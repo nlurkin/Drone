@@ -43,7 +43,8 @@ public:
 	bool isAllZero();
 private:
 	VectorFloat cartesianAcceleration;
-	Quaternion quaternioGyroscope;
+	VectorFloat cartesianGyroscope;
+	Quaternion quaternionGyroscope;
 	int16_t temperature;
 };
 

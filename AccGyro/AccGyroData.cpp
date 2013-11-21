@@ -8,8 +8,12 @@
 #include "AccGyroData.h"
 
 AccGyroData::AccGyroData(){
-	cartesianAcceleration(0,0,0);
-	cartesianGyroscope(0,0,0);
+	cartesianAcceleration.x = 0;
+	cartesianAcceleration.y = 0;
+	cartesianAcceleration.z = 0;
+	cartesianGyroscope.x = 0;
+	cartesianGyroscope.y = 0;
+	cartesianGyroscope.z = 0;
 	temperature = 0;
 }
 
@@ -18,7 +22,9 @@ AccGyroData::~AccGyroData() {
 }
 
 void AccGyroData::setAccelerometerValues(uint16_t x, uint16_t y, uint16_t z){
-	cartesianAcceleration(x,y,z);
+	cartesianAcceleration.x = x;
+	cartesianAcceleration.y = y;
+	cartesianAcceleration.z = z;
 }
 
 void AccGyroData::setAccelerometerValueX(uint16_t v){
