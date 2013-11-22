@@ -165,6 +165,7 @@ bool AccGyro::checkDataAvailable(){
 
 	if((status & 0x10) || fifoCount==1024 ){
 		//Overflow
+		Serial.print("FIFO overflow. Resetting...");
 		resetFIFO();
 		return false;
 	}
