@@ -9,6 +9,20 @@
 
 AccGyroData::AccGyroData(){
 	fTemperature = 0;
+	teapotPacket[0] = '$';
+	teapotPacket[1] = 0x02;
+	teapotPacket[2] = 0;
+	teapotPacket[3] = 0;
+	teapotPacket[4] = 0;
+	teapotPacket[5] = 0;
+	teapotPacket[6] = 0;
+	teapotPacket[7] = 0;
+	teapotPacket[8] = 0;
+	teapotPacket[9] = 0;
+	teapotPacket[10] = 0x00;
+	teapotPacket[11] = 0x00;
+	teapotPacket[12] = '\r';
+	teapotPacket[13] = '\n';
 }
 
 AccGyroData::~AccGyroData() {
@@ -29,6 +43,15 @@ void AccGyroData::setFromBuffer(uint8_t *buffer){
 	fAcceleration.x = (buffer[28] << 8) + buffer[29];
 	fAcceleration.y = (buffer[32] << 8) + buffer[33];
 	fAcceleration.z = (buffer[36] << 8) + buffer[37];
+
+	teapotPacket[2] = buffer[0];
+	teapotPacket[3] = buffer[1];
+	teapotPacket[4] = buffer[4];
+	teapotPacket[5] = buffer[5];
+	teapotPacket[6] = buffer[8];
+	teapotPacket[7] = buffer[9];
+	teapotPacket[8] = buffer[12];
+	teapotPacket[9] = buffer[13];
 }
 
 void AccGyroData::setFullScaleAccelerometer(uint8_t r){
@@ -76,9 +99,17 @@ VectorFloat AccGyroData::getTrueAcceleration(){
 	return r;
 }
 
+Quaternion AccGyroData::getQuaternion(){
+	return fQuaternion;
+}
+
+uint8_t *AccGyroData::getTeaPotPacket(){
+	teapotPacket[11]++;
+	return teapotPacket;
+}
 
 //void AccGyroData::setAccelerometerValues(uint16_t x, uint16_t y, uint16_t z){
-//	cartesianAcceleration.x = x;
+	//	cartesianAcceleration.x = x;
 //	cartesianAcceleration.y = y;
 //	cartesianAcceleration.z = z;
 //}

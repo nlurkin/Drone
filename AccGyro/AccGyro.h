@@ -21,6 +21,7 @@ public:
 
 	void init();
 	void exportValueToSerial();
+	void exportTeaPot();
 
 	bool checkDataAvailable();
 

@@ -72,17 +72,34 @@ AccGyro::~AccGyro() {
 void AccGyro::exportValueToSerial(){
 	if(!checkDataAvailable()) return;
 
-	VectorFloat acc;
+	VectorFloat acc, realAcc;
 
 	fillValues();
 
 	acc = data.getLinearAcceleration();
+	realAcc = data.getTrueAcceleration();
 
 	Serial.print(acc.x);
 	Serial.print(",");
 	Serial.print(acc.y);
 	Serial.print(",");
-	Serial.println(acc.z);
+	Serial.print(acc.z);
+	Serial.print(",");
+	Serial.print(realAcc.x);
+	Serial.print(",");
+	Serial.print(realAcc.y);
+	Serial.print(",");
+	Serial.println(realAcc.z);
+}
+
+void AccGyro::exportTeaPot(){
+	if(!checkDataAvailable()) return;
+
+	fillValues();
+
+	// display quaternion values in InvenSense Teapot demo format:
+	Serial.write(data.getTeaPotPacket(), 14);
+	//teapotPacket[11]++; // packetCount, loops at 0xFF on purpose
 }
 
 bool AccGyro::checkDataAvailable(){

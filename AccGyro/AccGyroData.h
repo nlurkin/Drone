@@ -35,6 +35,9 @@ public:
 	VectorFloat getTrueAcceleration();
 	VectorFloat getGravity();
 
+	Quaternion getQuaternion();
+	uint8_t *getTeaPotPacket();
+
 	/*void setAccelerometerValues(uint16_t x, uint16_t y, uint16_t z);
 	void setAccelerometerValueX(uint16_t v);
 	void setAccelerometerValueY(uint16_t v);
@@ -63,6 +66,8 @@ private:
 	VectorInt16 fAcceleration;
 	VectorInt16 fGyroscope;
 	int16_t fTemperature;
+	uint8_t teapotPacket[14];
+
 	//int16_t temperature;
 
 	float fFullScaleGyroscope;
