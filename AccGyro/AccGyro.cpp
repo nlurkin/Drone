@@ -61,6 +61,9 @@ void AccGyro::init(){
 		Serial.print(dmpStatus);
 		Serial.println(F(")"));
 	}
+
+	data.setFullScaleAccelerometer(getFullScaleAccelRange());
+	data.setFullScaleGyroscope(getFullScaleGyroRange());
 }
 
 AccGyro::~AccGyro() {
@@ -69,88 +72,17 @@ AccGyro::~AccGyro() {
 void AccGyro::exportValueToSerial(){
 	if(!checkDataAvailable()) return;
 
-	Quaternion q;
-	AccGyroData d;
+	VectorFloat acc;
 
-	d = getValues();
+	fillValues();
 
-		// display quaternion values in easy matrix form: w x y z
-		//dmpGetQuaternion(&q, fifoBuffer);
-		//dmpGetEuler(euler, &q);
-		//dmpGetGravity(&gravity, &q);
-		//dmpGetYawPitchRoll(ypr, &q, &gravity);
-		//dmpGetAccel(&aa, fifoBuffer);
-		//dmpGetLinearAccel(&aaReal, &aa, &gravity);
-		//dmpGetLinearAccelInWorld(&aaWorld, &aaReal, &q);
+	acc = data.getLinearAcceleration();
 
-		/*Serial.print("quat\t");
-		Serial.print(q.w);
-		Serial.print("\t");
-		Serial.print(q.x);
-		Serial.print("\t");
-		Serial.print(q.y);
-		Serial.print("\t");
-		Serial.println(q.z);
-
-		// display Euler angles in degrees
-		Serial.print("euler\t");
-		Serial.print(euler[0] * 180/M_PI);
-		Serial.print("\t");
-		Serial.print(euler[1] * 180/M_PI);
-		Serial.print("\t");
-		Serial.println(euler[2] * 180/M_PI);
-
-		// display Euler angles in degrees
-		Serial.print("ypr\t");
-		Serial.print(ypr[0] * 180/M_PI);
-		Serial.print("\t");
-		Serial.print(ypr[1] * 180/M_PI);
-		Serial.print("\t");
-		Serial.println(ypr[2] * 180/M_PI);
-
-		// display real acceleration, adjusted to remove gravity
-		Serial.print("areal\t");
-		Serial.print(aaReal.x);
-		Serial.print("\t");
-		Serial.print(aaReal.y);
-		Serial.print("\t");
-		Serial.println(aaReal.z);
-
-		// display initial world-frame acceleration, adjusted to remove gravity
-		// and rotated based on known orientation from quaternion
-		Serial.print("aworld\t");
-		Serial.print(aaWorld.x);
-		Serial.print("\t");
-		Serial.print(aaWorld.y);
-		Serial.print("\t");
-		Serial.println(aaWorld.z);
-		 */
-		int16_t x,y,z;
-		uint8_t r;
-		double rx,ry,rz;
-		float fsr;
-		r = getFullScaleAccelRange();
-		if(r==0) fsr = 8192.0 * 2;
-		if(r==1) fsr = 4096.0 * 2;
-		if(r==2) fsr = 2048.0 * 2;
-		if(r==3) fsr = 1024.0 * 2;
-
-		getAcceleration(&x, &y, &z);
-
-		rx = (float)x/fsr;
-		ry = (float)y/fsr;
-		rz = (float)z/fsr;
-
-		//Serial.print("Accelerator values: ");
-		//Serial.print(" x=");
-		Serial.print(rx);
-		Serial.print(",");
-		Serial.print(ry);
-		Serial.print(",");
-		Serial.println(rz);
-	//}
-
-	//delay(1000);
+	Serial.print(acc.x);
+	Serial.print(",");
+	Serial.print(acc.y);
+	Serial.print(",");
+	Serial.println(acc.z);
 }
 
 bool AccGyro::checkDataAvailable(){
@@ -163,29 +95,30 @@ bool AccGyro::checkDataAvailable(){
 		interrupt = false;
 		status = getIntStatus();
 
-	if((status & 0x10) || fifoCount==1024 ){
-		//Overflow
-		Serial.print("FIFO overflow. Resetting...");
-		resetFIFO();
-		return false;
-	}
-	else if(status & 0x02){
-		//New data
-		//Wait for complete block
-		while (fifoCount < dmpPacketSize) fifoCount = getFIFOCount();
-		return true;
-	}
+		if((status & 0x10) || fifoCount==1024 ){
+			//Overflow
+			Serial.print("FIFO overflow. Resetting...");
+			resetFIFO();
+			return false;
+		}
+		else if(status & 0x02){
+			//New data
+			//Wait for complete block
+			while (fifoCount < dmpPacketSize) fifoCount = getFIFOCount();
+			return true;
+		}
 	}
 
 	if(fifoCount>dmpPacketSize) return true;
-
+	return false;
 }
 
-AccGyroData AccGyro::getValues(){
+void AccGyro::fillValues(){
 	// read a packet from FIFO
 	uint8_t fifoBuffer[64];
 
 	getFIFOBytes(fifoBuffer, dmpPacketSize);
 	fifoCount -= dmpPacketSize;
 
+	data.setFromBuffer(fifoBuffer);
 }

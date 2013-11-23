@@ -24,7 +24,7 @@ public:
 
 	bool checkDataAvailable();
 
-	AccGyroData getValues();
+	void fillValues();
 private:
 	bool initialized;
 	bool dmpInitialized;
