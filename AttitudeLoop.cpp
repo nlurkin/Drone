@@ -9,14 +9,15 @@
 
 AttitudeLoop::AttitudeLoop() {
 	// TODO Auto-generated constructor stub
-
+	fPOmega = 0;
+	fPQ = 0;
 }
 
 AttitudeLoop::~AttitudeLoop() {
 	// TODO Auto-generated destructor stub
 }
 
-VectorFloat AttitudeLoop::Compute(Quaternion qM, VectorFloat omegaM) {
+VectorFloat AttitudeLoop::ComputePP(Quaternion qM, VectorFloat omegaM) {
 	Quaternion qErr;
 	VectorFloat axisErr;
 
@@ -27,4 +28,14 @@ VectorFloat AttitudeLoop::Compute(Quaternion qM, VectorFloat omegaM) {
 
 	fTorque = -axisErr*fPQ - omegaM*fPOmega;
 	return fTorque;
+}
+
+motorFactor_t AttitudeLoop::Compute(Quaternion qM, VectorFloat omegaM) {
+	motorFactor_t F;
+
+	//Compute necessary torque
+	ComputePP(qM, omegaM);
+
+	//Fit the desired torque vector with the motor response function to extract the 4 motor factors
+	return F;
 }

@@ -23,6 +23,9 @@ AccGyroData::AccGyroData(){
 	teapotPacket[11] = 0x00;
 	teapotPacket[12] = '\r';
 	teapotPacket[13] = '\n';
+
+	setFullScaleAccelerometer(0);
+	setFullScaleGyroscope(0);
 }
 
 AccGyroData::~AccGyroData() {

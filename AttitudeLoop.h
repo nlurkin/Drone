@@ -11,12 +11,20 @@
 #include <Arduino.h>
 #include "helper_3dmath.h"
 
+typedef struct motorFactor{
+	int m1;
+	int m2;
+	int m3;
+	int m4;
+} motorFactor_t;
+
 class AttitudeLoop {
 public:
 	AttitudeLoop();
 	virtual ~AttitudeLoop();
 
-	VectorFloat Compute(Quaternion qM, VectorFloat omegaM);
+	VectorFloat ComputePP(Quaternion qM, VectorFloat omegaM);
+	motorFactor_t Compute(Quaternion qM, VectorFloat omegaM);
 
 	const Quaternion& getQRef() const {return fQRef;}
 	float getPq() const {return fPQ;}
@@ -26,11 +34,17 @@ public:
 		fPQ = pQ;
 		fPOmega = pOmega;
 	}
+	const VectorFloat& getTorque() const {return fTorque;}
+
+	const Matrix<float, 3, 3>& getI() const {return fI;}
+	void setI(const Matrix<float, 3, 3>& i) {fI = i;}
 
 private:
 	Quaternion fQRef;
 	float fPQ, fPOmega;
 	VectorFloat fTorque;
+
+	Matrix<float, 3, 3> fI;
 };
 
 #endif /* ATTITUDELOOP_H_ */
