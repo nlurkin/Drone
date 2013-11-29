@@ -108,6 +108,21 @@ uint8_t *AccGyroData::getTeaPotPacket(){
 	return teapotPacket;
 }
 
+VectorInt16 AccGyroData::getRawAngularRate() {
+	return fGyroscope;
+}
+
+VectorFloat AccGyroData::getAngularRate() {
+	VectorFloat r;
+
+	r.x = fGyroscope.x/fFullScaleGyroscope;
+	r.y = fGyroscope.y/fFullScaleGyroscope;
+	r.z = fGyroscope.z/fFullScaleGyroscope;
+
+	return r;
+}
+
+
 //void AccGyroData::setAccelerometerValues(uint16_t x, uint16_t y, uint16_t z){
 	//	cartesianAcceleration.x = x;
 //	cartesianAcceleration.y = y;
@@ -215,3 +230,4 @@ uint8_t *AccGyroData::getTeaPotPacket(){
 //bool AccGyroData::isAllZero(){
 //	return (x_accel==0) & (y_accel==0) & (z_accel==0) & (x_gyro==0) & (y_gyro==0) & (z_gyro==0) & (temperature==0);
 //}
+

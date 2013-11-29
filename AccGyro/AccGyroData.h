@@ -38,6 +38,9 @@ public:
 	Quaternion getQuaternion();
 	uint8_t *getTeaPotPacket();
 
+	VectorInt16 getRawAngularRate();
+	VectorFloat getAngularRate();
+
 	/*void setAccelerometerValues(uint16_t x, uint16_t y, uint16_t z);
 	void setAccelerometerValueX(uint16_t v);
 	void setAccelerometerValueY(uint16_t v);
