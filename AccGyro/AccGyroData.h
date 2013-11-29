@@ -9,7 +9,7 @@
 #define ACCGYRODATA_H_
 
 #include <Arduino.h>
-#include "helper_3dmath.h"
+#include "mathClasses.h"
 
 /* ================================================================================================ *
  | Default MotionApps v2.0 42-byte FIFO packet structure:                                           |

@@ -9,7 +9,7 @@
 #define ATTITUDELOOP_H_
 
 #include <Arduino.h>
-#include "helper_3dmath.h"
+#include "mathClasses.h"
 
 typedef struct motorFactor{
 	int m1;
