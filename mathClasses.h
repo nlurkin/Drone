@@ -32,8 +32,6 @@ THE SOFTWARE.
 #ifndef _HELPER_3DMATH_H_
 #define _HELPER_3DMATH_H_
 
-#include <vector>
-
 class Quaternion {
 public:
 	float w;
@@ -280,9 +278,9 @@ public:
 };
 
 template<class T, int I, int J>
-class Matrix{
+class MatrixNic{
 public:
-	Matrix(){
+	MatrixNic(){
 		for(int i=0; i<I; i++){
 			for(int j=0; j<J; j++){
 				data[i][j] = 0.0f;
@@ -290,7 +288,7 @@ public:
 		}
 	};
 
-	Matrix operator()(int i, int j) {return data[i][j];};
+	MatrixNic operator()(int i, int j) {return data[i][j];};
 	void operator()(int i, int j, T v) {data[i][j] = v;};
 
 private:

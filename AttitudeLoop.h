@@ -36,15 +36,15 @@ public:
 	}
 	const VectorFloat& getTorque() const {return fTorque;}
 
-	const Matrix<float, 3, 3>& getI() const {return fI;}
-	void setI(const Matrix<float, 3, 3>& i) {fI = i;}
+	const MatrixNic<float, 3, 3>& getI() const {return fI;}
+	void setI(const MatrixNic<float, 3, 3>& i) {fI = i;}
 
 private:
 	Quaternion fQRef;
 	float fPQ, fPOmega;
 	VectorFloat fTorque;
 
-	Matrix<float, 3, 3> fI;
+	MatrixNic<float, 3, 3> fI;
 };
 
 #endif /* ATTITUDELOOP_H_ */

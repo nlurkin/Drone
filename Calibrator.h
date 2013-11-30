@@ -10,6 +10,7 @@
 
 #include <Arduino.h>
 #include "mathClasses.h"
+#include "MatrixMath.h"
 
 class Calibrator {
 public:
@@ -20,13 +21,13 @@ public:
 	bool calibrate();
 
 private:
-	bool calibrateIndividual();
+	bool calibrateIndividual(int motor);
 
-	fmat fI;
+	MatrixNic<int, 3, 3> fI;
 	vector<VectorFloat> R;
 
-	vector< vector<int>> fP;
-	vector< vector<VectorFloat>> fOmega, fAlpha;
+	vector< vector<int> > fP;
+	vector< vector<VectorFloat> > fOmega, fAlpha;
 };
 
 #endif /* CALIBRATOR_H_ */
