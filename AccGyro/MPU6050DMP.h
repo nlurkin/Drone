@@ -9,7 +9,7 @@
 #define MPU6050DMP_H_
 
 #include <MPU6050.h>
-#include "helper_3dmath.h"
+#include "mathClasses.h"
 #include <avr/pgmspace.h>
 
 class MPU6050DMP: public MPU6050 {

@@ -39,7 +39,7 @@ THE SOFTWARE.
 
 #include "I2Cdev.h"
 #include <avr/pgmspace.h>
-#include "helper_3dmath.h"
+#include "mathClasses.h"
 
 
 

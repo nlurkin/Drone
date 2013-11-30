@@ -288,7 +288,7 @@ public:
 		}
 	};
 
-	MatrixNic operator()(int i, int j) {return data[i][j];};
+	T &operator()(int i, int j) {return data[i][j];};
 	void operator()(int i, int j, T v) {data[i][j] = v;};
 
 private:

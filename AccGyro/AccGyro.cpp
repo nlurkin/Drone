@@ -22,6 +22,7 @@ AccGyro::AccGyro(int devAddr): MPU6050DMP(devAddr){
 	mpuIntStatus = 0;
 	fifoCount = 0;
 	fSimulate = false;
+	currentIndex = 0;
 }
 
 void AccGyro::init(){
@@ -75,7 +76,7 @@ void AccGyro::exportValueToSerial(){
 
 	VectorFloat acc, realAcc;
 
-	fillValues();
+	if(!fillValues()) return;
 
 	acc = data.getLinearAcceleration();
 	realAcc = data.getTrueAcceleration();
@@ -106,7 +107,7 @@ void AccGyro::exportTeaPot(){
 bool AccGyro::checkDataAvailable(){
 	int status;
 
-	if(fSimulate && Serial.available()>=10*sizeof(float)) return true;
+	if(fSimulate && Serial.available()>0) return true;
 
 	if (!dmpInitialized) return false;
 	if(!interrupt && fifoCount<dmpPacketSize) return false;
@@ -134,12 +135,12 @@ bool AccGyro::checkDataAvailable(){
 	return false;
 }
 
-void AccGyro::fillValues(){
-	if(fSimulate) readFromSerial();
-	else readFromSensor();
+bool AccGyro::fillValues(){
+	if(fSimulate) return readFromSerial();
+	else return readFromSensor();
 }
 
-void AccGyro::readFromSensor(){
+bool AccGyro::readFromSensor(){
 	// read a packet from FIFO
 	uint8_t fifoBuffer[64];
 
@@ -147,12 +148,21 @@ void AccGyro::readFromSensor(){
 	fifoCount -= dmpPacketSize;
 
 	data.setFromBuffer(fifoBuffer);
+	return true;
 }
 
-void AccGyro::readFromSerial() {
-	float buffer[9];
+bool AccGyro::readFromSerial() {
+	String s;
 
-	Serial.readBytes((char*)buffer, sizeof(float)*64);
-	data.setFromSerial(buffer);
+	s = Serial.readStringUntil('\n');
+	buffer[currentIndex] = s.toInt();
+	currentIndex++;
+
+	Serial.println(currentIndex);
+	if(currentIndex==10){
+		data.setFromSerial(buffer);
+		return true;
+	}
+	return false;
 }
 

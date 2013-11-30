@@ -25,12 +25,12 @@ public:
 
 	bool checkDataAvailable();
 
-	void fillValues();
+	bool fillValues();
 
-	void readFromSerial();
-	void readFromSensor();
+	bool readFromSerial();
+	bool readFromSensor();
 
-	void setSimulate(bool simulate) {fSimulate = simulate;}
+	void setSimulate(bool simulate) {Serial.print(F("Setting simulation mode:")); Serial.println(simulate); fSimulate = simulate;}
 
 private:
 	bool initialized;
@@ -44,6 +44,9 @@ private:
 	uint16_t fifoCount;     // count of all bytes currently in FIFO
 
 	bool fSimulate;
+	int currentIndex;
+	int buffer[10];
+
 	//uint8_t fifoBuffer[64]; // FIFO storage buffer
 
 	/*Quaternion q;
