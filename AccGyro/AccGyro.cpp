@@ -21,6 +21,7 @@ AccGyro::AccGyro(int devAddr): MPU6050DMP(devAddr){
 	dmpPacketSize = 42;
 	mpuIntStatus = 0;
 	fifoCount = 0;
+	fSimulate = false;
 }
 
 void AccGyro::init(){
@@ -104,6 +105,9 @@ void AccGyro::exportTeaPot(){
 
 bool AccGyro::checkDataAvailable(){
 	int status;
+
+	if(fSimulate && Serial.available()>=10*sizeof(float)) return true;
+
 	if (!dmpInitialized) return false;
 	if(!interrupt && fifoCount<dmpPacketSize) return false;
 
@@ -131,6 +135,11 @@ bool AccGyro::checkDataAvailable(){
 }
 
 void AccGyro::fillValues(){
+	if(fSimulate) readFromSerial();
+	else readFromSensor();
+}
+
+void AccGyro::readFromSensor(){
 	// read a packet from FIFO
 	uint8_t fifoBuffer[64];
 
@@ -139,3 +148,11 @@ void AccGyro::fillValues(){
 
 	data.setFromBuffer(fifoBuffer);
 }
+
+void AccGyro::readFromSerial() {
+	float buffer[9];
+
+	Serial.readBytes((char*)buffer, sizeof(float)*64);
+	data.setFromSerial(buffer);
+}
+

@@ -26,6 +26,12 @@ public:
 	bool checkDataAvailable();
 
 	void fillValues();
+
+	void readFromSerial();
+	void readFromSensor();
+
+	void setSimulate(bool simulate) {fSimulate = simulate;}
+
 private:
 	bool initialized;
 	bool dmpInitialized;
@@ -36,6 +42,8 @@ private:
 	uint16_t dmpPacketSize;
 
 	uint16_t fifoCount;     // count of all bytes currently in FIFO
+
+	bool fSimulate;
 	//uint8_t fifoBuffer[64]; // FIFO storage buffer
 
 	/*Quaternion q;

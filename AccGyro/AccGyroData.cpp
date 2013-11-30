@@ -106,6 +106,19 @@ Quaternion AccGyroData::getQuaternion(){
 	return fQuaternion;
 }
 
+void AccGyroData::setFromSerial(float buffer[10]) {
+	fQuaternion.w = buffer[0];
+	fQuaternion.x = buffer[1];
+	fQuaternion.y = buffer[2];
+	fQuaternion.z = buffer[3];
+	fGyroscope.x = buffer[4];
+	fGyroscope.y = buffer[5];
+	fGyroscope.z = buffer[6];
+	fAcceleration.x = buffer[7];
+	fAcceleration.y = buffer[8];
+	fAcceleration.z = buffer[9];
+}
+
 uint8_t *AccGyroData::getTeaPotPacket(){
 	teapotPacket[11]++;
 	return teapotPacket;
