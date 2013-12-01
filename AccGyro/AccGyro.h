@@ -45,7 +45,7 @@ private:
 
 	bool fSimulate;
 	int currentIndex;
-	int buffer[10];
+	float buffer[10];
 
 	//uint8_t fifoBuffer[64]; // FIFO storage buffer
 

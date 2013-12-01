@@ -106,7 +106,14 @@ Quaternion AccGyroData::getQuaternion(){
 	return fQuaternion;
 }
 
-void AccGyroData::setFromSerial(int buffer[10]) {
+void AccGyroData::setFromSerial(float buffer[10]) {
+
+	Serial.print("Reading from buffer: (");
+	for(int i =0; i<10; i++){
+		Serial.print(buffer[i]);
+		Serial.print(",");
+	}
+	Serial.println(")");
 	fQuaternion.w = buffer[0];
 	fQuaternion.x = buffer[1];
 	fQuaternion.y = buffer[2];

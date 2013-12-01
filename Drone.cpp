@@ -4,7 +4,6 @@
 
 
 AccGyro sensor(0X68);
-int incomingByte = 0;
 
 //The setup function is called once at startup of the sketch
 void setup()
@@ -22,12 +21,4 @@ void loop()
 {
 	//Add your repeated code here
 	sensor.exportValueToSerial();
-	//if (Serial.available() > 0) {
-		// read the incoming byte:
-		//incomingByte = Serial.read();
-
-		// say what you got:
-		//Serial.print("I received: ");
-		//Serial.println(incomingByte, DEC);
-	//}
 }

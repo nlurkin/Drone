@@ -81,17 +81,21 @@ void AccGyro::exportValueToSerial(){
 	acc = data.getLinearAcceleration();
 	realAcc = data.getTrueAcceleration();
 
+	Serial.print("Acceleration: (");
 	Serial.print(acc.x);
 	Serial.print(",");
 	Serial.print(acc.y);
 	Serial.print(",");
 	Serial.print(acc.z);
+	Serial.println(")");
+	Serial.print("Real Acceleration: (");
 	Serial.print(",");
 	Serial.print(realAcc.x);
 	Serial.print(",");
 	Serial.print(realAcc.y);
 	Serial.print(",");
-	Serial.println(realAcc.z);
+	Serial.print(realAcc.z);
+	Serial.println(")");
 }
 
 void AccGyro::exportTeaPot(){
@@ -155,10 +159,13 @@ bool AccGyro::readFromSerial() {
 	String s;
 
 	s = Serial.readStringUntil('\n');
-	buffer[currentIndex] = s.toInt();
+	if(currentIndex<4) buffer[currentIndex] = atof(s.c_str());
+	else buffer[currentIndex] = s.toInt();
 	currentIndex++;
 
-	Serial.println(currentIndex);
+	Serial.print(currentIndex);
+	Serial.print(" ");
+	Serial.println(s);
 	if(currentIndex==10){
 		data.setFromSerial(buffer);
 		return true;
