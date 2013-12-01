@@ -36,13 +36,15 @@ public:
 	VectorFloat getTrueAcceleration();
 	VectorFloat getGravity();
 
-	VectorInt16 getRawGyroscope();
-	VectorFloat getTrueGyroscope();
+	VectorInt16 getRawAngularRate();
+	VectorFloat getAngularRate();
 
 	VectorFloat getAlpha();
 
 	Quaternion getQuaternion();
 	uint8_t *getTeaPotPacket();
+
+
 
 private:
 	void computeAlpha(int timestamp, VectorFloat oldGyroscope);

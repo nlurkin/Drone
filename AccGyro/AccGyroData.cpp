@@ -8,7 +8,6 @@
 #include "AccGyroData.h"
 
 AccGyroData::AccGyroData(){
-	fTemperature = 0;
 	teapotPacket[0] = '$';
 	teapotPacket[1] = 0x02;
 	teapotPacket[2] = 0;
@@ -34,7 +33,7 @@ AccGyroData::~AccGyroData() {
 
 
 void AccGyroData::setFromBuffer(uint8_t *buffer, int timestamp){
-	VectorFloat oldGyro = getTrueGyroscope();
+	VectorFloat oldGyro = getAngularRate();
 
 	fQuaternion.w = (buffer[0] << 8) + buffer[1];
 	fQuaternion.x = (buffer[4] << 8) + buffer[5];
@@ -112,7 +111,7 @@ Quaternion AccGyroData::getQuaternion(){
 
 void AccGyroData::setFromSerial(float buffer[10], int timestamp) {
 
-	VectorFloat oldGyro = getTrueGyroscope();
+	VectorFloat oldGyro = getAngularRate();
 
 	Serial.print("Reading from buffer: (");
 	for(int i =0; i<10; i++){
@@ -134,20 +133,6 @@ void AccGyroData::setFromSerial(float buffer[10], int timestamp) {
 	computeAlpha(timestamp, oldGyro);
 }
 
-VectorInt16 AccGyroData::getRawGyroscope() {
-	return fGyroscope;
-}
-
-VectorFloat AccGyroData::getTrueGyroscope() {
-	VectorFloat r;
-
-	r.x = fGyroscope.x/fFullScaleGyroscope;
-	r.y = fGyroscope.y/fFullScaleGyroscope;
-	r.z = fGyroscope.z/fFullScaleGyroscope;
-
-	return r;
-}
-
 VectorFloat AccGyroData::getAlpha() {
 	return fAlpha;
 }
@@ -158,6 +143,19 @@ uint8_t *AccGyroData::getTeaPotPacket(){
 }
 
 void AccGyroData::computeAlpha(int timestamp, VectorFloat oldGyroscope) {
-	fAlpha = (getTrueGyroscope() - oldGyroscope)/(timestamp-fTimestamp);
+	fAlpha = (getAngularRate() - oldGyroscope)/(timestamp-fTimestamp);
 	fTimestamp = timestamp;
+}
+VectorInt16 AccGyroData::getRawAngularRate() {
+	return fGyroscope;
+}
+
+VectorFloat AccGyroData::getAngularRate() {
+	VectorFloat r;
+
+	r.x = fGyroscope.x/fFullScaleGyroscope;
+	r.y = fGyroscope.y/fFullScaleGyroscope;
+	r.z = fGyroscope.z/fFullScaleGyroscope;
+
+	return r;
 }
