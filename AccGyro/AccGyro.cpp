@@ -76,11 +76,15 @@ void AccGyro::exportValueToSerial(){
 	if(!checkDataAvailable()) return;
 
 	VectorFloat acc, realAcc;
+	VectorFloat realGyro;
+	Quaternion quat;
 
 	if(!fillValues()) return;
 
 	acc = data.getLinearAcceleration();
 	realAcc = data.getTrueAcceleration();
+	realGyro = data.getAngularRate();
+	quat = data.getQuaternion();
 
 	Serial.print("Acceleration: (");
 	Serial.print(acc.x);
@@ -90,12 +94,27 @@ void AccGyro::exportValueToSerial(){
 	Serial.print(acc.z);
 	Serial.println(")");
 	Serial.print("Real Acceleration: (");
-	Serial.print(",");
 	Serial.print(realAcc.x);
 	Serial.print(",");
 	Serial.print(realAcc.y);
 	Serial.print(",");
 	Serial.print(realAcc.z);
+	Serial.println(")");
+	Serial.print("Real Gyroscope: (");
+	Serial.print(realGyro.x);
+	Serial.print(",");
+	Serial.print(realGyro.y);
+	Serial.print(",");
+	Serial.print(realGyro.z);
+	Serial.println(")");
+	Serial.print("Quaternion: (");
+	Serial.print(quat.w);
+	Serial.print(",");
+	Serial.print(quat.x);
+	Serial.print(",");
+	Serial.print(quat.y);
+	Serial.print(",");
+	Serial.print(quat.z);
 	Serial.println(")");
 }
 
@@ -106,7 +125,6 @@ void AccGyro::exportTeaPot(){
 
 	// display quaternion values in InvenSense Teapot demo format:
 	Serial.write(data.getTeaPotPacket(), 14);
-	//teapotPacket[11]++; // packetCount, loops at 0xFF on purpose
 }
 
 bool AccGyro::checkDataAvailable(){
@@ -152,7 +170,7 @@ bool AccGyro::readFromSensor(){
 	getFIFOBytes(fifoBuffer, dmpPacketSize);
 	fifoCount -= dmpPacketSize;
 
-	data.setFromBuffer(fifoBuffer);
+	data.setFromBuffer(fifoBuffer, millis());
 	return true;
 }
 
@@ -168,7 +186,8 @@ bool AccGyro::readFromSerial() {
 	Serial.print(" ");
 	Serial.println(s);
 	if(currentIndex==10){
-		data.setFromSerial(buffer);
+		data.setFromSerial(buffer, millis());
+		currentIndex = 0;
 		return true;
 	}
 	return false;
@@ -176,19 +195,44 @@ bool AccGyro::readFromSerial() {
 
 void AccGyro::calibrate() {
 	Calibrator cc;
-	int power;
-	int motorIndex;
-	//while(!calibrated)
-	//Set motor power
+	int motorIndex=0;
+	bool cont = false;
+	bool calibrated = false;
 
-	//Measure few values
+	while(!calibrated){
+		//cc.clearPoints();
+		for(int power=100; power<1000; power += 100){
+			//Set motor power
+			setMotorPower(motorIndex, power);
+			//Measure few values
+			for(int count=0; count<5; count++){
+				while(!cont){
+					cont = checkDataAvailable();
+					if(cont){
+						cont = fillValues();
+					}
+				}
+				cont = false;
+				Serial.println(count);
+			}
 
-	//Add new point
-	//cc.newPoint(motorIndex, power,);
+			//Add new point
+			Serial.print("New point");
+			//calibrated = cc.newPoint(motorIndex, power, data.getAngularRate(), data.getAlpha());
+			Serial.println(calibrated);
+		}
+	}
 }
 
 void AccGyro::calibrateSerial() {
 }
 
 void AccGyro::calibrateSensor() {
+}
+
+void AccGyro::setMotorPower(int motor, int power){
+	Serial.print("CMD:power:");
+	Serial.print(motor);
+	Serial.print(":");
+	Serial.println(power);
 }

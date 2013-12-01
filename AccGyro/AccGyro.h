@@ -25,19 +25,19 @@ public:
 	void exportTeaPot();
 
 	bool checkDataAvailable();
-
 	bool fillValues();
-
-	bool readFromSerial();
-	bool readFromSensor();
 
 	void setSimulate(bool simulate) {Serial.print(F("Setting simulation mode:")); Serial.println(simulate); fSimulate = simulate;}
 
 	void calibrate();
+	void setMotorPower(int motor, int power);
+private:
+	bool readFromSerial();
+	bool readFromSensor();
+
 	void calibrateSerial();
 	void calibrateSensor();
 
-private:
 	bool initialized;
 	bool dmpInitialized;
 	int address;

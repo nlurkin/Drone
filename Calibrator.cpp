@@ -9,8 +9,6 @@
 #include "MatrixMath.h"
 
 Calibrator::Calibrator() {
-	// TODO Auto-generated constructor stub
-
 }
 
 Calibrator::~Calibrator() {
@@ -27,13 +25,15 @@ bool Calibrator::newPoint(int motor, float p, VectorFloat omega, VectorFloat alp
 
 bool Calibrator::calibrate() {
 
-	fP.clear();
+//	fP[].clear();
 
 	return true;
 }
 
 bool Calibrator::calibrateIndividual(int motor) {
-	if(fP.size()<12) return false;
+	Serial.print("fp.size ");
+	Serial.println(fP[motor].size());
+	if(fP[motor].size()<12) return false;
 
 	float a[12][12];
 	float b[12];
@@ -100,4 +100,19 @@ bool Calibrator::calibrateIndividual(int motor) {
 		return true;
 	}
 	return false;
+}
+
+void Calibrator::clearPoints(){
+	fP[0].clear();
+	fP[1].clear();
+	fP[2].clear();
+	fP[3].clear();
+	fOmega[0].clear();
+	fOmega[1].clear();
+	fOmega[2].clear();
+	fOmega[3].clear();
+	fAlpha[0].clear();
+	fAlpha[1].clear();
+	fAlpha[2].clear();
+	fAlpha[3].clear();
 }

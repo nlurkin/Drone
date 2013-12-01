@@ -14,6 +14,7 @@ void setup()
 	Serial.begin(9600);
 	Serial.println("Drone");
 	sensor.setSimulate(true);
+	sensor.calibrate();
 }
 
 // The loop function is called in an endless loop

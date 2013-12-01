@@ -27,7 +27,7 @@ public:
 	virtual ~AccGyroData();
 
 	void setFromBuffer(uint8_t *buffer, int timestamp);
-	void setFromSerial(float buffer[9], int timestamp);
+	void setFromSerial(float buffer[10], int timestamp);
 	void setFullScaleAccelerometer(uint8_t r);
 	void setFullScaleGyroscope(uint8_t r);
 

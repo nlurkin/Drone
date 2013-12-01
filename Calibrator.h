@@ -20,14 +20,16 @@ public:
 	bool newPoint(int motor, float p, VectorFloat omega, VectorFloat alpha);
 	bool calibrate();
 
+	void clearPoints();
+
 private:
 	bool calibrateIndividual(int motor);
 
 	MatrixNic<int, 3, 3> fI;
-	vector<VectorFloat> R;
+	VectorFloat R[4];
 
-	vector< vector<int> > fP;
-	vector< vector<VectorFloat> > fOmega, fAlpha;
+	vector<int> fP[4];
+	vector<VectorFloat> fOmega[4], fAlpha[4];
 };
 
 #endif /* CALIBRATOR_H_ */
