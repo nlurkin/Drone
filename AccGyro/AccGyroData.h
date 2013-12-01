@@ -26,8 +26,8 @@ public:
 	AccGyroData();
 	virtual ~AccGyroData();
 
-	void setFromBuffer(uint8_t *buffer);
-	void setFromSerial(float buffer[9]);
+	void setFromBuffer(uint8_t *buffer, int timestamp);
+	void setFromSerial(float buffer[9], int timestamp);
 	void setFullScaleAccelerometer(uint8_t r);
 	void setFullScaleGyroscope(uint8_t r);
 
@@ -36,40 +36,24 @@ public:
 	VectorFloat getTrueAcceleration();
 	VectorFloat getGravity();
 
+	VectorInt16 getRawGyroscope();
+	VectorFloat getTrueGyroscope();
+
+	VectorFloat getAlpha();
+
 	Quaternion getQuaternion();
 	uint8_t *getTeaPotPacket();
 
-	/*void setAccelerometerValues(uint16_t x, uint16_t y, uint16_t z);
-	void setAccelerometerValueX(uint16_t v);
-	void setAccelerometerValueY(uint16_t v);
-	void setAccelerometerValueZ(uint16_t v);
-
-	void setTemperatureValue(uint16_t v);
-
-	bool setValuesFromBufferAcc(uint8_t *buffer);
-	bool setValuesFromBufferGyro(uint8_t *buffer);
-	bool setValuesFromBuffer6(uint8_t *buffer);
-	bool setValuesFromBuffer7(uint8_t *buffer);
-
-	uint16_t getAccelerometerValueX();
-	uint16_t getAccelerometerValueY();
-	uint16_t getAccelerometerValueZ();
-
-	uint16_t getGyroscopeValueX();
-	uint16_t getGyroscopeValueY();
-	uint16_t getGyroscopeValueZ();
-
-	double getTemperatureValue();
-
-	bool isAllZero();*/
 private:
+	void computeAlpha(int timestamp, VectorFloat oldGyroscope);
+
+	int fTimestamp;
 	Quaternion fQuaternion;
 	VectorInt16 fAcceleration;
 	VectorInt16 fGyroscope;
-	int16_t fTemperature;
+	VectorFloat fAlpha;
+	//int16_t fTemperature;
 	uint8_t teapotPacket[14];
-
-	//int16_t temperature;
 
 	float fFullScaleGyroscope;
 	float fFullScaleAccelerometer;

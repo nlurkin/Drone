@@ -7,6 +7,7 @@
 
 #include "AccGyro.h"
 #include <Arduino.h>
+#include "Calibrator.h"
 
 volatile bool interrupt = false;     // indicates whether MPU interrupt pin has gone high
 
@@ -173,3 +174,21 @@ bool AccGyro::readFromSerial() {
 	return false;
 }
 
+void AccGyro::calibrate() {
+	Calibrator cc;
+	int power;
+	int motorIndex;
+	//while(!calibrated)
+	//Set motor power
+
+	//Measure few values
+
+	//Add new point
+	//cc.newPoint(motorIndex, power,);
+}
+
+void AccGyro::calibrateSerial() {
+}
+
+void AccGyro::calibrateSensor() {
+}

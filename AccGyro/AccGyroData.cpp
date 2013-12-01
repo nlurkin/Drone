@@ -33,7 +33,9 @@ AccGyroData::~AccGyroData() {
 }
 
 
-void AccGyroData::setFromBuffer(uint8_t *buffer){
+void AccGyroData::setFromBuffer(uint8_t *buffer, int timestamp){
+	VectorFloat oldGyro = getTrueGyroscope();
+
 	fQuaternion.w = (buffer[0] << 8) + buffer[1];
 	fQuaternion.x = (buffer[4] << 8) + buffer[5];
 	fQuaternion.y = (buffer[8] << 8) + buffer[9];
@@ -55,6 +57,8 @@ void AccGyroData::setFromBuffer(uint8_t *buffer){
 	teapotPacket[7] = buffer[9];
 	teapotPacket[8] = buffer[12];
 	teapotPacket[9] = buffer[13];
+
+	computeAlpha(timestamp, oldGyro);
 }
 
 void AccGyroData::setFullScaleAccelerometer(uint8_t r){
@@ -106,7 +110,9 @@ Quaternion AccGyroData::getQuaternion(){
 	return fQuaternion;
 }
 
-void AccGyroData::setFromSerial(float buffer[10]) {
+void AccGyroData::setFromSerial(float buffer[10], int timestamp) {
+
+	VectorFloat oldGyro = getTrueGyroscope();
 
 	Serial.print("Reading from buffer: (");
 	for(int i =0; i<10; i++){
@@ -124,6 +130,26 @@ void AccGyroData::setFromSerial(float buffer[10]) {
 	fAcceleration.x = buffer[7];
 	fAcceleration.y = buffer[8];
 	fAcceleration.z = buffer[9];
+
+	computeAlpha(timestamp, oldGyro);
+}
+
+VectorInt16 AccGyroData::getRawGyroscope() {
+	return fGyroscope;
+}
+
+VectorFloat AccGyroData::getTrueGyroscope() {
+	VectorFloat r;
+
+	r.x = fGyroscope.x/fFullScaleGyroscope;
+	r.y = fGyroscope.y/fFullScaleGyroscope;
+	r.z = fGyroscope.z/fFullScaleGyroscope;
+
+	return r;
+}
+
+VectorFloat AccGyroData::getAlpha() {
+	return fAlpha;
 }
 
 uint8_t *AccGyroData::getTeaPotPacket(){
@@ -131,110 +157,7 @@ uint8_t *AccGyroData::getTeaPotPacket(){
 	return teapotPacket;
 }
 
-//void AccGyroData::setAccelerometerValues(uint16_t x, uint16_t y, uint16_t z){
-	//	cartesianAcceleration.x = x;
-//	cartesianAcceleration.y = y;
-//	cartesianAcceleration.z = z;
-//}
-//
-//void AccGyroData::setAccelerometerValueX(uint16_t v){
-//	cartesianAcceleration.x = v;
-//}
-//
-//void AccGyroData::setAccelerometerValueY(uint16_t v){
-//	cartesianAcceleration.y = v;
-//}
-//
-//void AccGyroData::setAccelerometerValueZ(uint16_t v){
-//	cartesianAcceleration.z = v;
-//}
-//
-//void AccGyroData::setGyroscopeValues(uint16_t x, uint16_t y, uint16_t z){
-//	cartesianGyroscope(x,y,z);
-//}
-//
-//void AccGyroData::setGyroscopeValueX(uint16_t v){
-//	cartesianGyroscope.x = v;
-//}
-//
-//void AccGyroData::setGyroscopeValueY(uint16_t v){
-//	cartesianGyroscope.y = v;
-//}
-//
-//void AccGyroData::setGyroscopeValueZ(uint16_t v){
-//	cartesianGyroscope.z = v;
-//}
-//
-//void AccGyroData::setTemperatureValue(uint16_t v){
-//	temperature = v;
-//}
-//
-//
-//bool AccGyroData::setValuesFromBuffer7(uint8_t *buffer){
-//	x_accel = (((int16_t)buffer[0]) << 8) | buffer[1];
-//	y_accel = (((int16_t)buffer[2]) << 8) | buffer[3];
-//	z_accel = (((int16_t)buffer[4]) << 8) | buffer[5];
-//	temperature = (((int16_t)buffer[6]) << 8) | buffer[7];
-//	x_gyro = (((int16_t)buffer[8]) << 8) | buffer[9];
-//	y_gyro = (((int16_t)buffer[10]) << 8) | buffer[11];
-//	z_gyro = (((int16_t)buffer[12]) << 8) | buffer[13];
-//
-//	if(isAllZero()) return false;
-//	return true;
-//}
-//
-//bool AccGyroData::setValuesFromBufferAcc(uint8_t *buffer){
-//	x_accel = (((int16_t)buffer[0]) << 8) | buffer[1];
-//	y_accel = (((int16_t)buffer[2]) << 8) | buffer[3];
-//	z_accel = (((int16_t)buffer[4]) << 8) | buffer[5];
-//	if(isAllZero()) return false;
-//	return true;
-//}
-//
-//bool AccGyroData::setValuesFromBufferGyro(uint8_t *buffer){
-//	x_gyro = (((int16_t)buffer[8]) << 8) | buffer[9];
-//	y_gyro = (((int16_t)buffer[10]) << 8) | buffer[11];
-//	z_gyro = (((int16_t)buffer[12]) << 8) | buffer[13];
-//	if(isAllZero()) return false;
-//	return true;
-//}
-//
-//bool AccGyroData::setValuesFromBuffer6(uint8_t *buffer){
-//	x_accel = (((int16_t)buffer[0]) << 8) | buffer[1];
-//	y_accel = (((int16_t)buffer[2]) << 8) | buffer[3];
-//	z_accel = (((int16_t)buffer[4]) << 8) | buffer[5];
-//	x_gyro = (((int16_t)buffer[8]) << 8) | buffer[9];
-//	y_gyro = (((int16_t)buffer[10]) << 8) | buffer[11];
-//	z_gyro = (((int16_t)buffer[12]) << 8) | buffer[13];
-//	if(isAllZero()) return false;
-//	return true;
-//}
-//
-//
-//uint16_t AccGyroData::getAccelerometerValueX(){
-//	return x_accel;
-//}
-//uint16_t AccGyroData::getAccelerometerValueY(){
-//	return y_accel;
-//}
-//uint16_t AccGyroData::getAccelerometerValueZ(){
-//	return z_accel;
-//}
-//
-//uint16_t AccGyroData::getGyroscopeValueX(){
-//	return x_gyro;
-//}
-//uint16_t AccGyroData::getGyroscopeValueY(){
-//	return y_gyro;
-//}
-//uint16_t AccGyroData::getGyroscopeValueZ(){
-//	return z_gyro;
-//}
-//
-//double AccGyroData::getTemperatureValue(){
-//	return ((double)temperature + 12412.0) / 340.0;
-//}
-//
-//bool AccGyroData::isAllZero(){
-//	return (x_accel==0) & (y_accel==0) & (z_accel==0) & (x_gyro==0) & (y_gyro==0) & (z_gyro==0) & (temperature==0);
-//}
+void AccGyroData::computeAlpha(int timestamp, VectorFloat oldGyroscope) {
+	fAlpha = (getTrueGyroscope() - oldGyroscope)/(timestamp-fTimestamp);
+	fTimestamp = timestamp;
+}

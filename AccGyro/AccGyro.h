@@ -13,6 +13,7 @@
 #include "AccGyroData.h"
 //#include "MPU6050.h"
 #include "MPU6050DMP.h"
+#include "AttitudeLoop.h"
 
 class AccGyro: public MPU6050DMP {
 public:
@@ -32,6 +33,10 @@ public:
 
 	void setSimulate(bool simulate) {Serial.print(F("Setting simulation mode:")); Serial.println(simulate); fSimulate = simulate;}
 
+	void calibrate();
+	void calibrateSerial();
+	void calibrateSensor();
+
 private:
 	bool initialized;
 	bool dmpInitialized;
@@ -47,15 +52,7 @@ private:
 	int currentIndex;
 	float buffer[10];
 
-	//uint8_t fifoBuffer[64]; // FIFO storage buffer
-
-	/*Quaternion q;
-	float euler[3];
-	VectorFloat gravity;
-	float ypr[3];
-	VectorInt16 aa;         // [x, y, z]            accel sensor measurements
-	VectorInt16 aaReal;     // [x, y, z]            gravity-free accel sensor measurements
-	VectorInt16 aaWorld;*/
+	AttitudeLoop quatPPLoop;
 };
 
 #endif /* ACCGYRO_H_ */
