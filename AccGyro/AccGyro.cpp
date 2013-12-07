@@ -7,6 +7,7 @@
 
 #include "AccGyro.h"
 #include <Arduino.h>
+#include "Calibrator.h"
 
 volatile bool interrupt = false;     // indicates whether MPU interrupt pin has gone high
 
@@ -21,6 +22,8 @@ AccGyro::AccGyro(int devAddr): MPU6050DMP(devAddr){
 	dmpPacketSize = 42;
 	mpuIntStatus = 0;
 	fifoCount = 0;
+	fSimulate = false;
+	currentIndex = 0;
 }
 
 void AccGyro::init(){
@@ -61,6 +64,9 @@ void AccGyro::init(){
 		Serial.print(dmpStatus);
 		Serial.println(F(")"));
 	}
+
+	data.setFullScaleAccelerometer(getFullScaleAccelRange());
+	data.setFullScaleGyroscope(getFullScaleGyroRange());
 }
 
 AccGyro::~AccGyro() {
@@ -69,92 +75,63 @@ AccGyro::~AccGyro() {
 void AccGyro::exportValueToSerial(){
 	if(!checkDataAvailable()) return;
 
-	Quaternion q;
-	AccGyroData d;
+	VectorFloat acc, realAcc;
+	VectorFloat realGyro;
+	Quaternion quat;
 
-	d = getValues();
+	if(!fillValues()) return;
 
-		// display quaternion values in easy matrix form: w x y z
-		//dmpGetQuaternion(&q, fifoBuffer);
-		//dmpGetEuler(euler, &q);
-		//dmpGetGravity(&gravity, &q);
-		//dmpGetYawPitchRoll(ypr, &q, &gravity);
-		//dmpGetAccel(&aa, fifoBuffer);
-		//dmpGetLinearAccel(&aaReal, &aa, &gravity);
-		//dmpGetLinearAccelInWorld(&aaWorld, &aaReal, &q);
+	acc = data.getLinearAcceleration();
+	realAcc = data.getTrueAcceleration();
+	realGyro = data.getAngularRate();
+	quat = data.getQuaternion();
 
-		/*Serial.print("quat\t");
-		Serial.print(q.w);
-		Serial.print("\t");
-		Serial.print(q.x);
-		Serial.print("\t");
-		Serial.print(q.y);
-		Serial.print("\t");
-		Serial.println(q.z);
+	Serial.print("Acceleration: (");
+	Serial.print(acc.x);
+	Serial.print(",");
+	Serial.print(acc.y);
+	Serial.print(",");
+	Serial.print(acc.z);
+	Serial.println(")");
+	Serial.print("Real Acceleration: (");
+	Serial.print(realAcc.x);
+	Serial.print(",");
+	Serial.print(realAcc.y);
+	Serial.print(",");
+	Serial.print(realAcc.z);
+	Serial.println(")");
+	Serial.print("Real Gyroscope: (");
+	Serial.print(realGyro.x);
+	Serial.print(",");
+	Serial.print(realGyro.y);
+	Serial.print(",");
+	Serial.print(realGyro.z);
+	Serial.println(")");
+	Serial.print("Quaternion: (");
+	Serial.print(quat.w);
+	Serial.print(",");
+	Serial.print(quat.x);
+	Serial.print(",");
+	Serial.print(quat.y);
+	Serial.print(",");
+	Serial.print(quat.z);
+	Serial.println(")");
+}
 
-		// display Euler angles in degrees
-		Serial.print("euler\t");
-		Serial.print(euler[0] * 180/M_PI);
-		Serial.print("\t");
-		Serial.print(euler[1] * 180/M_PI);
-		Serial.print("\t");
-		Serial.println(euler[2] * 180/M_PI);
+void AccGyro::exportTeaPot(){
+	if(!checkDataAvailable()) return;
 
-		// display Euler angles in degrees
-		Serial.print("ypr\t");
-		Serial.print(ypr[0] * 180/M_PI);
-		Serial.print("\t");
-		Serial.print(ypr[1] * 180/M_PI);
-		Serial.print("\t");
-		Serial.println(ypr[2] * 180/M_PI);
+	fillValues();
 
-		// display real acceleration, adjusted to remove gravity
-		Serial.print("areal\t");
-		Serial.print(aaReal.x);
-		Serial.print("\t");
-		Serial.print(aaReal.y);
-		Serial.print("\t");
-		Serial.println(aaReal.z);
-
-		// display initial world-frame acceleration, adjusted to remove gravity
-		// and rotated based on known orientation from quaternion
-		Serial.print("aworld\t");
-		Serial.print(aaWorld.x);
-		Serial.print("\t");
-		Serial.print(aaWorld.y);
-		Serial.print("\t");
-		Serial.println(aaWorld.z);
-		 */
-		int16_t x,y,z;
-		uint8_t r;
-		double rx,ry,rz;
-		float fsr;
-		r = getFullScaleAccelRange();
-		if(r==0) fsr = 8192.0 * 2;
-		if(r==1) fsr = 4096.0 * 2;
-		if(r==2) fsr = 2048.0 * 2;
-		if(r==3) fsr = 1024.0 * 2;
-
-		getAcceleration(&x, &y, &z);
-
-		rx = (float)x/fsr;
-		ry = (float)y/fsr;
-		rz = (float)z/fsr;
-
-		//Serial.print("Accelerator values: ");
-		//Serial.print(" x=");
-		Serial.print(rx);
-		Serial.print(",");
-		Serial.print(ry);
-		Serial.print(",");
-		Serial.println(rz);
-	//}
-
-	//delay(1000);
+	// display quaternion values in InvenSense Teapot demo format:
+	Serial.write(data.getTeaPotPacket(), 14);
 }
 
 bool AccGyro::checkDataAvailable(){
 	int status;
+
+	if(fSimulate && Serial.available()>0) return true;
+
 	if (!dmpInitialized) return false;
 	if(!interrupt && fifoCount<dmpPacketSize) return false;
 
@@ -163,28 +140,126 @@ bool AccGyro::checkDataAvailable(){
 		interrupt = false;
 		status = getIntStatus();
 
-	if((status & 0x10) || fifoCount==1024 ){
-		//Overflow
-		resetFIFO();
-		return false;
-	}
-	else if(status & 0x02){
-		//New data
-		//Wait for complete block
-		while (fifoCount < dmpPacketSize) fifoCount = getFIFOCount();
-		return true;
-	}
+		if((status & 0x10) || fifoCount==1024 ){
+			//Overflow
+			Serial.print("FIFO overflow. Resetting...");
+			resetFIFO();
+			return false;
+		}
+		else if(status & 0x02){
+			//New data
+			//Wait for complete block
+			while (fifoCount < dmpPacketSize) fifoCount = getFIFOCount();
+			return true;
+		}
 	}
 
 	if(fifoCount>dmpPacketSize) return true;
-
+	return false;
 }
 
-AccGyroData AccGyro::getValues(){
+bool AccGyro::fillValues(){
+	if(fSimulate) return readFromSerial();
+	else return readFromSensor();
+}
+
+bool AccGyro::readFromSensor(){
 	// read a packet from FIFO
 	uint8_t fifoBuffer[64];
 
 	getFIFOBytes(fifoBuffer, dmpPacketSize);
 	fifoCount -= dmpPacketSize;
 
+	data.setFromBuffer(fifoBuffer, millis());
+	return true;
+}
+
+bool AccGyro::readFromSerial() {
+	String s;
+
+	s = Serial.readStringUntil('\n');
+	if(currentIndex<4) buffer[currentIndex] = atof(s.c_str());
+	else buffer[currentIndex] = s.toInt();
+	currentIndex++;
+
+	Serial.print(currentIndex);
+	Serial.print(" ");
+	Serial.println(s);
+	if(currentIndex==10){
+		data.setFromSerial(buffer, millis());
+		currentIndex = 0;
+		return true;
+	}
+	return false;
+}
+
+void AccGyro::calibrate() {
+	Calibrator cc;
+	int motorIndex=0;
+	bool cont = false;
+	bool calibrated = false;
+
+	while(!calibrated){
+		//cc.clearPoints();
+		for(int power=100; power<1000; power += 100){
+			//Set motor power
+			setMotorPower(motorIndex, power);
+			//Measure few values
+			for(int count=0; count<5; count++){
+				while(!cont){
+					cont = checkDataAvailable();
+					if(cont){
+						cont = fillValues();
+					}
+				}
+				cont = false;
+				Serial.println(count);
+			}
+
+			//Add new point
+			Serial.print("New point");
+			//calibrated = cc.newPoint(motorIndex, power, data.getAngularRate(), data.getAlpha());
+			Serial.println(calibrated);
+		}
+	}
+}
+
+void AccGyro::calibrateSerial() {
+}
+
+void AccGyro::setCalibration() {
+	if(fSimulate) setCalibrationSerial();
+	else setCalibrationLocal();
+}
+
+void AccGyro::calibrateSensor() {
+}
+
+void AccGyro::setMotorPower(int motor, int power){
+	Serial.print("CMD:power:");
+	Serial.print(motor);
+	Serial.print(":");
+	Serial.println(power);
+}
+
+void AccGyro::setCalibrationSerial() {
+	String s;
+
+	Serial.println("CMD:sendI");
+
+	MatrixNic<float, 3, 3> I;
+	int vals = 0;
+	while(vals<3){
+		if(Serial.available()){
+			s = Serial.readStringUntil('\n');
+			I(vals, vals) = atof(s.c_str());
+			Serial.println(s);
+			vals++;
+		}
+	}
+
+	quatPPLoop.setI(I);
+}
+
+void AccGyro::setCalibrationLocal() {
 }

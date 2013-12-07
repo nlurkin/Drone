@@ -1,0 +1,14 @@
+Using PID algorithm
+Writing P^2 algorithm using quaternions
+	* Need to get angular rates : get gyro raw data
+	
+	q_ref = desired quaternion
+	q_m = measured quaternion
+	w_m = measured angular rates (3-vector)
+	q_err = q_ref x q_m* : error quaternion
+	Axis_err = [q_err_1 q_err_2 q_err_3]
+	If q_err_0 < 0 Axis_err = -Axis_err
+	torque = -P_q.Axis_err -P_w.w_m
+	
+	* link torque with motor response
+	* Add translation

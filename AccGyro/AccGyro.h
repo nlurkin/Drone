@@ -13,6 +13,7 @@
 #include "AccGyroData.h"
 //#include "MPU6050.h"
 #include "MPU6050DMP.h"
+#include "AttitudeLoop.h"
 
 class AccGyro: public MPU6050DMP {
 public:
@@ -21,11 +22,29 @@ public:
 
 	void init();
 	void exportValueToSerial();
+	void exportTeaPot();
 
 	bool checkDataAvailable();
+	bool fillValues();
 
-	AccGyroData getValues();
+	void setSimulate(bool simulate) {Serial.print(F("Setting simulation mode:")); Serial.println(simulate); fSimulate = simulate;}
+
+	void calibrate();
+	void setCalibration();
+	void setMotorPower(int motor, int power);
+
+	AttitudeLoop getControlLoop() {return quatPPLoop;}
+
 private:
+	bool readFromSerial();
+	bool readFromSensor();
+
+	void calibrateSerial();
+	void calibrateSensor();
+
+	void setCalibrationSerial();
+	void setCalibrationLocal();
+
 	bool initialized;
 	bool dmpInitialized;
 	int address;
@@ -35,15 +54,12 @@ private:
 	uint16_t dmpPacketSize;
 
 	uint16_t fifoCount;     // count of all bytes currently in FIFO
-	//uint8_t fifoBuffer[64]; // FIFO storage buffer
 
-	/*Quaternion q;
-	float euler[3];
-	VectorFloat gravity;
-	float ypr[3];
-	VectorInt16 aa;         // [x, y, z]            accel sensor measurements
-	VectorInt16 aaReal;     // [x, y, z]            gravity-free accel sensor measurements
-	VectorInt16 aaWorld;*/
+	bool fSimulate;
+	int currentIndex;
+	float buffer[10];
+
+	AttitudeLoop quatPPLoop;
 };
 
 #endif /* ACCGYRO_H_ */
