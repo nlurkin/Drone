@@ -39,3 +39,12 @@ motorFactor_t AttitudeLoop::Compute(Quaternion qM, VectorFloat omegaM) {
 	//Fit the desired torque vector with the motor response function to extract the 4 motor factors
 	return F;
 }
+
+void AttitudeLoop::printI(){
+	Serial.print("Ixx=");
+	Serial.print(fI(0,0));
+	Serial.print(", Iyy=");
+	Serial.print(fI(1,1));
+	Serial.print(", Izz=");
+	Serial.println(fI(2,2));
+}

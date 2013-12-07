@@ -1,5 +1,5 @@
-from DroneSimulator.Motor import Motor
-from DroneSimulator.matrix import vecScalarProduct, vecDiff
+from Motor import Motor
+from matrix import vecScalarProduct, vecDiff
 
 class Body(object):
     '''

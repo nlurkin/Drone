@@ -227,6 +227,11 @@ void AccGyro::calibrate() {
 void AccGyro::calibrateSerial() {
 }
 
+void AccGyro::setCalibration() {
+	if(fSimulate) setCalibrationSerial();
+	else setCalibrationLocal();
+}
+
 void AccGyro::calibrateSensor() {
 }
 
@@ -235,4 +240,26 @@ void AccGyro::setMotorPower(int motor, int power){
 	Serial.print(motor);
 	Serial.print(":");
 	Serial.println(power);
+}
+
+void AccGyro::setCalibrationSerial() {
+	String s;
+
+	Serial.println("CMD:sendI");
+
+	MatrixNic<float, 3, 3> I;
+	int vals = 0;
+	while(vals<3){
+		if(Serial.available()){
+			s = Serial.readStringUntil('\n');
+			I(vals, vals) = atof(s.c_str());
+			Serial.println(s);
+			vals++;
+		}
+	}
+
+	quatPPLoop.setI(I);
+}
+
+void AccGyro::setCalibrationLocal() {
 }

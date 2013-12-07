@@ -39,6 +39,7 @@ public:
 	const MatrixNic<float, 3, 3>& getI() const {return fI;}
 	void setI(const MatrixNic<float, 3, 3>& i) {fI = i;}
 
+	void printI();
 private:
 	Quaternion fQRef;
 	float fPQ, fPOmega;

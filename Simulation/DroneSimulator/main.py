@@ -1,14 +1,86 @@
 #!/usr/bin/env python
-from DroneSimulator.matrix import *
-import sys
-import serial
-import time, msvcrt
-import qmath
+from FullSimu import Simu
+from matrix import *
 import math
+import qmath
+import serial
+import string
+import sys
+import time
+import msvcrt
 
 
 
 ser = serial.Serial(port=7, baudrate=9600, timeout=1)
+
+simu = Simu()
+
+def readInput( caption, default, timeout = 5):
+    start_time = time.time()
+    #sys.stdout.write('%s(%s):'%(caption, default));
+    inputS = ''
+    while True:
+        if msvcrt.kbhit():
+            chrS = msvcrt.getche()
+            if ord(chrS) == 13: # enter_key
+                break
+            elif ord(chrS) >= 32: #space_char
+                inputS += chrS
+        if len(inputS) == 0 and (time.time() - start_time) > timeout:
+            break
+
+    #print ''  # needed to move to next line
+    if len(inputS) > 0:
+        return inputS
+    else:
+        return default
+
+def sendI():
+    I = simu.getI()
+    ser.write(str(I[0]) + "\r\n")
+    ser.write(str(I[1]) + "\r\n")
+    ser.write(str(I[2]) + "\r\n")
+    print "Sending %s %s %s" % (I[0], I[1], I[2])
+
+def loop():
+    s = str(ser.readline());
+    
+    if len(s) > 0:
+        print s
+        if s[0:3]=="CMD":
+            spl = s.split(':');
+            print spl
+            if string.rstrip(spl[1], "\r\n")=="sendI":
+                sendI()
+            #if s[1]=="power":
+                #changeMotorPower(s[2], s[3])
+
+
+def main():
+    timeout = 0.0001
+    s = ""
+    while(True):
+        loop()
+        s = readInput("", "", timeout)
+        print s
+        if s=="q":
+            break
+        #elif s=="s":
+        #    buildAttitude(0, math.pi/4, 0, 1)
+        #    sendSensor()
+        
+    
+
+
+if __name__ == "__main__":
+    main()
+    sys.exit(0);
+
+
+
+
+
+'''
 acc = [0, 0, 0]
 gyro = [0, 0, 0]
 angle = [0, 0, 0]
@@ -105,6 +177,4 @@ def main():
         
     
 
-if __name__ == "__main__":
-    main()
-    sys.exit(0);
+'''

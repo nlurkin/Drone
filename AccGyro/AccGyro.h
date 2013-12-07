@@ -30,13 +30,20 @@ public:
 	void setSimulate(bool simulate) {Serial.print(F("Setting simulation mode:")); Serial.println(simulate); fSimulate = simulate;}
 
 	void calibrate();
+	void setCalibration();
 	void setMotorPower(int motor, int power);
+
+	AttitudeLoop getControlLoop() {return quatPPLoop;}
+
 private:
 	bool readFromSerial();
 	bool readFromSensor();
 
 	void calibrateSerial();
 	void calibrateSensor();
+
+	void setCalibrationSerial();
+	void setCalibrationLocal();
 
 	bool initialized;
 	bool dmpInitialized;
