@@ -14,6 +14,7 @@ MainLoop::MainLoop(): sensor(0X68) {
 	fSimulate = false;
 	fCalibrated = false;
 	fInitialized = false;
+	fCalibrationRequested = false;
 }
 
 MainLoop::~MainLoop() {
@@ -30,12 +31,16 @@ void MainLoop::loop(){
 	if(!fInitialized){
 		initLoop();
 	}
+	else{
+
+	}
 }
 
 void MainLoop::initLoop(){
 	if(!fCalibrated) setCalibration();
 	else{
 		ctl.printI();
+		fInitialized = true;
 	}
 }
 
@@ -45,10 +50,14 @@ void MainLoop::setCalibration() {
 }
 
 void MainLoop::setCalibrationSerial() {
-	if(!fCalibrationRequested) ser.cmdRequestI();
+	if(!fCalibrationRequested){
+		ser.cmdRequestI();
+		fCalibrationRequested = true;
+	}
 	ser.read();
 	if(ser.isIReady()){
 		ctl.setI(ser.getI());
+		fCalibrated = true;
 	}
 }
 

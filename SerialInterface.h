@@ -18,9 +18,8 @@ public:
 	virtual ~SerialInterface();
 
 	void cmdPower(int motor, int power);
-	MatrixNic<float, 3, 3> cmdRequestI();
+	void cmdRequestI();
 
-	bool checkDataAvailable();
 	bool read();
 
 	void readData(String s);
@@ -30,12 +29,16 @@ public:
 	void readIMat(String s);
 
 	bool isIReady();
+	bool isSensorReady();
 
 	MatrixNic<float, 3, 3> getI();
+	float* getBuffer();
 private:
 	MatrixNic<float, 3, 3> fI;
+	float fBuffer[10];
 
 	int fICount;
+	int fBufferCount;
 };
 
 #endif /* SERIALINTERFACE_H_ */

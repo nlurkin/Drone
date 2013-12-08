@@ -37,9 +37,10 @@ def readInput( caption, default, timeout = 5):
 
 def sendI():
     I = simu.getI()
-    ser.write(str(I[0]) + "\r\n")
-    ser.write(str(I[1]) + "\r\n")
-    ser.write(str(I[2]) + "\r\n")
+    prefix = "DAT:IMAT:"
+    ser.write(prefix + "Ixx:" + str(I[0]) + "\r\n")
+    ser.write(prefix + "Iyy:" + str(I[1]) + "\r\n")
+    ser.write(prefix + "Izz:" + str(I[2]) + "\r\n")
     print "Sending %s %s %s" % (I[0], I[1], I[2])
 
 def loop():

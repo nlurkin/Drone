@@ -9,10 +9,9 @@
 
 SerialInterface::SerialInterface() {
 	// TODO Auto-generated constructor stub
-	Wire.begin();
-
-	Serial.begin(9600);
-	Serial.println("Drone");
+	Serial.println("Drone serial interface initialized");
+	fICount = 0;
+	fBufferCount = 0;
 }
 
 SerialInterface::~SerialInterface() {
@@ -26,25 +25,8 @@ void SerialInterface::cmdPower(int motor, int power) {
 	Serial.println(power);
 }
 
-MatrixNic<float, 3, 3> SerialInterface::cmdRequestI(){
-	String s;
-	MatrixNic<float, 3, 3> I;
-
+void SerialInterface::cmdRequestI(){
 	Serial.println("CMD:sendI");
-
-	int vals = 0;
-	while(vals<3){
-		if(Serial.available()){
-			s = Serial.readStringUntil('\n');
-			I(vals, vals) = atof(s.c_str());
-			Serial.println(s);
-			vals++;
-		}
-	}
-	return I;
-}
-
-bool SerialInterface::checkDataAvailable() {
 }
 
 bool SerialInterface::read(){
@@ -78,18 +60,26 @@ void SerialInterface::readCmd(String s) {
 }
 
 void SerialInterface::readSensor(String s) {
+	if(fBufferCount==10) fBufferCount=0;
+
+	if(s.startsWith("BUF0:")) fBuffer[0] = atof(s.substring(4).c_str());
+	else if(s.startsWith("BUF1:")) fBuffer[1] = atof(s.substring(4).c_str());
+	else if(s.startsWith("BUF2:")) fBuffer[2] = atof(s.substring(4).c_str());
+	else if(s.startsWith("BUF3:")) fBuffer[3] = atof(s.substring(4).c_str());
+	else if(s.startsWith("BUF4:")) fBuffer[4] = s.substring(4).toInt();
+	else if(s.startsWith("BUF5:")) fBuffer[5] = s.substring(4).toInt();
+	else if(s.startsWith("BUF6:")) fBuffer[6] = s.substring(4).toInt();
+	else if(s.startsWith("BUF7:")) fBuffer[7] = s.substring(4).toInt();
+	else if(s.startsWith("BUF8:")) fBuffer[8] = s.substring(4).toInt();
+	else if(s.startsWith("BUF9:")) fBuffer[9] = s.substring(4).toInt();
 }
 
 void SerialInterface::readIMat(String s) {
-	if(s.startsWith("Ixx:")){
-		fI(0,0) = atof(s.substring(4).c_str());
-	}
-	else if(s.startsWith("Iyy:")){
-			fI(1,1) = atof(s.substring(4).c_str());
-	}
-	else if(s.startsWith("Izz:")){
-			fI(2,2) = atof(s.substring(4).c_str());
-	}
+	if(fICount==3) fICount=0;
+
+	if(s.startsWith("IXX:")) fI(0,0) = atof(s.substring(4).c_str());
+	else if(s.startsWith("IYY:")) fI(1,1) = atof(s.substring(4).c_str());
+	else if(s.startsWith("IZZ:")) fI(2,2) = atof(s.substring(4).c_str());
 	fICount++;
 }
 
@@ -100,4 +90,13 @@ bool SerialInterface::isIReady() {
 MatrixNic<float, 3, 3> SerialInterface::getI() {
 	fICount = 0;
 	return fI;
+}
+
+bool SerialInterface::isSensorReady() {
+	return (fBufferCount==10);
+}
+
+float* SerialInterface::getBuffer() {
+	fBufferCount = 0;
+	return fBuffer;
 }

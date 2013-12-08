@@ -130,7 +130,7 @@ void AccGyro::exportTeaPot(){
 bool AccGyro::checkDataAvailable(){
 	int status;
 
-	if(fSimulate && Serial.available()>0) return true;
+	if(fSimulate && ser.isSensorReady()) return true;
 
 	if (!dmpInitialized) return false;
 	if(!interrupt && fifoCount<dmpPacketSize) return false;
@@ -175,22 +175,8 @@ bool AccGyro::readFromSensor(){
 }
 
 bool AccGyro::readFromSerial() {
-	String s;
-
-	s = Serial.readStringUntil('\n');
-	if(currentIndex<4) buffer[currentIndex] = atof(s.c_str());
-	else buffer[currentIndex] = s.toInt();
-	currentIndex++;
-
-	Serial.print(currentIndex);
-	Serial.print(" ");
-	Serial.println(s);
-	if(currentIndex==10){
-		data.setFromSerial(buffer, millis());
-		currentIndex = 0;
-		return true;
-	}
-	return false;
+	data.setFromSerial(ser.getBuffer(), millis());
+	return true;
 }
 
 void AccGyro::setSerialInterface(SerialInterface s) {

@@ -3,12 +3,17 @@
 #include <Arduino.h>
 #include "MainLoop.h"
 
-MainLoop mainloop;
+MainLoop *mainloop;
 //The setup function is called once at startup of the sketch
 void setup()
 {
+	Wire.begin();
+
+	Serial.begin(9600);
+
+	mainloop = new MainLoop();
 	// Add your initialization code here
-	mainloop.setup();
+	mainloop->setup();
 }
 
 // The loop function is called in an endless loop
@@ -16,5 +21,5 @@ void loop()
 {
 	//Add your repeated code here
 	//sensor.exportValueToSerial();
-	mainloop.loop();
+	mainloop->loop();
 }
