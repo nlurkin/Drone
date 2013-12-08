@@ -23,7 +23,7 @@ MainLoop::~MainLoop() {
 
 void MainLoop::setup(){
 	fSimulate = true;
-	sensor.setSerialInterface(ser);
+	sensor.setSerialInterface(&ser);
 	sensor.setSimulate(true);
 }
 

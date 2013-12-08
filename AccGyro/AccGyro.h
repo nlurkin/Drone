@@ -32,7 +32,7 @@ public:
 	void calibrate();
 	void setCalibration();
 
-	void setSerialInterface(SerialInterface s);
+	void setSerialInterface(SerialInterface *s);
 
 private:
 	bool readFromSerial();
@@ -58,7 +58,7 @@ private:
 	int currentIndex;
 	float buffer[10];
 
-	SerialInterface ser;
+	SerialInterface *ser;
 };
 
 #endif /* ACCGYRO_H_ */

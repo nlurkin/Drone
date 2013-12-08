@@ -87,7 +87,6 @@ def loop():
         print s
         if s[0:3]=="CMD":
             spl = s.split(':');
-            print spl
             if string.rstrip(spl[1], "\r\n")=="sendI":
                 sendI()
             #if s[1]=="power":
@@ -100,7 +99,6 @@ def main():
     while(True):
         loop()
         s = readInput("", "", timeout)
-        print s
         if s=="q":
             break
         elif s=="s":

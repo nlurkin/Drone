@@ -76,6 +76,9 @@ void SerialInterface::readSensor(String s) {
 	else if(s.startsWith("BUF9:")) fBuffer[9] = s.substring(4).toInt();
 	fBufferCount++;
 	if(fBufferCount==10) Serial.println("Full buffer received");
+	Serial.print("Buffer count4: ");
+	Serial.println(fBufferCount);
+
 }
 
 void SerialInterface::readIMat(String s) {

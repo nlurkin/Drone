@@ -75,12 +75,14 @@ AccGyro::~AccGyro() {
 void AccGyro::exportValueToSerial(){
 	if(!checkDataAvailable()) return;
 
+	Serial.println("Data available");
 	VectorFloat acc, realAcc;
 	VectorFloat realGyro;
 	Quaternion quat;
 
 	if(!fillValues()) return;
 
+	Serial.println("Filled data");
 	acc = data.getLinearAcceleration();
 	realAcc = data.getTrueAcceleration();
 	realGyro = data.getAngularRate();
@@ -130,7 +132,7 @@ void AccGyro::exportTeaPot(){
 bool AccGyro::checkDataAvailable(){
 	int status;
 
-	if(fSimulate && ser.isSensorReady()) return true;
+	if(fSimulate && ser->isSensorReady()) return true;
 
 	if (!dmpInitialized) return false;
 	if(!interrupt && fifoCount<dmpPacketSize) return false;
@@ -175,11 +177,12 @@ bool AccGyro::readFromSensor(){
 }
 
 bool AccGyro::readFromSerial() {
-	data.setFromSerial(ser.getBuffer(), millis());
+	data.setFromSerial(ser->getBuffer(), millis());
+	Serial.println("Read from serial");
 	return true;
 }
 
-void AccGyro::setSerialInterface(SerialInterface s) {
+void AccGyro::setSerialInterface(SerialInterface *s) {
 	ser = s;
 }
 
