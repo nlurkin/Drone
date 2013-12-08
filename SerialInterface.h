@@ -19,6 +19,7 @@ public:
 
 	void cmdPower(int motor, int power);
 	void cmdRequestI();
+	void cmdTorque(VectorFloat tau);
 
 	bool read();
 

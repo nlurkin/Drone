@@ -25,6 +25,8 @@ void MainLoop::setup(){
 	fSimulate = true;
 	sensor.setSerialInterface(&ser);
 	sensor.setSimulate(true);
+	ctl.setQRef(Quaternion(1, 0, 0, 0));
+	ctl.setP(20, 4);
 }
 
 void MainLoop::loop(){
@@ -71,8 +73,14 @@ void MainLoop::calibrateSensor() {
 }
 
 void MainLoop::flightLoop() {
-	sensor.exportValueToSerial();
-
+	VectorFloat tau;
+	if(sensor.checkDataAvailable()){
+		if(sensor.fillValues()){
+			sensor.exportValueToSerial();
+			tau = ctl.ComputePP(sensor.getQuaternion(), sensor.getOmega());
+			ser.cmdTorque(tau);
+		}
+	}
 }
 
 void MainLoop::calibrate() {

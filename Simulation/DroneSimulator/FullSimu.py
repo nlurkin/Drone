@@ -4,6 +4,7 @@ from random import random
 from scipy.constants.constants import pi
 import matplotlib.pyplot as plt
 import numpy
+import qmath
     
 class Simu(object):
     Rho = 1.2250 #kg.m^-3
@@ -34,6 +35,10 @@ class Simu(object):
     
     t = None
     
+    gyro = None
+    angle = None
+    quat = None
+    
     def __init__(self):
         self.b.setConstants(self.I, self.K_d)
         self.b.setParameters(0.38, 4.493, True)
@@ -47,7 +52,10 @@ class Simu(object):
         self.x = [0,0,40]
         self.dt = 0.1
         self.time = numpy.arange(0,5, self.dt)
-        self.t = 0    
+        self.t = 0
+        self.gyro = [0, 0, 0]
+        self.angle = [0, 0, 0]
+        self.quat = qmath.quaternion    
     
     def deviate(self):
         r = [random(),random(), random()] 
@@ -62,57 +70,101 @@ class Simu(object):
         self.t = self.t+self.dt
     
     def singleStep(self, t):
-        plotNbr = 1
         #set measurements
         self.b.setMeasure(self.xDot, self.omega)
         self.b.setMotorMeasure([0,0,0,0], [0,0,0,0]) #from controller decision
         #Get Input from arduino
         self.omega = thetadot2omega(self.thetaDot, self.theta)
-        plt.figure(plotNbr)
-        plt.plot(t, self.omega[0], 'rx')
-        plt.plot(t, self.omega[1], 'gx')
-        plt.plot(t, self.omega[2], 'bx')
-        plotNbr+=1
         self.a = acceleration(self.theta, self.b)
         self.omegaDot = self.b.alpha()
-        plt.figure(plotNbr)
-        plt.plot(t, self.a[0], 'rx')
-        plt.plot(t, self.a[1], 'gx')
-        plt.plot(t, self.a[2], 'bx')
-        plotNbr+=1
         self.omega = vecSum(self.omega, vecScalarProduct(self.dt, self.omegaDot))
         self.thetaDot = omega2thetadot(self.theta, self.omega)
-        plt.figure(plotNbr)
-        plt.plot(t, self.thetaDot[0], 'rx')
-        plt.plot(t, self.thetaDot[1], 'gx')
-        plt.plot(t, self.thetaDot[2], 'bx')
-        plotNbr+=1
         self.theta = vecSum(self.theta, vecScalarProduct(self.dt, self.thetaDot))
-        plt.figure(plotNbr)
-        plt.plot(t, self.theta[0], 'rx')
-        plt.plot(t, self.theta[1], 'gx')
-        plt.plot(t, self.theta[2], 'bx')
-        plotNbr+=1
         self.xDot = vecSum(self.xDot, vecScalarProduct(self.dt, self.a))
-        plt.figure(plotNbr)
-        plt.plot(t, self.xDot[0], 'rx')
-        plt.plot(t, self.xDot[1], 'gx')
-        plt.plot(t, self.xDot[2], 'bx')
-        plotNbr+=1
         self.x = vecSum(self.x, vecScalarProduct(self.dt, self.xDot));
-        plt.figure(plotNbr)
-        plt.plot(t, self.x[0], 'rx')
-        plt.plot(t, self.x[1], 'gx')
-        plt.plot(t, self.x[2], 'bx')
-        plotNbr+=1
+        
+        self.buildAttitude()
+        self.plot(t)
+
     
     def mainLoop(self):
         for t in self.time:
             self.singleStep(t)
         self.plot()
-        
-    def plot(self):
+    
+    def plot(self, t):
         plotNbr=1
+        plt.figure(plotNbr)
+        plt.subplot(2, 2 ,1)
+        #quaternion
+        plt.plot(self.t, self.quat[1], 'rx')
+        plt.plot(self.t, self.quat[2], 'gx')
+        plt.plot(self.t, self.quat[3], 'bx')
+        plt.subplot(2, 2 ,2)
+        #theta
+        plt.plot(t, self.theta[0], 'rx')
+        plt.plot(t, self.theta[1], 'gx')
+        plt.plot(t, self.theta[2], 'bx')
+        plt.subplot(2, 2 ,3)
+        #thetadot
+        plt.plot(t, self.thetaDot[0], 'rx')
+        plt.plot(t, self.thetaDot[1], 'gx')
+        plt.plot(t, self.thetaDot[2], 'bx')
+        plt.subplot(2, 2 ,4)
+        #torque
+        plt.plot(t, self.b.Torque[0], 'rx')
+        plt.plot(t, self.b.Torque[1], 'gx')
+        plt.plot(t, self.b.Torque[2], 'bx')
+        
+        plotNbr+=1
+        
+        plt.figure(plotNbr)
+        plt.plot(t, self.omega[0], 'rx')
+        plt.plot(t, self.omega[1], 'gx')
+        plt.plot(t, self.omega[2], 'bx')
+        plotNbr+=1
+        
+        plt.figure(plotNbr)
+        plt.plot(t, self.a[0], 'rx')
+        plt.plot(t, self.a[1], 'gx')
+        plt.plot(t, self.a[2], 'bx')
+        plotNbr+=1
+        
+        plt.figure(plotNbr)
+        plt.plot(t, self.xDot[0], 'rx')
+        plt.plot(t, self.xDot[1], 'gx')
+        plt.plot(t, self.xDot[2], 'bx')
+        plotNbr+=1
+        
+        plt.figure(plotNbr)
+        plt.plot(t, self.x[0], 'rx')
+        plt.plot(t, self.x[1], 'gx')
+        plt.plot(t, self.x[2], 'bx')
+        plotNbr+=1
+        
+        
+    def plotSetup(self):
+        plotNbr=1
+        plt.figure(plotNbr)
+        plt.subplot(2, 2 ,1)
+        plt.title("quaternion")
+        plt.grid(True)
+        #quaternion
+        plt.subplot(2, 2 ,2)
+        #theta
+        plt.title("theta")
+        plt.grid(True)
+        plt.subplot(2, 2 ,3)
+        #thetadot
+        plt.title("thetaDot")
+        plt.grid(True)
+        plt.subplot(2, 2 ,4)
+        #torque
+        plt.title("torque")
+        plt.grid(True)
+        
+        plotNbr+=1
+        
         plt.figure(plotNbr)
         plt.title("omega")
         plt.grid(True)
@@ -120,16 +172,6 @@ class Simu(object):
         
         plt.figure(plotNbr)
         plt.title("a")
-        plt.grid(True)
-        plotNbr+=1
-        
-        plt.figure(plotNbr)
-        plt.title("thetaDot")
-        plt.grid(True)
-        plotNbr+=1
-        
-        plt.figure(plotNbr)
-        plt.title("theta")
         plt.grid(True)
         plotNbr+=1
         
@@ -142,8 +184,9 @@ class Simu(object):
         plt.title("x")
         plt.grid(True)
         plotNbr+=1
+
         
-        plt.show()
+        #plt.draw()
     
     def getI(self):
         return self.I
@@ -152,10 +195,28 @@ class Simu(object):
         return self.theta
     
     def getTime(self):
-        return self.time
+        return self.t
     
     def getdTime(self):
         return self.dt
     
     def setRequiredTorque(self, t):
         self.b.setTorque(t)
+    
+    def buildAttitude(self):
+        print self.theta
+        print self.angle
+        print self.dt
+        print self.quat
+        self.gyro = [(self.theta[0]-self.angle[0])/self.dt, (self.theta[1]-self.angle[1])/self.dt, (self.theta[2]-self.angle[2])/self.dt]
+        self.angle = self.theta
+        self.quat = qmath.quaternion([self.theta[2], self.theta[1], self.theta[0]])
+
+    def getQuaternion(self):
+        return self.quat
+    
+    def getGyro(self):
+        return self.gyro
+    
+    def getAcc(self):
+        return self.a

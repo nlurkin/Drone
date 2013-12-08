@@ -101,6 +101,15 @@ bool SerialInterface::isSensorReady() {
 	return (fBufferCount==10);
 }
 
+void SerialInterface::cmdTorque(VectorFloat tau) {
+	Serial.print("CMD:TAUS:TAUX:");
+	Serial.println(tau.x);
+	Serial.print("CMD:TAUS:TAUY:");
+	Serial.println(tau.y);
+	Serial.print("CMD:TAUS:TAUZ:");
+	Serial.println(tau.z);
+}
+
 float* SerialInterface::getBuffer() {
 	fBufferCount = 0;
 	for(int i=0; i<10; i++){

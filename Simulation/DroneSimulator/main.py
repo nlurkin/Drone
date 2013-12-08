@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+import matplotlib.pyplot as plt
 from FullSimu import Simu
 from matrix import *
 import math
@@ -9,10 +10,10 @@ import string
 import sys
 from time import sleep, time
 
-acc = [0, 0, 0]
-gyro = [0, 0, 0]
-angle = [0, 0, 0]
-quat = qmath.quaternion
+#acc = [0, 0, 0]
+#gyro = [0, 0, 0]
+#angle = [0, 0, 0]
+#quat = qmath.quaternion
 
 torqueSet = 0
 reqTorque = [0, 0, 0]
@@ -23,7 +24,6 @@ simu = Simu()
 
 def readInput( caption, default, timeout = 5):
     start_time = time()
-    #sys.stdout.write('%s(%s):'%(caption, default));
     inputS = ''
     while True:
         if msvcrt.kbhit():
@@ -35,12 +35,11 @@ def readInput( caption, default, timeout = 5):
         if len(inputS) == 0 and (time() - start_time) > timeout:
             break
 
-    #print ''  # needed to move to next line
     if len(inputS) > 0:
         return inputS
     else:
         return default
-
+'''
 def buildAttitude(alpha, beta, gamma, time):
     global gyro
     global angle
@@ -48,11 +47,20 @@ def buildAttitude(alpha, beta, gamma, time):
     
     gyro = [(alpha-angle[0])/time, (beta-angle[1])/time, (gamma-angle[2])/time]
     angle = [alpha, beta, gamma]
-    quat = qmath.quaternion([alpha, beta, gamma])
+    quat = qmath.quaternion([gamma, beta, alpha])
+    plt.figure(100)
+    t = simu.getTime()
+    plt.plot(t, quat[1], 'rx')
+    plt.plot(t, quat[2], 'gx')
+    plt.plot(t, quat[3], 'bx')
+'''
 
 def sendSensor():
     prefix = "DAT:SENS:"
     time = 0.05
+    quat = simu.getQuaternion()
+    gyro = simu.getGyro()
+    acc = [0, 0, 0]
     ser.write(prefix + "BUF0:" + str(quat[0]) + "\r\n")
     sleep(time);
     ser.write(prefix + "BUF1:" + str(quat[1]) + "\r\n")
@@ -84,6 +92,7 @@ def sendI():
 
 def loop():
     global reqTorque
+    global torqueSet
     s = str(ser.readline());
 
     if len(s) > 0:
@@ -93,24 +102,24 @@ def loop():
             spl = s.split(':');
             if spl[1]=="sendI":
                 sendI()
-            elif spl[1]=="TAUS:":
+            elif spl[1]=="TAUS":
                 if spl[2]=="TAUX":
-                    reqTorque[0] = 1
+                    reqTorque[0] = float(spl[3])
                     torqueSet+=1;  
                 elif spl[2]=="TAUY":
-                    reqTorque[1] = 1
+                    reqTorque[1] = float(spl[3])
                     torqueSet+=1;  
                 elif spl[2]=="TAUZ":
-                    reqTorque[2] = 1
+                    reqTorque[2] = float(spl[3])
                     torqueSet+=1;  
             #elif s[1]=="power":
                 #changeMotorPower(s[2], s[3])
 
 def doOneStep():
     simu.nextStep()
-    theta = simu.getTheta()
-    dt = simu.getdTime()
-    buildAttitude(theta[0], theta[1], theta[2], dt)
+    #theta = simu.getTheta()
+    #dt = simu.getdTime()
+    #simu.buildAttitude()
     sendSensor()
 
 def main():
@@ -119,27 +128,38 @@ def main():
     timeout = 0.0001
     s = ""
     continuous = False
+    plotting = True
+    
+    simu.plotSetup()
     while(True):
+        s = readInput("", "", timeout)
+        if plotting:
+            if s=="p":
+                plotting = False
+            plt.pause(1)
+            continue
+        
         loop()
         if(continuous):
             if ser.inWaiting()==0 and torqueSet==3:
                 torqueSet = 0
                 simu.setRequiredTorque(reqTorque)
                 doOneStep()
-        s = readInput("", "", timeout)
+                plt.pause(0.0001)
         if s=="q":
             break
         elif s=="c":
             continuous= not(continuous)
-            torqueSet = 0
+            reqTorque = [0, 0 ,0]
+            torqueSet = 3
             print "continuous %s" % (continuous)
         elif s=="s":
+            simu.setRequiredTorque(reqTorque)
             doOneStep()
+            plt.pause(0.0001)
         elif s=="d":
             simu.deviate()
             print "Disturbing system"
-        elif s=="p":
-            simu.plot()
         
     
 

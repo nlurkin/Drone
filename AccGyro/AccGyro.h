@@ -23,6 +23,8 @@ public:
 	void init();
 	void exportValueToSerial();
 	void exportTeaPot();
+	Quaternion getQuaternion();
+	VectorFloat getOmega();
 
 	bool checkDataAvailable();
 	bool fillValues();

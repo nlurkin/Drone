@@ -60,6 +60,8 @@ class Body(object):
         
     def setTorque(self, t):
         self.Torque = t
+        print "Setting torque to"
+        print self.Torque
     
     def setMotorConstants(self, Rho, K_v, K_t, K_tau, I_M, A_swept, A_xsec, Radius, C_D):
         self.m1.setConstants(Rho, K_v, K_t, K_tau, I_M, A_swept, A_xsec, Radius, C_D)

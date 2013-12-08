@@ -73,14 +73,14 @@ AccGyro::~AccGyro() {
 }
 
 void AccGyro::exportValueToSerial(){
-	if(!checkDataAvailable()) return;
+	//if(!checkDataAvailable()) return;
 
-	Serial.println("Data available");
+	//Serial.println("Data available");
 	VectorFloat acc, realAcc;
 	VectorFloat realGyro;
 	Quaternion quat;
 
-	if(!fillValues()) return;
+	//if(!fillValues()) return;
 
 	Serial.println("Filled data");
 	acc = data.getLinearAcceleration();
@@ -163,6 +163,14 @@ bool AccGyro::checkDataAvailable(){
 bool AccGyro::fillValues(){
 	if(fSimulate) return readFromSerial();
 	else return readFromSensor();
+}
+
+Quaternion AccGyro::getQuaternion() {
+	return data.getQuaternion();
+}
+
+VectorFloat AccGyro::getOmega() {
+	return data.getAngularRate();
 }
 
 bool AccGyro::readFromSensor(){

@@ -92,6 +92,18 @@ public:
 	Quaternion operator*(Quaternion q){
 		return getProduct(q);
 	}
+
+	void print(){
+		Serial.print(w);
+		Serial.print(" ");
+		Serial.print(x);
+		Serial.print(" ");
+		Serial.print(y);
+		Serial.print(" ");
+		Serial.print(z);
+		Serial.println("");
+	}
+
 };
 
 class VectorInt16 {
@@ -159,6 +171,16 @@ public:
 		r.rotate(q);
 		return r;
 	}
+
+	void print(){
+		Serial.print(x);
+		Serial.print(" ");
+		Serial.print(y);
+		Serial.print(" ");
+		Serial.print(z);
+		Serial.println("");
+	}
+
 };
 
 class VectorFloat {
@@ -276,6 +298,16 @@ public:
 		r.z = -r.z;
 		return r;
 	}
+
+	void print(){
+		Serial.print(x);
+		Serial.print(" ");
+		Serial.print(y);
+		Serial.print(" ");
+		Serial.print(z);
+		Serial.println("");
+	}
+
 };
 
 template<class T, int I, int J>
@@ -292,6 +324,15 @@ public:
 	T &operator()(int i, int j) {return data[i][j];};
 	void operator()(int i, int j, T v) {data[i][j] = v;};
 
+	void print(){
+		for(int i=0; i<I; i++){
+			for(int j=0; j<J; j++){
+				Serial.print(data[i][j]);
+				Serial.print(" ");
+			}
+			Serial.println("");
+		}
+	};
 private:
 	T data[I][J];
 };
@@ -342,5 +383,7 @@ private:
 		d_data = newdata;
 	};// Allocates double the old space
 };
+
+
 
 #endif /* _HELPER_3DMATH_H_ */
