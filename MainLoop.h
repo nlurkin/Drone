@@ -19,6 +19,7 @@ public:
 	void loop();
 
 	void initLoop();
+	void flightLoop();
 
 	void setCalibration();
 	void setCalibrationSerial();

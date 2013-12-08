@@ -32,7 +32,7 @@ void MainLoop::loop(){
 		initLoop();
 	}
 	else{
-
+		flightLoop();
 	}
 }
 
@@ -68,6 +68,10 @@ void MainLoop::calibrateSerial() {
 }
 
 void MainLoop::calibrateSensor() {
+}
+
+void MainLoop::flightLoop() {
+	sensor.exportValueToSerial();
 }
 
 void MainLoop::calibrate() {

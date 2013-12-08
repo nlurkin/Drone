@@ -72,6 +72,7 @@ void SerialInterface::readSensor(String s) {
 	else if(s.startsWith("BUF7:")) fBuffer[7] = s.substring(4).toInt();
 	else if(s.startsWith("BUF8:")) fBuffer[8] = s.substring(4).toInt();
 	else if(s.startsWith("BUF9:")) fBuffer[9] = s.substring(4).toInt();
+	fBufferCount++;
 }
 
 void SerialInterface::readIMat(String s) {
