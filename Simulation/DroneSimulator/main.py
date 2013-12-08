@@ -2,13 +2,17 @@
 from FullSimu import Simu
 from matrix import *
 import math
+import msvcrt
 import qmath
 import serial
 import string
 import sys
-import time
-import msvcrt
+from time import sleep, time
 
+acc = [0, 0, 0]
+gyro = [0, 0, 0]
+angle = [0, 0, 0]
+quat = qmath.quaternion
 
 
 ser = serial.Serial(port=7, baudrate=9600, timeout=1)
@@ -16,7 +20,7 @@ ser = serial.Serial(port=7, baudrate=9600, timeout=1)
 simu = Simu()
 
 def readInput( caption, default, timeout = 5):
-    start_time = time.time()
+    start_time = time()
     #sys.stdout.write('%s(%s):'%(caption, default));
     inputS = ''
     while True:
@@ -26,7 +30,7 @@ def readInput( caption, default, timeout = 5):
                 break
             elif ord(chrS) >= 32: #space_char
                 inputS += chrS
-        if len(inputS) == 0 and (time.time() - start_time) > timeout:
+        if len(inputS) == 0 and (time() - start_time) > timeout:
             break
 
     #print ''  # needed to move to next line
@@ -35,12 +39,45 @@ def readInput( caption, default, timeout = 5):
     else:
         return default
 
+def buildAttitude(alpha, beta, gamma, time):
+    global gyro
+    global angle
+    global quat
+    
+    gyro = [(alpha-angle[0])/time, (beta-angle[1])/time, (gamma-angle[2])/time]
+    angle = [alpha, beta, gamma]
+    quat = qmath.quaternion([alpha, beta, gamma])
+
+def sendSensor():
+    prefix = "DAT:SENS:"
+    time = 0.05
+    ser.write(prefix + "BUF0:" + str(quat[0]) + "\r\n")
+    sleep(time);
+    ser.write(prefix + "BUF1:" + str(quat[1]) + "\r\n")
+    sleep(time);
+    ser.write(prefix + "BUF2:" + str(quat[2]) + "\r\n")
+    sleep(time);
+    ser.write(prefix + "BUF3:" + str(quat[3]) + "\r\n")
+    sleep(time);
+    ser.write(prefix + "BUF4:" + str(int(gyro[0]*131*2)) + "\r\n")
+    sleep(time);
+    ser.write(prefix + "BUF5:" + str(int(gyro[1]*131*2)) + "\r\n")
+    sleep(time);
+    ser.write(prefix + "BUF6:" + str(int(gyro[2]*131*2)) + "\r\n")
+    sleep(time);
+    ser.write(prefix + "BUF7:" + str(int(acc[0]*8192*2)) + "\r\n")
+    sleep(time);
+    ser.write(prefix + "BUF8:" + str(int(acc[1]*8192*2)) + "\r\n")
+    sleep(time);
+    ser.write(prefix + "BUF9:" + str(int(acc[2]*8192*2)) + "\r\n")
+    print "Sending data"
+    
 def sendI():
     I = simu.getI()
     prefix = "DAT:IMAT:"
-    ser.write(prefix + "Ixx:" + str(I[0]) + "\r\n")
-    ser.write(prefix + "Iyy:" + str(I[1]) + "\r\n")
-    ser.write(prefix + "Izz:" + str(I[2]) + "\r\n")
+    ser.write(prefix + "IXX:" + str(I[0]) + "\r\n")
+    ser.write(prefix + "IYY:" + str(I[1]) + "\r\n")
+    ser.write(prefix + "IZZ:" + str(I[2]) + "\r\n")
     print "Sending %s %s %s" % (I[0], I[1], I[2])
 
 def loop():
@@ -66,9 +103,9 @@ def main():
         print s
         if s=="q":
             break
-        #elif s=="s":
-        #    buildAttitude(0, math.pi/4, 0, 1)
-        #    sendSensor()
+        elif s=="s":
+            buildAttitude(0, math.pi/4, 0, 1)
+            sendSensor()
         
     
 

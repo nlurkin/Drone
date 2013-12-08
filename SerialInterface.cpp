@@ -30,11 +30,13 @@ void SerialInterface::cmdRequestI(){
 }
 
 bool SerialInterface::read(){
-	bool r = false;
 	String s;
+	bool r = false;
 
 	while(Serial.available()>0){
 		s = Serial.readStringUntil('\n');
+		Serial.print("Receiving from Serial: ");
+		Serial.println(s);
 		//Does it look like a command
 		if(s.startsWith("CMD:")){
 			readCmd(s.substring(4));
@@ -73,6 +75,7 @@ void SerialInterface::readSensor(String s) {
 	else if(s.startsWith("BUF8:")) fBuffer[8] = s.substring(4).toInt();
 	else if(s.startsWith("BUF9:")) fBuffer[9] = s.substring(4).toInt();
 	fBufferCount++;
+	if(fBufferCount==10) Serial.println("Full buffer received");
 }
 
 void SerialInterface::readIMat(String s) {
@@ -82,10 +85,11 @@ void SerialInterface::readIMat(String s) {
 	else if(s.startsWith("IYY:")) fI(1,1) = atof(s.substring(4).c_str());
 	else if(s.startsWith("IZZ:")) fI(2,2) = atof(s.substring(4).c_str());
 	fICount++;
+	if(fICount==3) Serial.println("Full IMat received");
 }
 
 bool SerialInterface::isIReady() {
-	 return (fICount==3);
+	return (fICount==3);
 }
 
 MatrixNic<float, 3, 3> SerialInterface::getI() {

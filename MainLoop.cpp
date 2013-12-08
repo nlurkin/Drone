@@ -28,6 +28,7 @@ void MainLoop::setup(){
 }
 
 void MainLoop::loop(){
+	ser.read();
 	if(!fInitialized){
 		initLoop();
 	}
@@ -54,7 +55,6 @@ void MainLoop::setCalibrationSerial() {
 		ser.cmdRequestI();
 		fCalibrationRequested = true;
 	}
-	ser.read();
 	if(ser.isIReady()){
 		ctl.setI(ser.getI());
 		fCalibrated = true;
