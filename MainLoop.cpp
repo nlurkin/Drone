@@ -72,6 +72,7 @@ void MainLoop::calibrateSensor() {
 
 void MainLoop::flightLoop() {
 	sensor.exportValueToSerial();
+
 }
 
 void MainLoop::calibrate() {

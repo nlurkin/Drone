@@ -36,7 +36,7 @@ class Simu(object):
     
     def __init__(self):
         self.b.setConstants(self.I, self.K_d)
-        self.b.setParameters(0.38, 4.493)
+        self.b.setParameters(0.38, 4.493, True)
         self.b.setMotorConstants(self.Rho, self.K_v, self.K_t, self.K_tau, self.I_M, self.A_swept, self.A_xsec, self.Radius, self.C_D)
         self.omega = [0,0,0]
         self.omegaDot = [0,0,0]
@@ -107,7 +107,6 @@ class Simu(object):
         plotNbr+=1
     
     def mainLoop(self):
-        i = None
         for t in self.time:
             self.singleStep(t)
         self.plot()
@@ -157,3 +156,6 @@ class Simu(object):
     
     def getdTime(self):
         return self.dt
+    
+    def setRequiredTorque(self, t):
+        self.b.setTorque(t)

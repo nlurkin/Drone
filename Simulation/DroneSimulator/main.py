@@ -14,7 +14,8 @@ gyro = [0, 0, 0]
 angle = [0, 0, 0]
 quat = qmath.quaternion
 
-sendDone = False
+torqueSet = 0
+reqTorque = [0, 0, 0]
 
 ser = serial.Serial(port=7, baudrate=9600, timeout=1)
 
@@ -50,7 +51,6 @@ def buildAttitude(alpha, beta, gamma, time):
     quat = qmath.quaternion([alpha, beta, gamma])
 
 def sendSensor():
-    global sendDone
     prefix = "DAT:SENS:"
     time = 0.05
     ser.write(prefix + "BUF0:" + str(quat[0]) + "\r\n")
@@ -73,7 +73,6 @@ def sendSensor():
     sleep(time);
     ser.write(prefix + "BUF9:" + str(int(acc[2]*8192*2)) + "\r\n")
     print "Sending data"
-    sendDone = True
     
 def sendI():
     I = simu.getI()
@@ -84,15 +83,27 @@ def sendI():
     print "Sending %s %s %s" % (I[0], I[1], I[2])
 
 def loop():
+    global reqTorque
     s = str(ser.readline());
 
     if len(s) > 0:
         print s
+        s = string.rstrip(s, "\r\n")
         if s[0:3]=="CMD":
             spl = s.split(':');
-            if string.rstrip(spl[1], "\r\n")=="sendI":
+            if spl[1]=="sendI":
                 sendI()
-            #if s[1]=="power":
+            elif spl[1]=="TAUS:":
+                if spl[2]=="TAUX":
+                    reqTorque[0] = 1
+                    torqueSet+=1;  
+                elif spl[2]=="TAUY":
+                    reqTorque[1] = 1
+                    torqueSet+=1;  
+                elif spl[2]=="TAUZ":
+                    reqTorque[2] = 1
+                    torqueSet+=1;  
+            #elif s[1]=="power":
                 #changeMotorPower(s[2], s[3])
 
 def doOneStep():
@@ -103,22 +114,24 @@ def doOneStep():
     sendSensor()
 
 def main():
-    global sendDone
+    global torqueSet
+    global reqTorque
     timeout = 0.0001
     s = ""
     continuous = False
     while(True):
         loop()
         if(continuous):
-            if ser.inWaiting()==0:
-                sendDone = False
+            if ser.inWaiting()==0 and torqueSet==3:
+                torqueSet = 0
+                simu.setRequiredTorque(reqTorque)
                 doOneStep()
         s = readInput("", "", timeout)
         if s=="q":
             break
         elif s=="c":
             continuous= not(continuous)
-            sendDone = True
+            torqueSet = 0
             print "continuous %s" % (continuous)
         elif s=="s":
             doOneStep()

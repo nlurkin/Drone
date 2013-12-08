@@ -20,6 +20,7 @@ class Body(object):
     #parameters
     L = None #longueur des bras #scalar
     Mass = None #masse #scalar
+    TorqueIsSet = None #switch #scalar
     
     #constants
     I = None #inertia matrix #vector
@@ -42,9 +43,10 @@ class Body(object):
         self.I = I
         self.K_d = K_d
         
-    def setParameters(self, L,  Mass):
+    def setParameters(self, L,  Mass, TorqueIsSet):
         self.L = L
         self.Mass = Mass
+        self.TorqueIsSet = TorqueIsSet
     
     def setMeasure(self, Velocity, Omega):
         self.Velocity = Velocity
@@ -56,6 +58,8 @@ class Body(object):
         self.m3.setMeasure(omega[2], alpha[2])
         self.m4.setMeasure(omega[3], alpha[3])    
         
+    def setTorque(self, t):
+        self.Torque = t
     
     def setMotorConstants(self, Rho, K_v, K_t, K_tau, I_M, A_swept, A_xsec, Radius, C_D):
         self.m1.setConstants(Rho, K_v, K_t, K_tau, I_M, A_swept, A_xsec, Radius, C_D)
@@ -64,7 +68,8 @@ class Body(object):
         self.m4.setConstants(Rho, K_v, K_t, K_tau, I_M, A_swept, A_xsec, Radius, C_D)
     
     def torque(self):
-        self.Torque = [self.L*(self.m1.thrust()-self.m3.thrust()), self.L*(self.m2.thrust()-self.m4.thrust()), self.m1.tau_z()+self.m2.tau_z()+self.m3.tau_z()+self.m4.tau_z()]
+        if not self.TorqueIsSet:
+            self.Torque = [self.L*(self.m1.thrust()-self.m3.thrust()), self.L*(self.m2.thrust()-self.m4.thrust()), self.m1.tau_z()+self.m2.tau_z()+self.m3.tau_z()+self.m4.tau_z()]
         return self.Torque
     
     def thrust(self):
