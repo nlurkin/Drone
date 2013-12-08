@@ -193,73 +193,7 @@ bool AccGyro::readFromSerial() {
 	return false;
 }
 
-void AccGyro::calibrate() {
-	Calibrator cc;
-	int motorIndex=0;
-	bool cont = false;
-	bool calibrated = false;
-
-	while(!calibrated){
-		//cc.clearPoints();
-		for(int power=100; power<1000; power += 100){
-			//Set motor power
-			setMotorPower(motorIndex, power);
-			//Measure few values
-			for(int count=0; count<5; count++){
-				while(!cont){
-					cont = checkDataAvailable();
-					if(cont){
-						cont = fillValues();
-					}
-				}
-				cont = false;
-				Serial.println(count);
-			}
-
-			//Add new point
-			Serial.print("New point");
-			//calibrated = cc.newPoint(motorIndex, power, data.getAngularRate(), data.getAlpha());
-			Serial.println(calibrated);
-		}
-	}
+void AccGyro::setSerialInterface(SerialInterface s) {
+	ser = s;
 }
 
-void AccGyro::calibrateSerial() {
-}
-
-void AccGyro::setCalibration() {
-	if(fSimulate) setCalibrationSerial();
-	else setCalibrationLocal();
-}
-
-void AccGyro::calibrateSensor() {
-}
-
-void AccGyro::setMotorPower(int motor, int power){
-	Serial.print("CMD:power:");
-	Serial.print(motor);
-	Serial.print(":");
-	Serial.println(power);
-}
-
-void AccGyro::setCalibrationSerial() {
-	String s;
-
-	Serial.println("CMD:sendI");
-
-	MatrixNic<float, 3, 3> I;
-	int vals = 0;
-	while(vals<3){
-		if(Serial.available()){
-			s = Serial.readStringUntil('\n');
-			I(vals, vals) = atof(s.c_str());
-			Serial.println(s);
-			vals++;
-		}
-	}
-
-	quatPPLoop.setI(I);
-}
-
-void AccGyro::setCalibrationLocal() {
-}

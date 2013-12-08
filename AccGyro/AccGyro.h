@@ -13,7 +13,7 @@
 #include "AccGyroData.h"
 //#include "MPU6050.h"
 #include "MPU6050DMP.h"
-#include "AttitudeLoop.h"
+#include "SerialInterface.h"
 
 class AccGyro: public MPU6050DMP {
 public:
@@ -31,9 +31,8 @@ public:
 
 	void calibrate();
 	void setCalibration();
-	void setMotorPower(int motor, int power);
 
-	AttitudeLoop getControlLoop() {return quatPPLoop;}
+	void setSerialInterface(SerialInterface s);
 
 private:
 	bool readFromSerial();
@@ -59,7 +58,7 @@ private:
 	int currentIndex;
 	float buffer[10];
 
-	AttitudeLoop quatPPLoop;
+	SerialInterface ser;
 };
 
 #endif /* ACCGYRO_H_ */
