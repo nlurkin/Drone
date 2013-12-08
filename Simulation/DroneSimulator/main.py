@@ -14,6 +14,7 @@ gyro = [0, 0, 0]
 angle = [0, 0, 0]
 quat = qmath.quaternion
 
+sendDone = False
 
 ser = serial.Serial(port=7, baudrate=9600, timeout=1)
 
@@ -49,6 +50,7 @@ def buildAttitude(alpha, beta, gamma, time):
     quat = qmath.quaternion([alpha, beta, gamma])
 
 def sendSensor():
+    global sendDone
     prefix = "DAT:SENS:"
     time = 0.05
     ser.write(prefix + "BUF0:" + str(quat[0]) + "\r\n")
@@ -71,6 +73,7 @@ def sendSensor():
     sleep(time);
     ser.write(prefix + "BUF9:" + str(int(acc[2]*8192*2)) + "\r\n")
     print "Sending data"
+    sendDone = True
     
 def sendI():
     I = simu.getI()
@@ -82,7 +85,7 @@ def sendI():
 
 def loop():
     s = str(ser.readline());
-    
+
     if len(s) > 0:
         print s
         if s[0:3]=="CMD":
@@ -92,18 +95,38 @@ def loop():
             #if s[1]=="power":
                 #changeMotorPower(s[2], s[3])
 
+def doOneStep():
+    simu.nextStep()
+    theta = simu.getTheta()
+    dt = simu.getdTime()
+    buildAttitude(theta[0], theta[1], theta[2], dt)
+    sendSensor()
 
 def main():
+    global sendDone
     timeout = 0.0001
     s = ""
+    continuous = False
     while(True):
         loop()
+        if(continuous):
+            if ser.inWaiting()==0:
+                sendDone = False
+                doOneStep()
         s = readInput("", "", timeout)
         if s=="q":
             break
+        elif s=="c":
+            continuous= not(continuous)
+            sendDone = True
+            print "continuous %s" % (continuous)
         elif s=="s":
-            buildAttitude(0, math.pi/4, 0, 1)
-            sendSensor()
+            doOneStep()
+        elif s=="d":
+            simu.deviate()
+            print "Disturbing system"
+        elif s=="p":
+            simu.plot()
         
     
 

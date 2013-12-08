@@ -32,6 +32,8 @@ class Simu(object):
     time = None
     dt = None
     
+    t = None
+    
     def __init__(self):
         self.b.setConstants(self.I, self.K_d)
         self.b.setParameters(0.38, 4.493)
@@ -44,14 +46,20 @@ class Simu(object):
         self.xDot = [0,0,0]
         self.x = [0,0,40]
         self.dt = 0.1
-        self.time = numpy.arange(0,5, self.dt)    
+        self.time = numpy.arange(0,5, self.dt)
+        self.t = 0    
     
     def deviate(self):
         r = [random(),random(), random()] 
-        deviation = 1
+        deviation = 10
         self.thetaDot = vecScalarSum(-deviation, vecScalarProduct(2*deviation, r))
         self.thetaDot[0] = 0
         self.thetaDot[1] = 0
+        print self.thetaDot
+    
+    def nextStep(self):
+        self.singleStep(self.t)
+        self.t = self.t+self.dt
     
     def singleStep(self, t):
         plotNbr = 1
@@ -59,7 +67,7 @@ class Simu(object):
         self.b.setMeasure(self.xDot, self.omega)
         self.b.setMotorMeasure([0,0,0,0], [0,0,0,0]) #from controller decision
         #Get Input from arduino
-        omega = thetadot2omega(self.thetaDot, self.theta)
+        self.omega = thetadot2omega(self.thetaDot, self.theta)
         plt.figure(plotNbr)
         plt.plot(t, self.omega[0], 'rx')
         plt.plot(t, self.omega[1], 'gx')
@@ -102,7 +110,9 @@ class Simu(object):
         i = None
         for t in self.time:
             self.singleStep(t)
+        self.plot()
         
+    def plot(self):
         plotNbr=1
         plt.figure(plotNbr)
         plt.title("omega")
@@ -138,3 +148,12 @@ class Simu(object):
     
     def getI(self):
         return self.I
+    
+    def getTheta(self):
+        return self.theta
+    
+    def getTime(self):
+        return self.time
+    
+    def getdTime(self):
+        return self.dt
