@@ -64,21 +64,18 @@ void SerialInterface::readCmd(String s) {
 void SerialInterface::readSensor(String s) {
 	if(fBufferCount==10) fBufferCount=0;
 
-	if(s.startsWith("BUF0:")) fBuffer[0] = atof(s.substring(4).c_str());
-	else if(s.startsWith("BUF1:")) fBuffer[1] = atof(s.substring(4).c_str());
-	else if(s.startsWith("BUF2:")) fBuffer[2] = atof(s.substring(4).c_str());
-	else if(s.startsWith("BUF3:")) fBuffer[3] = atof(s.substring(4).c_str());
-	else if(s.startsWith("BUF4:")) fBuffer[4] = s.substring(4).toInt();
-	else if(s.startsWith("BUF5:")) fBuffer[5] = s.substring(4).toInt();
-	else if(s.startsWith("BUF6:")) fBuffer[6] = s.substring(4).toInt();
-	else if(s.startsWith("BUF7:")) fBuffer[7] = s.substring(4).toInt();
-	else if(s.startsWith("BUF8:")) fBuffer[8] = s.substring(4).toInt();
-	else if(s.startsWith("BUF9:")) fBuffer[9] = s.substring(4).toInt();
+	if(s.startsWith("BUF0:")) fBuffer[0] = atof(s.substring(5).c_str());
+	else if(s.startsWith("BUF1:")) fBuffer[1] = atof(s.substring(5).c_str());
+	else if(s.startsWith("BUF2:")) fBuffer[2] = atof(s.substring(5).c_str());
+	else if(s.startsWith("BUF3:")) fBuffer[3] = atof(s.substring(5).c_str());
+	else if(s.startsWith("BUF4:")) fBuffer[4] = s.substring(5).toInt();
+	else if(s.startsWith("BUF5:")) fBuffer[5] = s.substring(5).toInt();
+	else if(s.startsWith("BUF6:")) fBuffer[6] = s.substring(5).toInt();
+	else if(s.startsWith("BUF7:")) fBuffer[7] = s.substring(5).toInt();
+	else if(s.startsWith("BUF8:")) fBuffer[8] = s.substring(5).toInt();
+	else if(s.startsWith("BUF9:")) fBuffer[9] = s.substring(5).toInt();
 	fBufferCount++;
 	if(fBufferCount==10) Serial.println("Full buffer received");
-	Serial.print("Buffer count4: ");
-	Serial.println(fBufferCount);
-
 }
 
 void SerialInterface::readIMat(String s) {
@@ -106,5 +103,10 @@ bool SerialInterface::isSensorReady() {
 
 float* SerialInterface::getBuffer() {
 	fBufferCount = 0;
+	for(int i=0; i<10; i++){
+		Serial.print(fBuffer[i]);
+		Serial.print(" ");
+	}
+	Serial.println("");
 	return fBuffer;
 }
