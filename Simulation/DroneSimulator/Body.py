@@ -59,6 +59,18 @@ class Body(object):
         self.m4.setMeasure(omega[3], alpha[3])    
         
     def setTorque(self, t):
+        if t[0]>10:
+            t[0] = 10
+        if t[1]>10:
+            t[1] = 10
+        if t[2]>10:
+            t[2] = 10
+        if t[0]<-10:
+            t[0] = -10
+        if t[1]<-10:
+            t[1] = -10
+        if t[2]<-10:
+            t[2] = -10
         self.Torque = t
         print "Setting torque to"
         print self.Torque
@@ -83,9 +95,13 @@ class Body(object):
         return self.Friction
     
     def alpha(self):
-        self.Alpha = [(self.torque()[0]/self.I[0]) - (((self.I[1]-self.I[2])/self.I[0])*self.Omega[1]*self.Omega[2]),
-                      (self.torque()[1]/self.I[1]) - (((self.I[2]-self.I[0])/self.I[1])*self.Omega[0]*self.Omega[2]),
-                      (self.torque()[2]/self.I[2]) - (((self.I[0]-self.I[1])/self.I[2])*self.Omega[0]*self.Omega[1])]
+        print "Omega"
+        print self.Omega
+        self.Alpha = [(self.torque()[0] - (self.I[1]-self.I[2])*self.Omega[1]*self.Omega[2])/self.I[0],
+                      (self.torque()[1] - (self.I[2]-self.I[0])*self.Omega[0]*self.Omega[2])/self.I[1],
+                      (self.torque()[2] - (self.I[0]-self.I[1])*self.Omega[0]*self.Omega[1])/self.I[2]]
+        print "Alpha"
+        print self.Alpha
         return self.Alpha
         
     def mass(self):

@@ -9,18 +9,14 @@ import serial
 import string
 import sys
 from time import sleep, time
+from qmath.qmathcore import quaternion
 
-#acc = [0, 0, 0]
-#gyro = [0, 0, 0]
-#angle = [0, 0, 0]
-#quat = qmath.quaternion
+#torqueSet = 0
+#reqTorque = [0, 0, 0]
 
-torqueSet = 0
-reqTorque = [0, 0, 0]
+#ser = serial.Serial(port=7, baudrate=9600, timeout=1)
 
-ser = serial.Serial(port=7, baudrate=9600, timeout=1)
-
-simu = Simu()
+#simu = Simu()
 
 def readInput( caption, default, timeout = 5):
     start_time = time()
@@ -90,6 +86,16 @@ def sendI():
     ser.write(prefix + "IZZ:" + str(I[2]) + "\r\n")
     print "Sending %s %s %s" % (I[0], I[1], I[2])
 
+def sendNewTracking():
+    angle = simu.getNextMove()
+    quat = quaternion(angle[2], angle[1], angle[0])
+    prefix = "CMD:TRCK:"
+    ser.write(prefix + "QUAW:" + str(quat[0]) + "\r\n")
+    ser.write(prefix + "QUAX:" + str(quat[1]) + "\r\n")
+    ser.write(prefix + "QUAY:" + str(quat[2]) + "\r\n")
+    ser.write(prefix + "QUAZ:" + str(quat[3]) + "\r\n")
+    print "Requesting tracking (%s,%s,%s,%s)" % (quat)
+    
 def loop():
     global reqTorque
     global torqueSet
@@ -115,13 +121,6 @@ def loop():
             #elif s[1]=="power":
                 #changeMotorPower(s[2], s[3])
 
-def doOneStep():
-    simu.nextStep()
-    #theta = simu.getTheta()
-    #dt = simu.getdTime()
-    #simu.buildAttitude()
-    sendSensor()
-
 def main():
     global torqueSet
     global reqTorque
@@ -129,6 +128,7 @@ def main():
     s = ""
     continuous = False
     plotting = True
+    tracking = False
     
     simu.plotSetup()
     while(True):
@@ -140,11 +140,18 @@ def main():
             continue
         
         loop()
+        #plt.pause(0.001)
         if(continuous):
             if ser.inWaiting()==0 and torqueSet==3:
                 torqueSet = 0
                 simu.setRequiredTorque(reqTorque)
-                doOneStep()
+                if not tracking:
+                    simu.nextStep()
+                    sendSensor()
+                else:
+                    sendNewTracking()
+                    sendSensor()
+                    
                 plt.pause(0.0001)
         if s=="q":
             break
@@ -155,11 +162,16 @@ def main():
             print "continuous %s" % (continuous)
         elif s=="s":
             simu.setRequiredTorque(reqTorque)
-            doOneStep()
+            simu.nextStep()
+            sendSensor()
             plt.pause(0.0001)
         elif s=="d":
             simu.deviate()
             print "Disturbing system"
+        elif s=="ms":
+            simu.setMoveType(1)
+            tracking = True
+            
         
     
 

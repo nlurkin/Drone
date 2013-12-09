@@ -42,7 +42,7 @@ def omega2thetadot(t, o):
     mat1 = [[1, sin(t[0])*tan(t[1]), cos(t[0])*tan(t[1])], 
             [0, cos(t[0]), -sin(t[0])], 
             [0, sin(t[0])/cos(t[1]), cos(t[0])/cos(t[1])]]
-    #mat2 = [[0, -sin(t[0]), cos(t[0])*sin(t[1])], [0, cos(t[0]), sin(t[0])*cos(t[1])], [1, 0, -sin(t[1])]]
+    #mat1 = [[0, -sin(t[0]), cos(t[0])*cos(t[1])], [0, cos(t[0]), sin(t[0])*cos(t[1])], [1, 0, -sin(t[1])]]
     
     return matDotProduct(mat1, o)
 

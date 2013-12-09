@@ -34,6 +34,8 @@ VectorFloat AttitudeLoop::ComputePP(Quaternion qM, VectorFloat omegaM) {
 
 	Serial.println("printing axisErr");
 	axisErr.print();
+	Serial.println("printing OmegaM");
+	omegaM.print();
 	fTorque = -axisErr*fPQ - omegaM*fPOmega;
 
 	return fTorque;
