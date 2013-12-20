@@ -74,6 +74,9 @@ void MainLoop::calibrateSensor() {
 
 void MainLoop::flightLoop() {
 	VectorFloat tau;
+	if(ser.isAttitudeReady()){
+		ctl.setQRef(ser.getAttitude());
+	}
 	if(sensor.checkDataAvailable()){
 		if(sensor.fillValues()){
 			sensor.exportValueToSerial();

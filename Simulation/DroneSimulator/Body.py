@@ -1,5 +1,6 @@
 from Motor import Motor
-from matrix import vecScalarProduct, vecDiff
+from mathclasses import Vector
+
 
 class Body(object):
     '''
@@ -25,6 +26,8 @@ class Body(object):
     #constants
     I = None #inertia matrix #vector
     K_d = None #friction-linear velocity #scalar
+    
+    maxTorque = 100
     
     #mesure
     Velocity = None #vector
@@ -59,18 +62,18 @@ class Body(object):
         self.m4.setMeasure(omega[3], alpha[3])    
         
     def setTorque(self, t):
-        if t[0]>10:
-            t[0] = 10
-        if t[1]>10:
-            t[1] = 10
-        if t[2]>10:
-            t[2] = 10
-        if t[0]<-10:
-            t[0] = -10
-        if t[1]<-10:
-            t[1] = -10
-        if t[2]<-10:
-            t[2] = -10
+        if t[0]>self.maxTorque:
+            t[0] = self.maxTorque
+        if t[1]>self.maxTorque:
+            t[1] = self.maxTorque
+        if t[2]>self.maxTorque:
+            t[2] = self.maxTorque
+        if t[0]<-self.maxTorque:
+            t[0] = -self.maxTorque
+        if t[1]<-self.maxTorque:
+            t[1] = -self.maxTorque
+        if t[2]<-self.maxTorque:
+            t[2] = -self.maxTorque
         self.Torque = t
         print "Setting torque to"
         print self.Torque
@@ -95,13 +98,16 @@ class Body(object):
         return self.Friction
     
     def alpha(self):
-        print "Omega"
-        print self.Omega
+        #print "Omega"
+        #print self.Omega
         self.Alpha = [(self.torque()[0] - (self.I[1]-self.I[2])*self.Omega[1]*self.Omega[2])/self.I[0],
                       (self.torque()[1] - (self.I[2]-self.I[0])*self.Omega[0]*self.Omega[2])/self.I[1],
                       (self.torque()[2] - (self.I[0]-self.I[1])*self.Omega[0]*self.Omega[1])/self.I[2]]
-        print "Alpha"
-        print self.Alpha
+        #self.Alpha = [self.torque()[0],
+        #              self.torque()[1],
+        #              self.torque()[2]]
+        #print "Alpha"
+        #print self.Alpha
         return self.Alpha
         
     def mass(self):

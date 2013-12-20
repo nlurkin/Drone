@@ -1,8 +1,16 @@
 #!/usr/bin/env python
-import matplotlib.pyplot as plt
-from main import readInput
-from FullSimu import Simu
+from mathclasses import Quaternion
+from scipy.constants.constants import pi
 
+
+q = Quaternion([pi/2, pi, 0])
+
+print q
+print q.real()
+print q.imag()
+print q.conj()
+
+'''
 simu = Simu()
 
 t = 0
@@ -19,3 +27,4 @@ while s!="p":
 while t<10:
     simu.getNextMove()
     plt.pause(0.0001)
+'''

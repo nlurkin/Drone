@@ -28,18 +28,23 @@ public:
 
 	void readSensor(String s);
 	void readIMat(String s);
+	void readNewAttitude(String s);
 
 	bool isIReady();
 	bool isSensorReady();
+	bool isAttitudeReady();
 
 	MatrixNic<float, 3, 3> getI();
 	float* getBuffer();
+	Quaternion getAttitude();
 private:
 	MatrixNic<float, 3, 3> fI;
 	float fBuffer[10];
+	Quaternion fQuat;
 
 	int fICount;
 	int fBufferCount;
+	int fQuatCount;
 };
 
 #endif /* SERIALINTERFACE_H_ */

@@ -21,7 +21,7 @@ VectorFloat AttitudeLoop::ComputePP(Quaternion qM, VectorFloat omegaM) {
 	Quaternion qErr;
 	VectorFloat axisErr;
 
-	qErr = fQRef * qM;
+	qErr = fQRef.getConjugate() * qM;
 
 	Serial.println("printing qref");
 	fQRef.print();

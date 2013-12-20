@@ -12,6 +12,7 @@ SerialInterface::SerialInterface() {
 	Serial.println("Drone serial interface initialized");
 	fICount = 0;
 	fBufferCount = 0;
+	fQuatCount = 0;
 }
 
 SerialInterface::~SerialInterface() {
@@ -59,12 +60,18 @@ void SerialInterface::readData(String s) {
 }
 
 void SerialInterface::readCmd(String s) {
+	if(s.startsWith("TRCK:")){
+		readNewAttitude(s.substring(5));
+	}
 }
 
 void SerialInterface::readSensor(String s) {
 	if(fBufferCount==10) fBufferCount=0;
 
-	if(s.startsWith("BUF0:")) fBuffer[0] = atof(s.substring(5).c_str());
+	if(s.startsWith("BUF0:")) {
+		fBuffer[0] = atof(s.substring(5).c_str());
+		fBufferCount=0;
+	}
 	else if(s.startsWith("BUF1:")) fBuffer[1] = atof(s.substring(5).c_str());
 	else if(s.startsWith("BUF2:")) fBuffer[2] = atof(s.substring(5).c_str());
 	else if(s.startsWith("BUF3:")) fBuffer[3] = atof(s.substring(5).c_str());
@@ -81,7 +88,10 @@ void SerialInterface::readSensor(String s) {
 void SerialInterface::readIMat(String s) {
 	if(fICount==3) fICount=0;
 
-	if(s.startsWith("IXX:")) fI(0,0) = atof(s.substring(4).c_str());
+	if(s.startsWith("IXX:")){
+		fI(0,0) = atof(s.substring(4).c_str());
+		fICount=0;
+	}
 	else if(s.startsWith("IYY:")) fI(1,1) = atof(s.substring(4).c_str());
 	else if(s.startsWith("IZZ:")) fI(2,2) = atof(s.substring(4).c_str());
 	fICount++;
@@ -110,6 +120,24 @@ void SerialInterface::cmdTorque(VectorFloat tau) {
 	Serial.println(tau.z);
 }
 
+void SerialInterface::readNewAttitude(String s) {
+	if(fQuatCount==4) fQuatCount=0;
+
+	if(s.startsWith("QUAW:")){
+		fQuat.w = atof(s.substring(5).c_str());
+		fQuatCount=0;
+	}
+	else if(s.startsWith("QUAX:")) fQuat.x = atof(s.substring(5).c_str());
+	else if(s.startsWith("QUAY:")) fQuat.y = atof(s.substring(5).c_str());
+	else if(s.startsWith("QUAZ:")) fQuat.z = atof(s.substring(5).c_str());
+	fQuatCount++;
+	if(fQuatCount==4) Serial.println("Full attitude quaternion received");
+}
+
+bool SerialInterface::isAttitudeReady() {
+	return (fQuatCount==4);
+}
+
 float* SerialInterface::getBuffer() {
 	fBufferCount = 0;
 	for(int i=0; i<10; i++){
@@ -118,4 +146,8 @@ float* SerialInterface::getBuffer() {
 	}
 	Serial.println("");
 	return fBuffer;
+}
+
+Quaternion SerialInterface::getAttitude() {
+	return fQuat;
 }
