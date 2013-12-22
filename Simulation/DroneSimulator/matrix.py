@@ -1,5 +1,7 @@
 from numpy.ma.core import sin, cos, tan
-def vecCrossProduct(a, b): #vector, vector 
+from mathclasses import *
+
+'''def vecCrossProduct(a, b): #vector, vector 
     c = [[a[1]*b[2]-a[2]*b[1]], [b[2]*a[0]-a[2]*b[0]], [a[0]*b[1]-b[0]*a[1]]]
     return c
 
@@ -24,32 +26,32 @@ def vecScalarProduct(a, b): #scalar, vector
 
 def vecScalarSum(a, b): #scalar, vector
     c = [a+b[0], a+b[1], a+b[2]]
-    return c
+    return c'''
 
 
 def thetadot2omega(tD, t):
-    mat1 = [[1, 0, -sin(t[1])], [0, cos(t[0]), cos(t[1])*sin(t[0])], [0, -sin(t[0]), cos(t[1])*cos(t[0])]]
+    mat1 = Matrix([[1, 0, -sin(t[1])], [0, cos(t[0]), cos(t[1])*sin(t[0])], [0, -sin(t[0]), cos(t[1])*cos(t[0])]])
     #mat2 = [[0, -sin(t[0]), cos(t[0])*sin(t[1])], [0, cos(t[0]), sin(t[0])*cos(t[1])], [1, 0, -sin(t[1])]]
-    return matDotProduct(mat1, tD)
+    return mat1*tD
 
 def rotation(t):
-    mat = [[cos(t[0])*sin(t[2])-cos(t[1])*sin(t[0])*sin(t[2]), -cos(t[2])*sin(t[0])-cos(t[0])*cos(t[1])*sin(t[2]), sin(t[1])*sin(t[2])], 
+    mat = Matrix([[cos(t[0])*sin(t[2])-cos(t[1])*sin(t[0])*sin(t[2]), -cos(t[2])*sin(t[0])-cos(t[0])*cos(t[1])*sin(t[2]), sin(t[1])*sin(t[2])], 
            [cos(t[1])*cos(t[2])*sin(t[0])+cos(t[0])*sin(t[2]), cos(t[0])*cos(t[1])*cos(t[2])-sin(t[0])*sin(t[2]), -cos(t[2])*sin(t[1])], 
-           [sin(t[0])*sin(t[1]), cos(t[0])*sin(t[1]), cos(t[1])]]
+           [sin(t[0])*sin(t[1]), cos(t[0])*sin(t[1]), cos(t[1])]])
     return mat
 
 def omega2thetadot(t, o):
-    mat1 = [[1, sin(t[0])*tan(t[1]), cos(t[0])*tan(t[1])], 
+    mat1 = Matrix([[1, sin(t[0])*tan(t[1]), cos(t[0])*tan(t[1])], 
             [0, cos(t[0]), -sin(t[0])], 
-            [0, sin(t[0])/cos(t[1]), cos(t[0])/cos(t[1])]]
+            [0, sin(t[0])/cos(t[1]), cos(t[0])/cos(t[1])]])
     #mat1 = [[0, -sin(t[0]), cos(t[0])*cos(t[1])], [0, cos(t[0]), sin(t[0])*cos(t[1])], [1, 0, -sin(t[1])]]
     
-    return matDotProduct(mat1, o)
+    return mat1*o
 
 def acceleration(angles, b):
-    gravity = [0,0,-9.81]
+    gravity = Vector([0,0,-9.81])
     R = rotation(angles)
-    T = matDotProduct(R, b.thrust())
+    T = R*b.thrust()
     Fd = b.friction()
-    a = vecSum(gravity, vecSum(vecScalarProduct(1/b.mass(), T), Fd))
+    a = gravity+T*(1/b.mass())+Fd
     return a

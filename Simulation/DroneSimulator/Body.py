@@ -13,10 +13,10 @@ class Body(object):
     m4 = Motor()
     
     #calcule
-    Torque = None #vector
-    Thrust = None #vector
-    Friction = None #vector
-    Alpha = None #vector
+    Torque = Vector() #vector
+    Thrust = Vector() #vector
+    Friction = Vector() #vector
+    Alpha = Vector() #vector
     
     #parameters
     L = None #longueur des bras #scalar
@@ -24,14 +24,14 @@ class Body(object):
     TorqueIsSet = None #switch #scalar
     
     #constants
-    I = None #inertia matrix #vector
+    I = Vector() #inertia matrix #vector
     K_d = None #friction-linear velocity #scalar
     
     maxTorque = 100
     
     #mesure
-    Velocity = None #vector
-    Omega = None #vector
+    Velocity = Vector() #vector
+    Omega = Vector() #vector
     
     def __init__(self):
         '''
@@ -75,8 +75,7 @@ class Body(object):
         if t[2]<-self.maxTorque:
             t[2] = -self.maxTorque
         self.Torque = t
-        print "Setting torque to"
-        print self.Torque
+        print "Setting torque to" + self.Torque.__str__()
     
     def setMotorConstants(self, Rho, K_v, K_t, K_tau, I_M, A_swept, A_xsec, Radius, C_D):
         self.m1.setConstants(Rho, K_v, K_t, K_tau, I_M, A_swept, A_xsec, Radius, C_D)
@@ -90,19 +89,19 @@ class Body(object):
         return self.Torque
     
     def thrust(self):
-        self.Thrust = [0, 0, self.m1.thrust()+self.m2.thrust()+self.m3.thrust()+self.m4.thrust()]
+        self.Thrust = Vector([0, 0, self.m1.thrust()+self.m2.thrust()+self.m3.thrust()+self.m4.thrust()])
         return self.Thrust
     
-    def friction(self):
-        self.Friction = vecScalarProduct(-self.K_d, self.Velocity)
+    def friction(self):        
+        self.Friction = -self.Velocity*self.K_d
         return self.Friction
     
     def alpha(self):
         #print "Omega"
         #print self.Omega
-        self.Alpha = [(self.torque()[0] - (self.I[1]-self.I[2])*self.Omega[1]*self.Omega[2])/self.I[0],
+        self.Alpha = Vector([(self.torque()[0] - (self.I[1]-self.I[2])*self.Omega[1]*self.Omega[2])/self.I[0],
                       (self.torque()[1] - (self.I[2]-self.I[0])*self.Omega[0]*self.Omega[2])/self.I[1],
-                      (self.torque()[2] - (self.I[0]-self.I[1])*self.Omega[0]*self.Omega[1])/self.I[2]]
+                      (self.torque()[2] - (self.I[0]-self.I[1])*self.Omega[0]*self.Omega[1])/self.I[2]])
         #self.Alpha = [self.torque()[0],
         #              self.torque()[1],
         #              self.torque()[2]]

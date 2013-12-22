@@ -1,6 +1,6 @@
 #!python
 from Controller import PSquare
-from mathclasses import Quaternion
+from mathclasses import Quaternion, Vector
 from FullSimu import Simu
 from time import sleep, time
 import matplotlib.pyplot as plt
@@ -10,7 +10,7 @@ import string
 import sys
 
 torqueSet = 0
-reqTorque = [0, 0, 0]
+reqTorque = Vector([0, 0, 0])
 
 locally = True
 
@@ -45,25 +45,25 @@ def sendSensor():
     time = 0.05
     quat = simu.getQuaternion()
     gyro = simu.getGyro()
-    acc = [0, 0, 0]
-    ser.write(prefix + "BUF0:" + str(quat[0]) + "\r\n")
+    acc = Vector([0, 0, 0])
+    ser.write(prefix + "BUF0:" + str(quat.w) + "\r\n")
+    sleep(time)
+    ser.write(prefix + "BUF1:" + str(quat.x) + "\r\n")
+    sleep(time)
+    ser.write(prefix + "BUF2:" + str(quat.y) + "\r\n")
     sleep(time);
-    ser.write(prefix + "BUF1:" + str(quat[1]) + "\r\n")
-    sleep(time);
-    ser.write(prefix + "BUF2:" + str(quat[2]) + "\r\n")
-    sleep(time);
-    ser.write(prefix + "BUF3:" + str(quat[3]) + "\r\n")
-    sleep(time);
+    ser.write(prefix + "BUF3:" + str(quat.z) + "\r\n")
+    sleep(time)
     ser.write(prefix + "BUF4:" + str(int(gyro[0]*131*2)) + "\r\n")
-    sleep(time);
+    sleep(time)
     ser.write(prefix + "BUF5:" + str(int(gyro[1]*131*2)) + "\r\n")
-    sleep(time);
+    sleep(time)
     ser.write(prefix + "BUF6:" + str(int(gyro[2]*131*2)) + "\r\n")
-    sleep(time);
+    sleep(time)
     ser.write(prefix + "BUF7:" + str(int(acc[0]*8192*2)) + "\r\n")
-    sleep(time);
+    sleep(time)
     ser.write(prefix + "BUF8:" + str(int(acc[1]*8192*2)) + "\r\n")
-    sleep(time);
+    sleep(time)
     ser.write(prefix + "BUF9:" + str(int(acc[2]*8192*2)) + "\r\n")
     print "Sending data"
     
@@ -85,11 +85,11 @@ def sendNewTracking():
         ctrl.setQRef(quat)
     else:
         prefix = "CMD:TRCK:"
-        ser.write(prefix + "QUAW:" + str(quat[0]) + "\r\n")
-        ser.write(prefix + "QUAX:" + str(quat[1]) + "\r\n")
-        ser.write(prefix + "QUAY:" + str(quat[2]) + "\r\n")
-        ser.write(prefix + "QUAZ:" + str(quat[3]) + "\r\n")
-    print "Requesting tracking (%s,%s,%s,%s)" % (quat[0], quat[1], quat[2], quat[3])
+        ser.write(prefix + "QUAW:" + str(quat.w) + "\r\n")
+        ser.write(prefix + "QUAX:" + str(quat.x) + "\r\n")
+        ser.write(prefix + "QUAY:" + str(quat.y) + "\r\n")
+        ser.write(prefix + "QUAZ:" + str(quat.z) + "\r\n")
+    print "Requesting tracking (%s,%s,%s,%s)" % (quat.w, quat.x, quat.y, quat.z)
     
 def loop():
     global reqTorque
@@ -147,7 +147,6 @@ def main():
         
         if locally==False:
             loop()
-        #plt.pause(0.001)
         if(continuous):
             if locally==True:
                 qM = simu.getQuaternion()
@@ -173,7 +172,7 @@ def main():
             break
         elif s=="c":
             continuous= not(continuous)
-            reqTorque = [0, 0 ,0]
+            reqTorque = Vector([0, 0 ,0])
             torqueSet = 3
             print "continuous %s" % (continuous)
         elif s=="s":
