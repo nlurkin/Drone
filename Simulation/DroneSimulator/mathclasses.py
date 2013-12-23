@@ -37,6 +37,9 @@ class Quaternion:
                 self.y = q[2]
                 self.z = q[3]
             elif len(q)==3:
+                q[0] = float(q[0])
+                q[1] = float(q[1])
+                q[2] = float(q[2])
                 self.w = cos(q[0]/2)*cos(q[1]/2)*cos(q[2]/2)+sin(q[0]/2)*sin(q[1]/2)*sin(q[2]/2)
                 self.x = sin(q[0]/2)*cos(q[1]/2)*cos(q[2]/2)-cos(q[0]/2)*sin(q[1]/2)*sin(q[2]/2)
                 self.y = cos(q[0]/2)*sin(q[1]/2)*cos(q[2]/2)+sin(q[0]/2)*cos(q[1]/2)*sin(q[2]/2)
@@ -49,7 +52,7 @@ class Quaternion:
         return self.__str__()
     
     def __add__(self, other):
-        q = Quaternion
+        q = Quaternion()
         q.w = self.w + other.w
         q.x = self.x + other.x
         q.y = self.y + other.y
@@ -57,7 +60,7 @@ class Quaternion:
         return q
 
     def __sub__(self, other):
-        q = Quaternion
+        q = Quaternion()
         q.w = self.w - other.w
         q.x = self.x - other.x
         q.y = self.y - other.y
@@ -65,7 +68,7 @@ class Quaternion:
         return q
     
     def __mul__(self, other):
-        q = Quaternion
+        q = Quaternion()
         q.w = self.w*other.w - self.x*other.x - self.y*other.y - self.z*other.z
         q.x = self.w*other.x + self.x*other.w + self.y*other.z - self.z*other.y
         q.y = self.w*other.y - self.x*other.z + self.y*other.w + self.z*other.x
@@ -73,7 +76,7 @@ class Quaternion:
         return q
     
     def __neg__(self):
-        q = Quaternion
+        q = Quaternion()
         q.w = -self.w
         q.x = -self.x
         q.y = -self.y
@@ -81,9 +84,9 @@ class Quaternion:
         return q
     
     def conj(self):
-        q = Quaternion
+        q = Quaternion()
         q.w = self.w
-        q.x = -self.w
+        q.x = -self.x
         q.y = -self.y
         q.z = -self.z
         return q
@@ -92,7 +95,7 @@ class Quaternion:
         return (self.w*self.w + self.x*self.x + self.y*self.y + self.z*self.z)
     
     def normalize(self):
-        q = Quaternion
+        q = Quaternion()
         m = self.mag()
         q.w = self.w/m
         q.x = self.x/m
@@ -125,7 +128,10 @@ class Quaternion:
             return self.z
     
     def __eq__(self, other):
-        return ((self.w==other.w) and (self.x==other.x) and (self.y==other.y) and (self.z==other.z))
+        if other.__class__==Quaternion:
+            return ((self.w==other.w) and (self.x==other.x) and (self.y==other.y) and (self.z==other.z))
+        else:
+            return False
 
 class Vector:
     '''
@@ -146,7 +152,7 @@ class Vector:
             self.components = v.components
             self.size = v.size
         elif v.__class__==Quaternion:
-            self.components = v[1:]
+            self.components = [v[1], v[2], v[3]]
             self.size = 3
         elif type(v)==list:
             self.components = []
@@ -154,7 +160,6 @@ class Vector:
                 self.append(el)
         else:
             print "Unable to create Vector from " + type(v)
-            print v
     
     def append(self, el):
         self.components.append(el)
@@ -214,8 +219,14 @@ class Vector:
                 v.append(el+other)
             return Vector(v)
     
+    def __radd__(self, other):
+        return self.__add__(other)
+    
     def __sub__(self, other):
         return self.__add__(-other)
+    
+    def __rsub__(self, other):
+        return -self.__sub__(other)
         
     def __mul__(self, other):
         if other.__class__ == Vector and other.size==self.size:
@@ -231,8 +242,14 @@ class Vector:
                 v.append(el*other)
             return Vector(v)
     
+    def __rmul__(self, other):
+        return self.__mul__(other)
+    
     def __div__(self, other):
-        print "xxx"
+        v = []
+        for el in self.components:
+            v.append(el/other)
+        return Vector(v)
     
     def __neg__(self):
         v = []
@@ -274,7 +291,6 @@ class Matrix:
         elif type(v) == list:
             self.components = []
             for col in v:
-                print col
                 c = []
                 for row in col:
                     c.append(row)
@@ -284,10 +300,9 @@ class Matrix:
         if other.__class__ == Vector:
             v = Vector()
             i = 0
-            print self.components
             for col in self.components:
                 for row in col:
-                    v[i] = row*other[i]
+                    v[i] += row*other[i]
                 i+=1
             return v
         else:
@@ -301,6 +316,20 @@ class Matrix:
                 i+=1
             return v
     
+    def __repr__(self):
+        return self.__str__()
+    
+    def __str__(self):
+        s = ''
+        for col in self.components:
+            for row in col:
+                s += str(row)
+                s += ', '
+            s = s[:-1]
+            s += '\n '
+        s = s[:-2]
+        return '[' + s + ']'
+                 
 if __name__ == "__main__":
     print '*** running test ***'
     q = Quaternion([1,0,0,0])

@@ -32,6 +32,10 @@ def vecScalarSum(a, b): #scalar, vector
 def thetadot2omega(tD, t):
     mat1 = Matrix([[1, 0, -sin(t[1])], [0, cos(t[0]), cos(t[1])*sin(t[0])], [0, -sin(t[0]), cos(t[1])*cos(t[0])]])
     #mat2 = [[0, -sin(t[0]), cos(t[0])*sin(t[1])], [0, cos(t[0]), sin(t[0])*cos(t[1])], [1, 0, -sin(t[1])]]
+    print "thetaDot"
+    print tD
+    print mat1
+    print mat1*tD
     return mat1*tD
 
 def rotation(t):

@@ -1,10 +1,11 @@
 from Body import Body
+from mathclasses import Vector, Quaternion
+from matrix import thetadot2omega, acceleration, omega2thetadot
+from numpy.ma.core import sin
 from random import random
 from scipy.constants.constants import pi
 import matplotlib.pyplot as plt
 import numpy
-from mathclasses import *
-from matrix import *
     
 class Simu(object):
     Rho = 1.2250 #kg.m^-3
@@ -41,7 +42,7 @@ class Simu(object):
     quat = Quaternion()
     
     stepResponse = None
-    stepTimes = [0.5, 1.5, 3]
+    stepTimes = [0.5, 1000, 3000]
     
     waveResponse = None
     waveTimes = [0.5, 1, 1.5]
@@ -76,12 +77,11 @@ class Simu(object):
         self.moveTimes = [0, 0, 0]
     
     def deviate(self):
-        r = [random(),random(), random()] 
+        r = Vector([random(),random(), random()]) 
         deviation = 20
         self.thetaDot = -deviation+(2*deviation*r)
         self.thetaDot[2] = 0
         self.thetaDot[0] = 0
-        print self.thetaDot
     
     def heavyside(self, t, t0):
         if (t-t0)<0:
@@ -147,7 +147,8 @@ class Simu(object):
         plt.plot(self.t, val[1], 'rx')
         plt.subplot(3, 1 ,3)
         plt.plot(self.t, val[2], 'rx')
-        self.t = self.t+self.dt
+        #self.t = self.t+self.dt
+        return val
         
     
     def nextStep(self):
@@ -156,24 +157,14 @@ class Simu(object):
     
     def singleStep(self, t):
         #set measurements
-        print self.xDot
         self.b.setMeasure(self.xDot, self.omega)
         self.b.setMotorMeasure([0,0,0,0], [0,0,0,0]) #from controller decision
         #Get Input from arduino
         self.omega = thetadot2omega(self.thetaDot, self.theta)
         self.a = acceleration(self.theta, self.b)
         self.omegaDot = self.b.alpha()
-        print self.omegaDot
-        print self.dt
-        print self.omega
         self.omega = self.omega+(self.omegaDot*self.dt)
-        print "omega"
-        print self.omega
         self.thetaDot = omega2thetadot(self.theta, self.omega)
-        print "xxx"
-        print self.theta
-        print self.dt
-        print self.thetaDot
         self.theta = self.theta+(self.thetaDot*self.dt)
         self.xDot = self.xDot+(self.a*self.dt)
         self.x = self.x+(self.xDot*self.dt)
@@ -192,9 +183,9 @@ class Simu(object):
         plt.figure(plotNbr)
         plt.subplot(2, 2 ,1)
         #quaternion
-        plt.plot(self.t, self.quat[1], 'rx')
-        plt.plot(self.t, self.quat[2], 'gx')
-        plt.plot(self.t, self.quat[3], 'bx')
+        plt.plot(self.t, self.quat.x, 'rx')
+        plt.plot(self.t, self.quat.y, 'gx')
+        plt.plot(self.t, self.quat.z, 'bx')
         plt.subplot(2, 2 ,2)
         #theta
         plt.plot(t, self.theta[0], 'rx')
@@ -234,17 +225,11 @@ class Simu(object):
         plotNbr+=1
         plt.figure(50)
         plt.subplot(3, 1 ,1)
-        plt.plot(t, self.x[0], 'rx')
-        plt.plot(t, self.x[1], 'gx')
-        plt.plot(t, self.x[2], 'bx')
-        plt.subplot(3, 1 ,1)
-        plt.plot(t, self.xDot[0], 'rx')
-        plt.plot(t, self.xDot[1], 'gx')
-        plt.plot(t, self.xDot[2], 'bx')
-        plt.subplot(3, 1 ,1)
-        plt.plot(t, self.a[0], 'rx')
-        plt.plot(t, self.a[1], 'gx')
-        plt.plot(t, self.a[2], 'bx')
+        plt.plot(t, self.angle[0], 'gx')
+        plt.subplot(3, 1 ,2)
+        plt.plot(t, self.angle[1], 'gx')
+        plt.subplot(3, 1 ,3)
+        plt.plot(t, self.angle[2], 'gx')
         
         
         

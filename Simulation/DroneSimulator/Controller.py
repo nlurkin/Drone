@@ -40,7 +40,7 @@ class PSquare(object):
         print "qM"
         print qM
         
-        qErr = self.QRef.conj() * qM
+        qErr = self.QRef * qM
         print "qErr"
         print qErr
         if qErr[0]<0:

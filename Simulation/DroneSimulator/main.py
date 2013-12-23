@@ -79,8 +79,9 @@ def sendNewTracking():
     global locally
     
     angle = simu.getNextMove()
+    print angle
     quat = Quaternion([angle[2], angle[1], angle[0]])
-    
+    print quat
     if locally:
         ctrl.setQRef(quat)
     else:
@@ -181,6 +182,8 @@ def main():
                 omegaM = simu.getGyro()
                 reqTorque = ctrl.computePP(qM, omegaM)
             simu.setRequiredTorque(reqTorque)
+            if tracking:
+                sendNewTracking()
             simu.nextStep()
             sendSensor()
             plt.pause(0.0001)
