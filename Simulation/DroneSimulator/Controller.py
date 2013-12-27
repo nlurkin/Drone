@@ -65,6 +65,7 @@ class PID:
     Ki = None
     
     QRef = None
+    ARef = None
     I = Vector()
     Torque = Vector()
 
@@ -78,6 +79,7 @@ class PID:
         self.Kp = 0
         self.ki = 0
         self.QRef = Quaternion([0,0,0])
+        self.ARef = Vector([0,0,0])
         self.I = Vector([0, 0, 0])
         self.Torque = Vector([0, 0, 0])
     
@@ -89,12 +91,21 @@ class PID:
         self.Kp = v[1]
         self.Ki = v[2]
         
-    def setQRef(self, ref):
+    def setQRef(self, ref, angle):
         self.QRef = ref
+        self.ARef = angle
     
-    def computePP(self, qM, omegaM):
-        qErr = self.QRef.conj() * qM
+    def computePP(self, qM, omegaM, angles):
+        #print "QRef " + self.QRef
+        #print "QM " + qM
+        #qErr = self.QRef * qM.conj()
         
-        self.Torque = -(self.I * (self.Kd*omegaM + self.Kp*qErr.angles()))
-        self.Torque = Vector([0,0,0])
+        #print "qErr " + qErr
+        #print qErr.mag()
+        #aRef = self.QRef.angles()
+        print "ARef " + self.ARef
+        print "AM " + angles 
+        aErr = -(self.ARef-angles)
+        print "aErr " + aErr
+        self.Torque = self.I * (-self.Kd*omegaM - self.Kp*aErr)
         return self.Torque

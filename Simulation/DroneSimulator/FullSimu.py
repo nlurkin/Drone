@@ -1,6 +1,5 @@
 from Body import Body
 from mathclasses import Vector, Quaternion
-from matrix import thetadot2omega, acceleration, omega2thetadot
 from numpy.ma.core import sin
 from random import random
 from scipy.constants.constants import pi
@@ -25,21 +24,10 @@ class Simu(object):
     K_d = 0.0013
     b = Body()
     
-    omega = Vector()
-    omegaDot = Vector()
-    a = Vector()
-    thetaDot = Vector()
-    theta = Vector()
-    xDot = Vector()
-    x = Vector()
     time = None
     dt = None
     
     t = None
-    
-    gyro = Vector()
-    angle = Vector()
-    quat = Quaternion()
     
     stepResponse = None
     stepTimes = [0.5, 4.5, 10.5]
@@ -54,16 +42,7 @@ class Simu(object):
     moveType = None
     
     def __init__(self):
-        self.b.setConstants(self.I, self.K_d)
-        self.b.setParameters(0.38, 4.493, True)
-        self.b.setMotorConstants(self.Rho, self.K_v, self.K_t, self.K_tau, self.I_M, self.A_swept, self.A_xsec, self.Radius, self.C_D)
-        self.omega = Vector()
-        self.omegaDot = Vector()
-        self.a = Vector()
-        self.thetaDot = Vector()
-        self.theta = Vector()
-        self.xDot = Vector()
-        self.x = Vector([0,0,40])
+        #self.b.setMotorConstants(self.Rho, self.K_v, self.K_t, self.K_tau, self.I_M, self.A_swept, self.A_xsec, self.Radius, self.C_D)
         self.dt = 0.1
         self.time = numpy.arange(0,5, self.dt)
         self.t = 0
@@ -76,11 +55,18 @@ class Simu(object):
         self.moveType = 0
         self.moveTimes = [0, 0, 0]
     
+    def initBody(self, local):
+        self.b.setModel(self.I, self.K_d, 0.38, 4.493)
+        self.b.setParameters(True, 5, local)
+        if local==True:
+            self.b.initController()
+    
     def deviate(self):
         r = Vector([random(),random(), random()]) 
         deviation = 5
-        self.thetaDot = -deviation+(2*deviation*r)
-        self.thetaDot[2] = 0
+        self.b.setOmega(-deviation+(2*deviation*r))
+        #self.b.setOmega(Vector([1,2,0]))
+        #self.thetaDot[2] = 0
         #self.thetaDot[0] = 0
     
     def heavyside(self, t, t0):
@@ -157,9 +143,10 @@ class Simu(object):
     
     def singleStep(self, t):
         #set measurements
-        self.b.setMotorMeasure([0,0,0,0], [0,0,0,0]) #from controller decision
+        #self.b.setMotorMeasure([0,0,0,0], [0,0,0,0]) #from controller decision
         #Get Input from arduino
-        self.omega = thetadot2omega(self.thetaDot, self.theta)
+        self.b.nextStep(self.dt)
+        '''self.omega = thetadot2omega(self.thetaDot, self.theta)
         print "Omega from old thetas " + self.omega
         self.b.setMeasure(self.xDot, self.omega)
         self.a = acceleration(self.theta, self.b)
@@ -174,7 +161,7 @@ class Simu(object):
         self.xDot = self.xDot+(self.a*self.dt)
         self.x = self.x+(self.xDot*self.dt)
         
-        self.buildAttitude()
+        self.buildAttitude()'''
         self.plot(t)
 
     
@@ -188,19 +175,23 @@ class Simu(object):
         plt.figure(plotNbr)
         plt.subplot(2, 2 ,1)
         #quaternion
-        plt.plot(self.t, self.quat.x, 'rx')
-        plt.plot(self.t, self.quat.y, 'gx')
-        plt.plot(self.t, self.quat.z, 'bx')
+        plt.plot(self.t, self.b.Quat.x, 'rx')
+        plt.plot(self.t, self.b.Quat.y, 'gx')
+        plt.plot(self.t, self.b.Quat.z, 'bx')
+        plt.plot(self.t, self.b.ctrl.QRef.x, 'ro')
+        plt.plot(self.t, self.b.ctrl.QRef.y, 'go')
+        plt.plot(self.t, self.b.ctrl.QRef.z, 'bo')
+
         plt.subplot(2, 2 ,2)
         #theta
-        plt.plot(t, self.theta[0], 'rx')
-        plt.plot(t, self.theta[1], 'gx')
-        plt.plot(t, self.theta[2], 'bx')
+        plt.plot(t, self.b.Angles[0], 'rx')
+        plt.plot(t, self.b.Angles[1], 'gx')
+        plt.plot(t, self.b.Angles[2], 'bx')
         plt.subplot(2, 2 ,3)
         #thetadot
-        plt.plot(t, self.thetaDot[0], 'rx')
-        plt.plot(t, self.thetaDot[1], 'gx')
-        plt.plot(t, self.thetaDot[2], 'bx')
+        plt.plot(t, self.b.Omega[0], 'rx')
+        plt.plot(t, self.b.Omega[1], 'gx')
+        plt.plot(t, self.b.Omega[2], 'bx')
         plt.subplot(2, 2 ,4)
         #torque
         plt.plot(t, self.b.Torque[0], 'rx')
@@ -211,30 +202,30 @@ class Simu(object):
         plotNbr+=1
         plt.figure(plotNbr)
         plt.subplot(2, 2 ,1)
-        plt.plot(t, self.x[0], 'rx')
-        plt.plot(t, self.x[1], 'gx')
-        plt.plot(t, self.x[2], 'bx')
+        plt.plot(t, self.b.Position[0], 'rx')
+        plt.plot(t, self.b.Position[1], 'gx')
+        plt.plot(t, self.b.Position[2], 'bx')
         plt.subplot(2, 2 ,2)
-        plt.plot(t, self.xDot[0], 'rx')
-        plt.plot(t, self.xDot[1], 'gx')
-        plt.plot(t, self.xDot[2], 'bx')
+        plt.plot(t, self.b.Velocity[0], 'rx')
+        plt.plot(t, self.b.Velocity[1], 'gx')
+        plt.plot(t, self.b.Velocity[2], 'bx')
         plt.subplot(2, 2 ,3)
-        plt.plot(t, self.a[0], 'rx')
-        plt.plot(t, self.a[1], 'gx')
-        plt.plot(t, self.a[2], 'bx')
+        plt.plot(t, self.b.Acceleration[0], 'rx')
+        plt.plot(t, self.b.Acceleration[1], 'gx')
+        plt.plot(t, self.b.Acceleration[2], 'bx')
         plt.subplot(2, 2 ,4)
-        plt.plot(t, self.omega[0], 'rx')
-        plt.plot(t, self.omega[1], 'gx')
-        plt.plot(t, self.omega[2], 'bx')
+        #plt.plot(t, self.omega[0], 'rx')
+        #plt.plot(t, self.omega[1], 'gx')
+        #plt.plot(t, self.omega[2], 'bx')
         
         plotNbr+=1
         plt.figure(50)
         plt.subplot(3, 1 ,1)
-        plt.plot(t, self.angle[0], 'gx')
+        plt.plot(t, self.b.Angles[0], 'gx')
         plt.subplot(3, 1 ,2)
-        plt.plot(t, self.angle[1], 'gx')
+        plt.plot(t, self.b.Angles[1], 'gx')
         plt.subplot(3, 1 ,3)
-        plt.plot(t, self.angle[2], 'gx')
+        plt.plot(t, self.b.Angles[2], 'gx')
         
         
         
@@ -317,3 +308,7 @@ class Simu(object):
     
     def getAcc(self):
         return self.a
+    
+    def setReference(self, ref,angle):
+        self.b.setReference(ref,angle)
+        
