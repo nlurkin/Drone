@@ -102,11 +102,11 @@ class Body(object):
         self.Alpha = Vector([(self.torque()[0] - (self.I[1]-self.I[2])*self.Omega[1]*self.Omega[2])/self.I[0],
                       (self.torque()[1] - (self.I[2]-self.I[0])*self.Omega[0]*self.Omega[2])/self.I[1],
                       (self.torque()[2] - (self.I[0]-self.I[1])*self.Omega[0]*self.Omega[1])/self.I[2]])
-        #self.Alpha = [self.torque()[0],
-        #              self.torque()[1],
-        #              self.torque()[2]]
-        #print "Alpha"
-        #print self.Alpha
+        self.Alpha = Vector([(self.torque()[0])/self.I[0],
+                      (self.torque()[1])/self.I[1],
+                      (self.torque()[2])/self.I[2]])
+        #self.Alpha = self.I.inv()*(self.torque() - self.Omega*(self.I*self.Omega))
+        print "Alpha " + self.Alpha
         return self.Alpha
         
     def mass(self):

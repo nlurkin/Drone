@@ -42,7 +42,7 @@ class Simu(object):
     quat = Quaternion()
     
     stepResponse = None
-    stepTimes = [0.5, 1000, 3000]
+    stepTimes = [0.5, 4.5, 10.5]
     
     waveResponse = None
     waveTimes = [0.5, 1, 1.5]
@@ -69,7 +69,7 @@ class Simu(object):
         self.t = 0
         self.gyro = Vector()
         self.angle = Vector()
-        self.quat = Quaternion  
+        self.quat = Quaternion()
         self.stepResponse = [0, 0, 0]
         self.waveResponse = [0, 0, 0]
         self.flipResponse = [0, 0, 0]
@@ -78,10 +78,10 @@ class Simu(object):
     
     def deviate(self):
         r = Vector([random(),random(), random()]) 
-        deviation = 20
+        deviation = 5
         self.thetaDot = -deviation+(2*deviation*r)
         self.thetaDot[2] = 0
-        self.thetaDot[0] = 0
+        #self.thetaDot[0] = 0
     
     def heavyside(self, t, t0):
         if (t-t0)<0:
@@ -157,15 +157,20 @@ class Simu(object):
     
     def singleStep(self, t):
         #set measurements
-        self.b.setMeasure(self.xDot, self.omega)
         self.b.setMotorMeasure([0,0,0,0], [0,0,0,0]) #from controller decision
         #Get Input from arduino
         self.omega = thetadot2omega(self.thetaDot, self.theta)
+        print "Omega from old thetas " + self.omega
+        self.b.setMeasure(self.xDot, self.omega)
         self.a = acceleration(self.theta, self.b)
         self.omegaDot = self.b.alpha()
+        print "OmegaDot " + self.omegaDot   
         self.omega = self.omega+(self.omegaDot*self.dt)
+        print "Omega " + self.omega
         self.thetaDot = omega2thetadot(self.theta, self.omega)
+        print "thetaDot " + self.thetaDot
         self.theta = self.theta+(self.thetaDot*self.dt)
+        print "theta " + self.theta
         self.xDot = self.xDot+(self.a*self.dt)
         self.x = self.x+(self.xDot*self.dt)
         
@@ -302,7 +307,7 @@ class Simu(object):
     def buildAttitude(self):
         self.gyro = (self.theta-self.angle)/self.dt
         self.angle = self.theta
-        self.quat = Quaternion([self.theta[2], self.theta[1], self.theta[0]])
+        self.quat = Quaternion([self.theta[0], self.theta[1], self.theta[2]])
 
     def getQuaternion(self):
         return self.quat

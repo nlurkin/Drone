@@ -1,7 +1,8 @@
 #!python
-from Controller import PSquare
-from mathclasses import Quaternion, Vector
+from Controller import *
 from FullSimu import Simu
+from mathclasses import Quaternion, Vector
+from scipy.constants.constants import pi
 from time import sleep, time
 import matplotlib.pyplot as plt
 import msvcrt
@@ -17,7 +18,7 @@ locally = True
 ser = None
 
 simu = Simu()
-ctrl = PSquare() 
+ctrl = PID()
 
 def readInput( caption, default, timeout = 5):
     start_time = time()
@@ -80,7 +81,7 @@ def sendNewTracking():
     
     angle = simu.getNextMove()
     print angle
-    quat = Quaternion([angle[2], angle[1], angle[0]])
+    quat = Quaternion([angle[0], angle[1], angle[2]])
     print quat
     if locally:
         ctrl.setQRef(quat)
@@ -130,8 +131,10 @@ def main():
 
     if locally==True:
         ctrl.setI(simu.getI())
-        ctrl.setPs(20, 4)
+        #ctrl.setPs([20, 4])
+        ctrl.setPs([4,3,2])
         simu.setRequiredTorque(reqTorque)
+        #ctrl.setQRef(Quaternion([pi/4., 0, 0]))
         simu.nextStep()
     else:
         ser = serial.Serial(port=7, baudrate=9600, timeout=1)

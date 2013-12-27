@@ -1,5 +1,5 @@
-from numpy.ma.core import cos, sin
 from math import atan2
+from numpy.ma.core import cos, sin, arcsin, arctan
 
 class Quaternion:
     '''
@@ -58,6 +58,10 @@ class Quaternion:
         q.y = self.y + other.y
         q.z = self.z + other.z
         return q
+    
+    def __radd__(self, other):
+        if type(other)==str:
+            return other + self.__str__()
 
     def __sub__(self, other):
         q = Quaternion()
@@ -103,16 +107,11 @@ class Quaternion:
         q.z = self.z/m
     
     def angles(self):
-        a = []
-        a[0] = atan2(2*self.x*self.y - 2*self.w*self.z, 2*self.w*self.w + 2*self.x*self.x - 1)
-        '''#yaw
-        a.append()
-        #pitch
-        a.append(atan(gravity -> x / sqrt(gravity -> y*gravity -> y + gravity -> z*gravity -> z));
-        #roll: (tilt left/right, about X axis)
-        data[2] = atan(gravity -> y / sqrt(gravity -> x*gravity -> x + gravity -> z*gravity -> z));
-        '''
-        return a
+        a = [0, 0, 0]
+        a[0] = arctan(2*(self.w*self.x + self.y*self.z)/(1-2*(self.x*self.x + self.y*self.y)))
+        a[1] = arcsin(2*(self.w*self.y - self.z*self.x))
+        a[2] = arctan(2*(self.w*self.z + self.x*self.y)/(1-2*(self.y*self.y + self.z*self.z)))
+        return Vector(a)
     
     def vector(self):
         return Vector([self.x, self.y, self.z])
@@ -220,7 +219,10 @@ class Vector:
             return Vector(v)
     
     def __radd__(self, other):
-        return self.__add__(other)
+        if type(other) == str:
+            return other + self.__str__()
+        else:
+            return self.__add__(other)
     
     def __sub__(self, other):
         return self.__add__(-other)
