@@ -1,4 +1,5 @@
 #!python
+from ParamsClass import Params
 from FullSimu import Simu
 from mathclasses import Quaternion, Vector
 from time import sleep, time
@@ -10,8 +11,6 @@ import sys
 
 torqueSet = 0
 reqTorque = Vector([0, 0, 0])
-
-locally = True
 
 ser = None
 
@@ -38,14 +37,12 @@ def readInput( caption, default, timeout = 5):
 
 #microcontrolleur
 def sendSensor():
-    global locally
-    if locally==True:
+    if Params.runLocally==True:
         return
     prefix = "DAT:SENS:"
-    time = 0.05
-    quat = simu.getQuaternion()
-    gyro = simu.getGyro()
-    acc = Vector([0, 0, 0])
+    quat = simu.b.Quat
+    gyro = simu.b.Omega
+    acc = simu.b.Acceleration
     ser.write(prefix + "BUF0:" + str(quat.w) + "\r\n")
     sleep(time)
     ser.write(prefix + "BUF1:" + str(quat.x) + "\r\n")
@@ -67,19 +64,18 @@ def sendSensor():
     ser.write(prefix + "BUF9:" + str(int(acc[2]*8192*2)) + "\r\n")  
 
 def sendI():
-    I = simu.getI()
+    I = simu.I
     prefix = "DAT:IMAT:"
     ser.write(prefix + "IXX:" + str(I[0]) + "\r\n")
     ser.write(prefix + "IYY:" + str(I[1]) + "\r\n")
     ser.write(prefix + "IZZ:" + str(I[2]) + "\r\n")
     print "Sending %s %s %s" % (I[0], I[1], I[2])
+
 def sendNewTracking():
-    global locally
-    
     angle = simu.getNextMove()
     quat = Quaternion([angle[0], angle[1], angle[2]])
-    if locally:
-        simu.setReference(quat, Vector(angle))
+    if Params.runLocally:
+        simu.setReference(quat)
     else:
         prefix = "CMD:TRCK:"
         ser.write(prefix + "QUAW:" + str(quat.w) + "\r\n")
@@ -116,17 +112,15 @@ def serialLoop():
 def main():
     global torqueSet
     global reqTorque
-    global locally
     timeout = 0.0001
     s = ""
     continuous = False
     plotting = True
     tracking = False
-    cont = False
 
-    if locally==True:
-        simu.initBody(locally)
-        simu.setReference(Quaternion([1,1,0]), Vector([1,1,0]))
+    if Params.runLocally==True:
+        simu.initBody(Params.runLocally)
+        simu.setReference(Quaternion([1,1,0]))
     else:
         ser = serial.Serial(port=7, baudrate=9600, timeout=1)
     
@@ -140,10 +134,10 @@ def main():
             plt.pause(1)
             continue
         
-        if locally==False:
+        if Params.runLocally==False:
             serialLoop()
         if(continuous):
-            if locally==False:
+            if Params.runLocally==False:
                 if ser.inWaiting()==0 and torqueSet==3:
                     torqueSet = 0
             if not tracking:
@@ -172,7 +166,7 @@ def main():
             simu.deviate()
             print "Disturbing system"
         elif s=="ms":
-            simu.setMoveType(1)
+            simu.setMoveType(Params.moveType)
             tracking = True
             
         

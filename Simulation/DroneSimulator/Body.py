@@ -1,6 +1,6 @@
-from Controller import PID
-from mathclasses import Matrix
-from mathclasses import Quaternion, Vector
+from Controller import PID, PSquare
+from ParamsClass import Params
+from mathclasses import Matrix, Quaternion, Vector
 from numpy.ma.core import sin, tan, cos
 
 
@@ -23,7 +23,7 @@ class Body(object):
     position
     '''
     
-    ctrl = PID()
+    ctrl = None
     
     #set by controller
     Torque = Vector() #vector
@@ -59,6 +59,12 @@ class Body(object):
         '''
         Constructor
         '''
+        if Params.ctrlType==0:
+            self.ctrl = PID()
+            print "Using controller PID"
+        elif Params.ctrlType==1:
+            self.ctrl = PSquare()
+            print "Using controller PSquare"
         '''self.m1.setParams(1)
         self.m2.setParams(-1)
         self.m3.setParams(1)
@@ -81,15 +87,18 @@ class Body(object):
         self.m3.setMeasure(omega[2], alpha[2])
         self.m4.setMeasure(omega[3], alpha[3])'''    
     
-    def setReference(self, qRef, aRef):
-        self.ctrl.setQRef(qRef, aRef)
+    def setReference(self, qRef):
+        self.ctrl.setQRef(qRef)
     
     def initController(self):
         self.ctrl.setI(self.I)
-        self.ctrl.setPs([10,15,2])
+        if Params.ctrlType==0:
+            self.ctrl.setPs([10,15,2])
+        elif Params.ctrlType==1:
+            self.ctrl.setPs([20,4])
     
     def applyController(self):
-        t = self.ctrl.computePP(self.Quat, self.Omega, self.Angles)
+        t = self.ctrl.computePP(self.Quat, self.Omega)
         if t[0]>self.MaxTorque:
             t[0] = self.MaxTorque
         if t[1]>self.MaxTorque:
@@ -103,7 +112,6 @@ class Body(object):
         if t[2]<-self.MaxTorque:
             t[2] = -self.MaxTorque
         self.Torque = t
-        print "Setting torque to" + self.Torque.__str__()
     
     def nextStep(self, dt):
         if self.UseController:
@@ -158,16 +166,10 @@ class Body(object):
         mat1 = Matrix([[1, sin(self.Angles[0])*tan(self.Angles[1]), cos(self.Angles[0])*tan(self.Angles[1])], 
                        [0, cos(self.Angles[0]), -sin(self.Angles[0])], 
                        [0, sin(self.Angles[0])/cos(self.Angles[1]), cos(self.Angles[0])/cos(self.Angles[1])]])
-        print mat1
-        print self.Omega
         self.ThetaDot = mat1*self.Omega
-        print self.ThetaDot
 
     def computeAngles(self, dt):
-        print "ThetaDot " + self.ThetaDot
-        print "Old angle " + self.Angles
         self.Angles = self.Angles + self.ThetaDot*dt
-        print "New angle " + self.Angles 
         
     def computeQuaternion(self, dt):
         self.Quat = Quaternion([self.Angles[0], self.Angles[1], self.Angles[2]])
@@ -177,5 +179,3 @@ class Body(object):
     
     def setOmega(self, v):
         self.Omega = v
-        #self.Omega[1] = 0
-        #self.Omega[0] = 0

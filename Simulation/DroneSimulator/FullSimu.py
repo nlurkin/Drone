@@ -1,4 +1,5 @@
 from Body import Body
+from ParamsClass import Params
 from mathclasses import Vector, Quaternion
 from numpy.ma.core import sin
 from random import random
@@ -19,31 +20,26 @@ class Simu(object):
     A_xsec = A_swept
     C_D = 0.3
     
-    #I = [0.177, 0.177, 0.334]
-    I = Vector([0.334, 0.334, 0.334])
+    I = Params.I
     K_d = 0.0013
     b = Body()
     
     time = None
-    dt = None
+    dt = Params.dt
     
     t = None
     
     stepResponse = None
-    stepTimes = [0.5, 4.5, 10.5]
     
     waveResponse = None
-    waveTimes = [0.5, 1, 1.5]
     
     flipResponse = None
-    flipTimes = [1, 2, 3]
     
     moveTimes = None
     moveType = None
     
     def __init__(self):
         #self.b.setMotorConstants(self.Rho, self.K_v, self.K_t, self.K_tau, self.I_M, self.A_swept, self.A_xsec, self.Radius, self.C_D)
-        self.dt = 0.1
         self.time = numpy.arange(0,5, self.dt)
         self.t = 0
         self.gyro = Vector()
@@ -56,18 +52,15 @@ class Simu(object):
         self.moveTimes = [0, 0, 0]
     
     def initBody(self, local):
-        self.b.setModel(self.I, self.K_d, 0.38, 4.493)
-        self.b.setParameters(True, 5, local)
+        self.b.setModel(self.I, self.K_d, Params.L, Params.Mass)
+        self.b.setParameters(True, Params.MaxTorque, local)
         if local==True:
             self.b.initController()
     
     def deviate(self):
         r = Vector([random(),random(), random()]) 
-        deviation = 5
+        deviation = Params.MaxDeviation
         self.b.setOmega(-deviation+(2*deviation*r))
-        #self.b.setOmega(Vector([1,2,0]))
-        #self.thetaDot[2] = 0
-        #self.thetaDot[0] = 0
     
     def heavyside(self, t, t0):
         if (t-t0)<0:
@@ -103,17 +96,17 @@ class Simu(object):
     def setMoveType(self, t):
         self.moveType = t
         if self.moveType==1:
-            self.moveTimes[0] = self.t + self.stepTimes[0]
-            self.moveTimes[1] = self.t + self.stepTimes[1]
-            self.moveTimes[2] = self.t + self.stepTimes[2]
+            self.moveTimes[0] = self.t + Params.stepTimes[0]
+            self.moveTimes[1] = self.t + Params.stepTimes[1]
+            self.moveTimes[2] = self.t + Params.stepTimes[2]
         if self.moveType==2:
-            self.moveTimes[0] = self.t + self.waveTimes[0]
-            self.moveTimes[1] = self.t + self.waveTimes[1]
-            self.moveTimes[2] = self.t + self.waveTimes[2]
+            self.moveTimes[0] = self.t + Params.waveTimes[0]
+            self.moveTimes[1] = self.t + Params.waveTimes[1]
+            self.moveTimes[2] = self.t + Params.waveTimes[2]
         if self.moveType==3:
-            self.moveTimes[0] = self.t + self.flipTimes[0]
-            self.moveTimes[1] = self.t + self.flipTimes[1]
-            self.moveTimes[2] = self.t + self.flipTimes[2]
+            self.moveTimes[0] = self.t + Params.flipTimes[0]
+            self.moveTimes[1] = self.t + Params.flipTimes[1]
+            self.moveTimes[2] = self.t + Params.flipTimes[2]
     
     def getNextMove(self):
         val = None
@@ -128,12 +121,11 @@ class Simu(object):
         
         plt.figure(50)
         plt.subplot(3, 1 ,1)
-        plt.plot(self.t, val[0], 'rx')
+        plt.plot(self.t, val[0], 'ro')
         plt.subplot(3, 1 ,2)
-        plt.plot(self.t, val[1], 'rx')
+        plt.plot(self.t, val[1], 'go')
         plt.subplot(3, 1 ,3)
-        plt.plot(self.t, val[2], 'rx')
-        #self.t = self.t+self.dt
+        plt.plot(self.t, val[2], 'bo')
         return val
         
     
@@ -146,22 +138,6 @@ class Simu(object):
         #self.b.setMotorMeasure([0,0,0,0], [0,0,0,0]) #from controller decision
         #Get Input from arduino
         self.b.nextStep(self.dt)
-        '''self.omega = thetadot2omega(self.thetaDot, self.theta)
-        print "Omega from old thetas " + self.omega
-        self.b.setMeasure(self.xDot, self.omega)
-        self.a = acceleration(self.theta, self.b)
-        self.omegaDot = self.b.alpha()
-        print "OmegaDot " + self.omegaDot   
-        self.omega = self.omega+(self.omegaDot*self.dt)
-        print "Omega " + self.omega
-        self.thetaDot = omega2thetadot(self.theta, self.omega)
-        print "thetaDot " + self.thetaDot
-        self.theta = self.theta+(self.thetaDot*self.dt)
-        print "theta " + self.theta
-        self.xDot = self.xDot+(self.a*self.dt)
-        self.x = self.x+(self.xDot*self.dt)
-        
-        self.buildAttitude()'''
         self.plot(t)
 
     
@@ -214,18 +190,15 @@ class Simu(object):
         plt.plot(t, self.b.Acceleration[1], 'gx')
         plt.plot(t, self.b.Acceleration[2], 'bx')
         plt.subplot(2, 2 ,4)
-        #plt.plot(t, self.omega[0], 'rx')
-        #plt.plot(t, self.omega[1], 'gx')
-        #plt.plot(t, self.omega[2], 'bx')
         
         plotNbr+=1
         plt.figure(50)
         plt.subplot(3, 1 ,1)
-        plt.plot(t, self.b.Angles[0], 'gx')
+        plt.plot(t, self.b.Angles[0], 'rx')
         plt.subplot(3, 1 ,2)
         plt.plot(t, self.b.Angles[1], 'gx')
         plt.subplot(3, 1 ,3)
-        plt.plot(t, self.b.Angles[2], 'gx')
+        plt.plot(t, self.b.Angles[2], 'bx')
         
         
         
@@ -294,21 +267,7 @@ class Simu(object):
     
     def setRequiredTorque(self, t):
         self.b.setTorque(t)
-    
-    def buildAttitude(self):
-        self.gyro = (self.theta-self.angle)/self.dt
-        self.angle = self.theta
-        self.quat = Quaternion([self.theta[0], self.theta[1], self.theta[2]])
-
-    def getQuaternion(self):
-        return self.quat
-    
-    def getGyro(self):
-        return self.gyro
-    
-    def getAcc(self):
-        return self.a
-    
-    def setReference(self, ref,angle):
-        self.b.setReference(ref,angle)
+        
+    def setReference(self, ref):
+        self.b.setReference(ref)
         

@@ -10,7 +10,7 @@ class PSquare:
     QRef = Quaternion()
     PQ = None
     POmega = None
-    I = Vector()
+    I = Matrix()
     Torque = Vector()
 
 
@@ -26,7 +26,7 @@ class PSquare:
         self.Torque = Vector([0, 0, 0])
     
     def setI(self, I):
-        self.I = I
+        self.I = Matrix([[I[0],0,0],[0,I[1],0],[0,0,I[2]]])
     
     def setPs(self, v):
         self.PQ = v[0]
@@ -36,21 +36,13 @@ class PSquare:
         self.QRef = q
     
     def computePP(self, qM, omegaM):
-        print "QRef " + self.QRef
-        print "qM " + qM
-        
-        qErr = self.QRef.conj() * qM
-        print "qErr " + qErr
+        qErr = self.QRef * qM.conj()
         if qErr[0]<0:
             axisErr = -Vector(qErr)
         else:
             axisErr = Vector(qErr)
         
-        print "Err " + axisErr
-        self.Torque = -axisErr*self.PQ - omegaM*self.POmega
-        #self.Torque[0] = -axisErr[0]*self.PQ - omegaM[0]*self.POmega
-        #self.Torque[1] = -axisErr[1]*self.PQ - omegaM[1]*self.POmega
-        #self.Torque[2] = -axisErr[2]*self.PQ - omegaM[2]*self.POmega
+        self.Torque = self.I*(axisErr*self.PQ - omegaM*self.POmega)
         
         return self.Torque
 
@@ -66,7 +58,7 @@ class PID:
     
     QRef = None
     ARef = None
-    I = Vector()
+    I = Matrix()
     Torque = Vector()
 
 
@@ -91,21 +83,11 @@ class PID:
         self.Kp = v[1]
         self.Ki = v[2]
         
-    def setQRef(self, ref, angle):
+    def setQRef(self, ref):
         self.QRef = ref
-        self.ARef = angle
     
-    def computePP(self, qM, omegaM, angles):
-        #print "QRef " + self.QRef
-        #print "QM " + qM
-        #qErr = self.QRef * qM.conj()
+    def computePP(self, qM, omegaM):
+        qErr = -Vector(self.QRef * qM.conj())
         
-        #print "qErr " + qErr
-        #print qErr.mag()
-        #aRef = self.QRef.angles()
-        print "ARef " + self.ARef
-        print "AM " + angles 
-        aErr = -(self.ARef-angles)
-        print "aErr " + aErr
-        self.Torque = self.I * (-self.Kd*omegaM - self.Kp*aErr)
+        self.Torque = self.I * (-self.Kd*omegaM - self.Kp*qErr)
         return self.Torque
