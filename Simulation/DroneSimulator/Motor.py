@@ -49,6 +49,11 @@ class Motor(object):
         self.A_xsec = A_xsec
         self.Radius = Radius
         self.C_D = C_D
+        self.Omega = 0
+        self.Alpha = 0
+        #k
+        self.computeK()
+        self.computeB()
     
     def setParams(self, Rotation):
         self.Rotation = Rotation
@@ -57,8 +62,6 @@ class Motor(object):
         self.Power = power
         #Omega & Alpha
         self.computeOmega(dt)
-        #k
-        self.computeK()
         #thrust
         self.computeThrust()
         #tau_d
@@ -70,20 +73,20 @@ class Motor(object):
         self.Power = (self.K_v/self.K_t)*self.Tau*self.Omega
         return self.Power'''
     
+    def computeK(self):
+        self.K = pow(self.K_v*self.K_tau*sqrt(2*self.Rho*self.A_swept)/self.K_t, 2)
+
+    def computeB(self):
+        self.B = (self.Radius*self.Rho*self.C_D*self.A_xsec*pow(self.Radius, 2)/2.)
+
     def computeOmega(self, dt):
         newOmega = self.MaxOmega * self.Power
         self.Alpha = (newOmega - self.Omega)/dt
         self.Omega = newOmega
     
-    def computeK(self):
-        self.K = pow(self.K_v*self.K_tau*sqrt(2*self.Rho*self.A_swept)/self.K_t, 2)
-
     def computeThrust(self):
         self.Thrust = self.K*pow(self.Omega, 2)
         
-    def computeB(self):
-        self.B = (self.Radius*self.Rho*self.C_D*self.A_xsec*pow(self.Radius, 2)/2.)
-
     def computeTauD(self):
         self.Tau_D = self.B*pow(self.Omega, 2)
 

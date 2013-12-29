@@ -6,7 +6,7 @@ class Params:
     '''
 
     comPort = 3
-    runLocally = False
+    runLocally = True
     ctrlType = 1
     
     I = Vector([0.177, 0.177, 0.334])
@@ -27,6 +27,10 @@ class Params:
     serialSleep = 0.05
     
     MaxOmega = 10
+    Gravity = Vector([0, 0, 9.81])
+    
+    TorqueIsSet = False
+    
     def __init__(self):
         '''
         Constructor

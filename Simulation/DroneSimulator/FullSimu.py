@@ -53,7 +53,7 @@ class Simu(object):
     
     def initBody(self, local):
         self.b.setModel(self.I, self.K_d, Params.L, Params.Mass)
-        self.b.setParameters(True, Params.MaxTorque, local)
+        self.b.setParameters(Params.TorqueIsSet, Params.MaxTorque, local)
         if local==True:
             self.b.initController()
         self.b.setMotorConstants(self.Rho, self.K_v, self.K_t, self.K_tau, self.I_M, self.A_swept, self.A_xsec, self.Radius, self.C_D)
@@ -269,6 +269,6 @@ class Simu(object):
     def setRequiredTorque(self, t):
         self.b.setTorque(t)
         
-    def setReference(self, ref):
-        self.b.setReference(ref)
+    def setReference(self, ref, a):
+        self.b.setReference(ref, a)
         

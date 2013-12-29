@@ -89,8 +89,8 @@ class Body(object):
         self.m3.setMeasure(omega[2], alpha[2])
         self.m4.setMeasure(omega[3], alpha[3])    
     
-    def setReference(self, qRef):
-        self.ctrl.setQRef(qRef)
+    def setReference(self, qRef, aRef):
+        self.ctrl.setQRef(qRef, aRef)
     
     def initController(self):
         self.ctrl.setI(self.I)
@@ -100,7 +100,7 @@ class Body(object):
             self.ctrl.setPs([20,4])
     
     def applyController(self):
-        t = self.ctrl.computePP(self.Quat, self.Omega)
+        t = self.ctrl.computePP(self.Quat, self.Omega, self.Acceleration)
         if t[0]>self.MaxTorque:
             t[0] = self.MaxTorque
         if t[1]>self.MaxTorque:
@@ -121,9 +121,19 @@ class Body(object):
             self.applyController()
         
         #motor
-        self.computeMotor()
+        self.computeMotor(dt)
         #torque
         self.computeTorque()
+        #thrust
+        self.computeThrust()
+        #fiction
+        self.computeFriction()   
+        #acceleration
+        self.computeAcceleration()
+        #vitesse
+        self.computeVelocity(dt)
+        #position
+        self.computePosition(dt)
         #alpha
         self.computeAlpha(dt)
         #omega
@@ -134,42 +144,39 @@ class Body(object):
         self.computeAngles(dt)
         #quaternion
         self.computeQuaternion(dt)
-                
-        #acceleration
-        #vitesse
-        #position
+        
         
     def setMotorConstants(self, Rho, K_v, K_t, K_tau, I_M, A_swept, A_xsec, Radius, C_D):
         self.m1.setConstants(Rho, K_v, K_t, K_tau, I_M, A_swept, A_xsec, Radius, C_D)
         self.m2.setConstants(Rho, K_v, K_t, K_tau, I_M, A_swept, A_xsec, Radius, C_D)
         self.m3.setConstants(Rho, K_v, K_t, K_tau, I_M, A_swept, A_xsec, Radius, C_D)
         self.m4.setConstants(Rho, K_v, K_t, K_tau, I_M, A_swept, A_xsec, Radius, C_D)
+        if self.UseController:
+            self.ctrl.setMotorCoefficient([self.L*self.m1.K, 0, self.m1.B, 4*self.m1.K],
+                                          [0, self.L*self.m2.K, self.m2.B, 4*self.m2.K],
+                                          [-self.L*self.m3.K, 0, self.m3.B, 4*self.m3.K],
+                                          [0, -self.L*self.m4.K, self.m4.B, 4*self.m4.K])
     
-    def computeMotor(self):
+    def computeMotor(self, dt):
         if not self.TorqueIsSet:
-            self.m1.setMeasure(self.CtrlInput[0])
-            self.m2.setMeasure(self.CtrlInput[1])
-            self.m3.setMeasure(self.CtrlInput[2])
-            self.m4.setMeasure(self.CtrlInput[3])
+            self.m1.setMeasure(self.CtrlInput[0], dt)
+            self.m2.setMeasure(self.CtrlInput[1], dt)
+            self.m3.setMeasure(self.CtrlInput[2], dt)
+            self.m4.setMeasure(self.CtrlInput[3], dt)
     
     def computeTorque(self):
         if not self.TorqueIsSet:
             self.Torque = Vector([self.L*(self.m1.Thrust-self.m3.Thrust), self.L*(self.m2.Thrust-self.m4.Thrust), self.m1.Tau_z+self.m2.Tau_z+self.m3.Tau_z+self.m4.Tau_z])
         else:
             self.Torque = self.CtrlInput
-    
-    def thrust(self):
-        #self.Thrust = Vector([0, 0, self.m1.thrust()+self.m2.thrust()+self.m3.thrust()+self.m4.thrust()])
-        return self.Thrust
-    
-    def friction(self):        
+        
+    def computeFriction(self):        
         self.Friction = -self.Velocity*self.K_d
-        return self.Friction
     
     def computeAlpha(self, dt):
-        self.Alpha = Vector([(self.torque()[0] - (self.I[1]-self.I[2])*self.Omega[1]*self.Omega[2])/self.I[0],
-                      (self.torque()[1] - (self.I[2]-self.I[0])*self.Omega[0]*self.Omega[2])/self.I[1],
-                      (self.torque()[2] - (self.I[0]-self.I[1])*self.Omega[0]*self.Omega[1])/self.I[2]])
+        self.Alpha = Vector([(self.Torque[0] - (self.I[1]-self.I[2])*self.Omega[1]*self.Omega[2])/self.I[0],
+                      (self.Torque[1] - (self.I[2]-self.I[0])*self.Omega[0]*self.Omega[2])/self.I[1],
+                      (self.Torque[2] - (self.I[0]-self.I[1])*self.Omega[0]*self.Omega[1])/self.I[2]])
         '''self.Alpha = Vector([(self.torque()[0])/self.I[0],
                       (self.torque()[1])/self.I[1],
                       (self.torque()[2])/self.I[2]])'''
@@ -200,3 +207,21 @@ class Body(object):
     
     def setCtrlInput(self, i):
         self.CtrlInput = i
+    
+    def computeThrust(self):
+        if not self.TorqueIsSet:
+            self.Thrust = Vector([0, 0, self.m1.Thrust+self.m2.Thrust+self.m3.Thrust+self.m4.Thrust])
+        else:
+            self.Thrust = Vector([0,0,0])
+    
+    def computeAcceleration(self):
+        #rotate thrust
+        T = self.Thrust.rotate(self.Quat)
+        self.Acceleration = T/self.Mass
+        self.Acceleration = Params.Gravity+T*(1/self.Mass)+self.Friction
+    
+    def computeVelocity(self, dt):
+        self.Velocity += self.Acceleration*dt
+    
+    def computePosition(self, dt):
+        self.Position += self.Velocity*dt

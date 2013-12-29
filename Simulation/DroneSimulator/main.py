@@ -73,17 +73,20 @@ def sendI():
 
 def sendNewTracking(anglesSet):
     if anglesSet is None:
-        angle = simu.getNextMove()
+        [angle, a] = simu.getNextMove()
         quat = Quaternion([angle[0], angle[1], angle[2]])
     else:
         quat = Quaternion(anglesSet)
-    simu.setReference(quat)
-    prefix = "CMD:TRCK:"
-    ser.write(prefix + "QUAW:" + str(quat.w) + "\r\n")
-    ser.write(prefix + "QUAX:" + str(quat.x) + "\r\n")
-    ser.write(prefix + "QUAY:" + str(quat.y) + "\r\n")
-    ser.write(prefix + "QUAZ:" + str(quat.z) + "\r\n")
-    print "Requesting tracking (%s,%s,%s,%s)" % (quat.w, quat.x, quat.y, quat.z)
+        a = simu.b.Mass*Params.Gravity
+    simu.setReference(quat, a)
+    
+    if not Params.runLocally:
+        prefix = "CMD:TRCK:"
+        ser.write(prefix + "QUAW:" + str(quat.w) + "\r\n")
+        ser.write(prefix + "QUAX:" + str(quat.x) + "\r\n")
+        ser.write(prefix + "QUAY:" + str(quat.y) + "\r\n")
+        ser.write(prefix + "QUAZ:" + str(quat.z) + "\r\n")
+        print "Requesting tracking (%s,%s,%s,%s)" % (quat.w, quat.x, quat.y, quat.z)
 
 def serialLoop():
     global reqTorque
@@ -124,8 +127,7 @@ def main():
     
     simu.initBody(Params.runLocally)
     if Params.runLocally==True:
-        simu.setReference(Quaternion([1,1,0]))
-        sendNewTracking(None)
+        sendNewTracking([0, 0, 0])
     else:
         ser = serial.Serial(port=Params.comPort, baudrate=9600, timeout=1)
     
