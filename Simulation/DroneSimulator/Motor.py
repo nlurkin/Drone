@@ -1,3 +1,4 @@
+from ParamsClass import Params
 from numpy.ma.core import sqrt
 
 class Motor(object):
@@ -31,6 +32,7 @@ class Motor(object):
     Omega = None #motor angular velocity #scalaire
     Alpha = None #motor angular acceleration #scalaire
     
+    MaxOmega = Params.MaxOmega
     
     def __init__(self):
         '''
@@ -51,33 +53,40 @@ class Motor(object):
     def setParams(self, Rotation):
         self.Rotation = Rotation
         
-    def setMeasure(self, Omega, Alpha):
-        self.Omega = Omega
-        self.Alpha = Alpha
-
+    def setMeasure(self, power, dt):
+        self.Power = power
+        #Omega & Alpha
+        self.computeOmega(dt)
+        #k
+        self.computeK()
+        #thrust
+        self.computeThrust()
+        #tau_d
+        self.computeTauD()
+        #tau_z
+        self.computeTauZ()
     
-    def tau_z(self):
-        #Mettre le -1 en global ou pas?
-        self.Tau_z = self.Rotation*self.tau_d() + self.I_M*self.Alpha
-        return self.Tau_z 
-    
-    def tau_d(self):
-        self.Tau_D = self.b()*pow(self.Omega, 2)
-        return self.Tau_D
-        
-    def b(self):
-        self.B = (self.Radius*self.Rho*self.C_D*self.A_xsec*pow(self.Radius, 2)/2.)
-        return self.B
-    
-    def power(self):
+    '''def power(self):
         self.Power = (self.K_v/self.K_t)*self.Tau*self.Omega
-        return self.Power 
+        return self.Power'''
     
-    def thrust(self):
-        self.Thrust = self.k()*pow(self.Omega, 2)
-        return self.Thrust
-        
-    def k(self):
+    def computeOmega(self, dt):
+        newOmega = self.MaxOmega * self.Power
+        self.Alpha = (newOmega - self.Omega)/dt
+        self.Omega = newOmega
+    
+    def computeK(self):
         self.K = pow(self.K_v*self.K_tau*sqrt(2*self.Rho*self.A_swept)/self.K_t, 2)
-        return self.K 
-    
+
+    def computeThrust(self):
+        self.Thrust = self.K*pow(self.Omega, 2)
+        
+    def computeB(self):
+        self.B = (self.Radius*self.Rho*self.C_D*self.A_xsec*pow(self.Radius, 2)/2.)
+
+    def computeTauD(self):
+        self.Tau_D = self.B*pow(self.Omega, 2)
+
+    def computeTauZ(self):
+        #Mettre le -1 en global ou pas?
+        self.Tau_z = self.Rotation*self.Tau_D + self.I_M*self.Alpha     

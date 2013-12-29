@@ -25,6 +25,8 @@ class Params:
     MaxDeviation = 5
     
     serialSleep = 0.05
+    
+    MaxOmega = 10
     def __init__(self):
         '''
         Constructor

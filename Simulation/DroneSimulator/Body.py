@@ -146,11 +146,15 @@ class Body(object):
         self.m4.setConstants(Rho, K_v, K_t, K_tau, I_M, A_swept, A_xsec, Radius, C_D)
     
     def computeMotor(self):
-        self.m1
+        if not self.TorqueIsSet:
+            self.m1.setMeasure(self.CtrlInput[0])
+            self.m2.setMeasure(self.CtrlInput[1])
+            self.m3.setMeasure(self.CtrlInput[2])
+            self.m4.setMeasure(self.CtrlInput[3])
     
     def computeTorque(self):
         if not self.TorqueIsSet:
-            self.Torque = Vector([self.L*(self.m1.thrust()-self.m3.thrust()), self.L*(self.m2.thrust()-self.m4.thrust()), self.m1.tau_z()+self.m2.tau_z()+self.m3.tau_z()+self.m4.tau_z()])
+            self.Torque = Vector([self.L*(self.m1.Thrust-self.m3.Thrust), self.L*(self.m2.Thrust-self.m4.Thrust), self.m1.Tau_z+self.m2.Tau_z+self.m3.Tau_z+self.m4.Tau_z])
         else:
             self.Torque = self.CtrlInput
     
