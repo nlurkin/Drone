@@ -299,6 +299,12 @@ public:
 		return r;
 	}
 
+	float &operator[](int i){
+		if(i==0) return x;
+		else if(i==1) return y;
+		else return z;
+	}
+
 	void print(){
 		Serial.print(x);
 		Serial.print(" ");
@@ -323,6 +329,17 @@ public:
 
 	T &operator()(int i, int j) {return data[i][j];};
 	void operator()(int i, int j, T v) {data[i][j] = v;};
+
+	VectorFloat operator*(VectorFloat in){
+		VectorFloat out;
+		for(int i=0; i<I; i++){
+			for(int j=0; j<J; j++){
+				out[i] += data[i][j]*in[j];
+			}
+		}
+
+		return out;
+	};
 
 	void print(){
 		for(int i=0; i<I; i++){

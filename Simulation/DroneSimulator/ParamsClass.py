@@ -5,7 +5,8 @@ class Params:
     classdocs
     '''
 
-    runLocally = True
+    comPort = 3
+    runLocally = False
     ctrlType = 1
     
     I = Vector([0.177, 0.177, 0.334])
@@ -19,9 +20,11 @@ class Params:
     
     dt = 0.1
     
-    moveType = 3
+    moveType = 1
     MaxTorque = 5
     MaxDeviation = 5
+    
+    serialSleep = 0.05
     def __init__(self):
         '''
         Constructor

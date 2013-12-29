@@ -1,4 +1,5 @@
 from Controller import PID, PSquare
+from Motor import Motor
 from ParamsClass import Params
 from mathclasses import Matrix, Quaternion, Vector
 from numpy.ma.core import sin, tan, cos
@@ -9,10 +10,10 @@ class Body(object):
     classdocs
     '''
 
-    '''m1 = Motor()
+    m1 = Motor()
     m2 = Motor()
     m3 = Motor()
-    m4 = Motor()'''
+    m4 = Motor()
     
     '''internal state:
     alpha    -> computed from Torque
@@ -26,9 +27,10 @@ class Body(object):
     ctrl = None
     
     #set by controller
-    Torque = Vector() #vector
+    CtrlInput = []
     
     #from motor
+    Torque = Vector() #vector
     Thrust = Vector() #vector
     
     #from physics
@@ -65,10 +67,10 @@ class Body(object):
         elif Params.ctrlType==1:
             self.ctrl = PSquare()
             print "Using controller PSquare"
-        '''self.m1.setParams(1)
+        self.m1.setParams(1)
         self.m2.setParams(-1)
         self.m3.setParams(1)
-        self.m4.setParams(-1)'''
+        self.m4.setParams(-1)
     
     def setModel(self, I, K_d, L, Mass):
         self.I = I
@@ -81,11 +83,11 @@ class Body(object):
         self.MaxTorque = MaxTorque 
         self.UseController = UseController
     
-    #def setMotorMeasure(self, omega, alpha):
-        '''self.m1.setMeasure(omega[0], alpha[0])
+    def setMotorMeasure(self, omega, alpha):
+        self.m1.setMeasure(omega[0], alpha[0])
         self.m2.setMeasure(omega[1], alpha[1])
         self.m3.setMeasure(omega[2], alpha[2])
-        self.m4.setMeasure(omega[3], alpha[3])'''    
+        self.m4.setMeasure(omega[3], alpha[3])    
     
     def setReference(self, qRef):
         self.ctrl.setQRef(qRef)
@@ -111,12 +113,17 @@ class Body(object):
             t[1] = -self.MaxTorque
         if t[2]<-self.MaxTorque:
             t[2] = -self.MaxTorque
-        self.Torque = t
+        self.CtrlInput = t
     
     def nextStep(self, dt):
+        #controller
         if self.UseController:
             self.applyController()
         
+        #motor
+        self.computeMotor()
+        #torque
+        self.computeTorque()
         #alpha
         self.computeAlpha(dt)
         #omega
@@ -133,15 +140,19 @@ class Body(object):
         #position
         
     def setMotorConstants(self, Rho, K_v, K_t, K_tau, I_M, A_swept, A_xsec, Radius, C_D):
-        '''self.m1.setConstants(Rho, K_v, K_t, K_tau, I_M, A_swept, A_xsec, Radius, C_D)
+        self.m1.setConstants(Rho, K_v, K_t, K_tau, I_M, A_swept, A_xsec, Radius, C_D)
         self.m2.setConstants(Rho, K_v, K_t, K_tau, I_M, A_swept, A_xsec, Radius, C_D)
         self.m3.setConstants(Rho, K_v, K_t, K_tau, I_M, A_swept, A_xsec, Radius, C_D)
-        self.m4.setConstants(Rho, K_v, K_t, K_tau, I_M, A_swept, A_xsec, Radius, C_D)'''
+        self.m4.setConstants(Rho, K_v, K_t, K_tau, I_M, A_swept, A_xsec, Radius, C_D)
     
-    def torque(self):
-        #if not self.TorqueIsSet:
-            #self.Torque = [self.L*(self.m1.thrust()-self.m3.thrust()), self.L*(self.m2.thrust()-self.m4.thrust()), self.m1.tau_z()+self.m2.tau_z()+self.m3.tau_z()+self.m4.tau_z()]
-        return self.Torque
+    def computeMotor(self):
+        self.m1
+    
+    def computeTorque(self):
+        if not self.TorqueIsSet:
+            self.Torque = Vector([self.L*(self.m1.thrust()-self.m3.thrust()), self.L*(self.m2.thrust()-self.m4.thrust()), self.m1.tau_z()+self.m2.tau_z()+self.m3.tau_z()+self.m4.tau_z()])
+        else:
+            self.Torque = self.CtrlInput
     
     def thrust(self):
         #self.Thrust = Vector([0, 0, self.m1.thrust()+self.m2.thrust()+self.m3.thrust()+self.m4.thrust()])
@@ -179,3 +190,9 @@ class Body(object):
     
     def setOmega(self, v):
         self.Omega = v
+    
+    def setTorque(self, t):
+        self.Torque = t
+    
+    def setCtrlInput(self, i):
+        self.CtrlInput = i

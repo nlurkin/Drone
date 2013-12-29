@@ -44,23 +44,23 @@ def sendSensor():
     gyro = simu.b.Omega
     acc = simu.b.Acceleration
     ser.write(prefix + "BUF0:" + str(quat.w) + "\r\n")
-    sleep(time)
+    sleep(Params.serialSleep)
     ser.write(prefix + "BUF1:" + str(quat.x) + "\r\n")
-    sleep(time)
+    sleep(Params.serialSleep)
     ser.write(prefix + "BUF2:" + str(quat.y) + "\r\n")
-    sleep(time);
+    sleep(Params.serialSleep);
     ser.write(prefix + "BUF3:" + str(quat.z) + "\r\n")
-    sleep(time)
+    sleep(Params.serialSleep)
     ser.write(prefix + "BUF4:" + str(int(gyro[0]*131*2)) + "\r\n")
-    sleep(time)
+    sleep(Params.serialSleep)
     ser.write(prefix + "BUF5:" + str(int(gyro[1]*131*2)) + "\r\n")
-    sleep(time)
+    sleep(Params.serialSleep)
     ser.write(prefix + "BUF6:" + str(int(gyro[2]*131*2)) + "\r\n")
-    sleep(time)
+    sleep(Params.serialSleep)
     ser.write(prefix + "BUF7:" + str(int(acc[0]*8192*2)) + "\r\n")
-    sleep(time)
+    sleep(Params.serialSleep)
     ser.write(prefix + "BUF8:" + str(int(acc[1]*8192*2)) + "\r\n")
-    sleep(time)
+    sleep(Params.serialSleep)
     ser.write(prefix + "BUF9:" + str(int(acc[2]*8192*2)) + "\r\n")  
 
 def sendI():
@@ -71,24 +71,26 @@ def sendI():
     ser.write(prefix + "IZZ:" + str(I[2]) + "\r\n")
     print "Sending %s %s %s" % (I[0], I[1], I[2])
 
-def sendNewTracking():
-    angle = simu.getNextMove()
-    quat = Quaternion([angle[0], angle[1], angle[2]])
-    if Params.runLocally:
-        simu.setReference(quat)
+def sendNewTracking(anglesSet):
+    if anglesSet is None:
+        angle = simu.getNextMove()
+        quat = Quaternion([angle[0], angle[1], angle[2]])
     else:
-        prefix = "CMD:TRCK:"
-        ser.write(prefix + "QUAW:" + str(quat.w) + "\r\n")
-        ser.write(prefix + "QUAX:" + str(quat.x) + "\r\n")
-        ser.write(prefix + "QUAY:" + str(quat.y) + "\r\n")
-        ser.write(prefix + "QUAZ:" + str(quat.z) + "\r\n")
+        quat = Quaternion(anglesSet)
+    simu.setReference(quat)
+    prefix = "CMD:TRCK:"
+    ser.write(prefix + "QUAW:" + str(quat.w) + "\r\n")
+    ser.write(prefix + "QUAX:" + str(quat.x) + "\r\n")
+    ser.write(prefix + "QUAY:" + str(quat.y) + "\r\n")
+    ser.write(prefix + "QUAZ:" + str(quat.z) + "\r\n")
     print "Requesting tracking (%s,%s,%s,%s)" % (quat.w, quat.x, quat.y, quat.z)
 
 def serialLoop():
     global reqTorque
     global torqueSet
+    global ser
     s = str(ser.readline());
-
+    
     if len(s) > 0:
         print s
         s = string.rstrip(s, "\r\n")
@@ -112,19 +114,21 @@ def serialLoop():
 def main():
     global torqueSet
     global reqTorque
+    global ser
     timeout = 0.0001
     s = ""
     continuous = False
     plotting = True
     tracking = False
-
-    if Params.runLocally==True:
-        simu.initBody(Params.runLocally)
-        simu.setReference(Quaternion([1,1,0]))
-    else:
-        ser = serial.Serial(port=7, baudrate=9600, timeout=1)
+    cont = False
     
-        
+    simu.initBody(Params.runLocally)
+    if Params.runLocally==True:
+        simu.setReference(Quaternion([1,1,0]))
+        sendNewTracking(None)
+    else:
+        ser = serial.Serial(port=Params.comPort, baudrate=9600, timeout=1)
+    
     simu.plotSetup()
     while(True):
         s = readInput("", "", timeout)
@@ -139,16 +143,21 @@ def main():
         if(continuous):
             if Params.runLocally==False:
                 if ser.inWaiting()==0 and torqueSet==3:
+                    simu.setRequiredTorque(reqTorque)
                     torqueSet = 0
-            if not tracking:
-                simu.nextStep()
-                sendSensor()
+                    cont = True
+                else:
+                    cont = False
             else:
-                sendNewTracking()
+                cont = True
+            
+            if cont==True:
+                if tracking:
+                    sendNewTracking(None)
                 simu.nextStep()
                 sendSensor()
                     
-            plt.pause(0.0001)
+                plt.pause(0.0001)
         if s=="q":
             break
         elif s=="c":
@@ -157,8 +166,9 @@ def main():
             torqueSet = 3
             print "continuous %s" % (continuous)
         elif s=="s":
+            simu.setRequiredTorque(reqTorque)
             if tracking:
-                sendNewTracking()
+                sendNewTracking(None)
             simu.nextStep()
             sendSensor()
             plt.pause(0.0001)
@@ -168,6 +178,9 @@ def main():
         elif s=="ms":
             simu.setMoveType(Params.moveType)
             tracking = True
+        elif s=="ref":
+            sendNewTracking([1,1,0])
+
             
         
     

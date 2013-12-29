@@ -56,6 +56,7 @@ class Simu(object):
         self.b.setParameters(True, Params.MaxTorque, local)
         if local==True:
             self.b.initController()
+        self.b.setMotorConstants(self.Rho, self.K_v, self.K_t, self.K_tau, self.I_M, self.A_swept, self.A_xsec, self.Radius, self.C_D)
     
     def deviate(self):
         r = Vector([random(),random(), random()]) 
