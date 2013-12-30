@@ -94,7 +94,7 @@ class Body(object):
             self.ctrl.setPs([20,4])
     
     def applyController(self):
-        t = self.ctrl.computePP(self.Quat, self.Omega, self.Velocity)
+        t = self.ctrl.computePP(self.Quat, self.Omega, self.Acceleration, self.Velocity)
         if self.TorqueIsSet: 
             if t[0]>self.MaxTorque:
                 t[0] = self.MaxTorque
@@ -219,6 +219,8 @@ class Body(object):
     
     def computeAcceleration(self):
         #rotate thrust
+        print "Thrust before rotation " + self.Thrust
+        print "Rotation " + self.Quat
         T = self.Thrust.rotate(self.Quat)
         print "Thrust " + T
         self.Acceleration = T/self.Mass

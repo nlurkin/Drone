@@ -1,6 +1,7 @@
 #from qmath.qmathcore import quaternion
 from ParamsClass import Params
 from mathclasses import Matrix, Quaternion, Vector, createRotation
+from numpy.lib.scimath import sqrt
 
 class PSquare:
     '''
@@ -66,30 +67,37 @@ class PSquare:
         self.L = L
         self.b = b
         self.Mass = m
+    
+    def controlSignal(self):
+        if self.VRef.mag()==0:    
+            vControl = 0
+        else:
+            vControl = 1
         
-    def computePP(self, qM, omegaM, vM):
-        vErr = self.VRef-vM
+        if self.QRef.vector().mag()==0:
+            aControl = 0
+        else:
+            aControl = 1
+        
+        return [vControl, aControl]
+    
+    def velocityControl(self, qM, aM, vM, vControl):
+        if vControl:
+            vErr = self.VRef-vM
+        else:
+            vErr = Vector([aM[0], aM[1], 0])
         
         print "AReq " + (-Params.Gravity)
         print "vErr " + vErr
-        self.Thrust = vErr - Params.Gravity
+        Thrust = vErr - Params.Gravity
         
-        print "Thrust " + self.Thrust
-        if self.Thrust[0]!=0 or self.Thrust[1]!=0:
-            qRef = createRotation(self.Thrust, Vector([0,0,1]))
-            qRef.w = 1
-            qRef.normalize()
-        else:
-            qRef = self.QRef
-
-        print "qm inv " + qM.conj()
-        print "qRef " + qRef
-        T = self.Thrust.rotate(qM.conj())*self.Mass
+        qRef = createRotation(Thrust, Vector([0,0,1]))
+        qRef.w = 1
+        qRef.normalize()
         
-        print "T " + T
-        T = T[2]
-
-        print "T " + str(T)
+        return [Thrust, qRef]
+    
+    def attitudeControl(self, qM, omegaM, qRef):
         qErr = qRef * qM.conj()
 
         if qErr[0]<0:
@@ -97,16 +105,48 @@ class PSquare:
         else:
             axisErr = Vector(qErr)
         
-        self.Torque = self.I*(axisErr*self.PQ - omegaM*self.POmega)
+        Torque = self.I*(axisErr*self.PQ - omegaM*self.POmega)
+        return Torque
         
+    def computePP(self, qM, omegaM, aM, vM):
+        [vControl, aControl] = self.controlSignal()
+        
+        [self.Thrust, vQRef] = self.velocityControl(qM, aM, vM, vControl)
+        print "qm inv " + qM.conj()
+        print "Thrust " + self.Thrust*self.Mass + " (" + str(sqrt(self.Thrust.mag())) + ")"
+        print "Rotation " + qM
+        
+        T = self.Thrust*self.Mass*(1/(Vector([0,0,1]).rotate(-qM.conj())[2]))
+        #T = self.Thrust.rotate(-qM.conj())*self.Mass
+        
+        print "T " + T + " (" + str(sqrt(T.mag())) + ")"
+        T = T[2]
+        print "T " + str(T)
+        
+        if vControl or not aControl:
+            qRef = vQRef
+        else:
+            qRef = self.QRef
+        
+        print "qRef " + qRef
+        self.Torque = self.attitudeControl(qM, omegaM, qRef)
+        
+        #fit
         if Params.TorqueIsSet:
             return self.Torque
+        
+        print "Requested T " + str(T)
+        print "Requested Torque " + self.Torque
         deno = ((self.Km1[0])*((self.Km2[1])*((self.Km3[2])*(self.Km4[3])+(self.Km4[2])*(self.Km3[3]))+(self.Km4[1])*((self.Km2[2])*(self.Km3[3])+(self.Km3[2])*(self.Km2[3])))+(self.Km3[0])*((self.Km2[1])*((self.Km1[2])*(self.Km4[3])+(self.Km4[2])*(self.Km1[3]))+(self.Km4[1])*((self.Km1[2])*(self.Km2[3])+(self.Km2[2])*(self.Km1[3]))))
         p1=((self.Km3[0])*((self.Km2[1])*((self.Km4[2])*T+(self.Torque[2])*(self.Km4[3]))+(self.Km4[1])*((self.Km2[2])*T+(self.Torque[2])*(self.Km2[3]))+(self.Torque[1])*((self.Km2[2])*(self.Km4[3])-(self.Km4[2])*(self.Km2[3])))+(self.Torque[0])*((self.Km2[1])*((self.Km3[2])*(self.Km4[3])+(self.Km4[2])*(self.Km3[3]))+(self.Km4[1])*((self.Km2[2])*(self.Km3[3])+(self.Km3[2])*(self.Km2[3]))))/deno
         p2=-((self.Km1[0])*((self.Km4[1])*((self.Torque[2])*(self.Km3[3])-(self.Km3[2])*T)+(self.Torque[1])*(-(self.Km3[2])*(self.Km4[3])-(self.Km4[2])*(self.Km3[3])))+(self.Km3[0])*((self.Km4[1])*((self.Torque[2])*(self.Km1[3])-(self.Km1[2])*T)+(self.Torque[1])*(-(self.Km1[2])*(self.Km4[3])-(self.Km4[2])*(self.Km1[3])))+(self.Torque[0])*(self.Km4[1])*((self.Km3[2])*(self.Km1[3])-(self.Km1[2])*(self.Km3[3])))/deno
         p3=-((self.Km1[0])*((self.Km2[1])*(-(self.Km4[2])*T-(self.Torque[2])*(self.Km4[3]))+(self.Km4[1])*(-(self.Km2[2])*T-(self.Torque[2])*(self.Km2[3]))+(self.Torque[1])*((self.Km4[2])*(self.Km2[3])-(self.Km2[2])*(self.Km4[3])))+(self.Torque[0])*((self.Km2[1])*((self.Km1[2])*(self.Km4[3])+(self.Km4[2])*(self.Km1[3]))+(self.Km4[1])*((self.Km1[2])*(self.Km2[3])+(self.Km2[2])*(self.Km1[3]))))/deno
         p4=-((self.Km1[0])*((self.Km2[1])*((self.Torque[2])*(self.Km3[3])-(self.Km3[2])*T)+(self.Torque[1])*((self.Km2[2])*(self.Km3[3])+(self.Km3[2])*(self.Km2[3])))+(self.Km3[0])*((self.Km2[1])*((self.Torque[2])*(self.Km1[3])-(self.Km1[2])*T)+(self.Torque[1])*((self.Km1[2])*(self.Km2[3])+(self.Km2[2])*(self.Km1[3])))+(self.Torque[0])*(self.Km2[1])*((self.Km3[2])*(self.Km1[3])-(self.Km1[2])*(self.Km3[3])))/deno
         self.Output = Vector([p1,p2,p3,p4])
+        print "Torque0 = " + str(p1*self.Km1[0]-p3*self.Km3[0])
+        print "Torque1 = " + str(p2*self.Km2[1]-p4*self.Km4[1])
+        print "Torque2 = " + str(p1*self.Km1[2]-p2*self.Km2[2]+p3*self.Km3[2]-p4*self.Km4[2])
+        print "T = " + str(p1*self.Km1[3]+p2*self.Km2[3]+p3*self.Km3[3]+p4*self.Km4[3])
         return self.Output
 
 

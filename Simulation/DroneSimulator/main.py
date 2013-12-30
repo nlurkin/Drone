@@ -73,12 +73,14 @@ def sendI():
 
 def sendNewTracking(anglesSet):
     if anglesSet is None:
-        [angle, a] = simu.getNextMove()
+        angle= simu.getNextMove()
+        v = Vector()
         quat = Quaternion([angle[0], angle[1], angle[2]])
     else:
         quat = Quaternion(anglesSet)
         a = Vector([0,0,0])
-        v = Vector([1,2,1])
+        v = Vector([-1,-2,0])
+        #v = Vector()
     simu.setReference(quat,v)
     
     if not Params.runLocally:
