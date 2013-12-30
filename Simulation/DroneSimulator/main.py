@@ -77,8 +77,9 @@ def sendNewTracking(anglesSet):
         quat = Quaternion([angle[0], angle[1], angle[2]])
     else:
         quat = Quaternion(anglesSet)
-        a = Vector([1,2,3])
-    simu.setReference(quat, a)
+        a = Vector([0,0,0])
+        v = Vector([1,2,1])
+    simu.setReference(quat,v)
     
     if not Params.runLocally:
         prefix = "CMD:TRCK:"

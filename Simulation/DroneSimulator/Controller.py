@@ -8,11 +8,12 @@ class PSquare:
     '''
     
     QRef = Quaternion()
-    ARef = Vector()
+    VRef = Vector()
     PQ = None
     POmega = None
     I = Matrix()
     Torque = Vector()
+    Thrust = Vector()
     
     Km1 = None
     Km2 = None
@@ -35,10 +36,13 @@ class PSquare:
         self.QRef = Quaternion([0,0,0])
         self.POmega = 0
         self.PQ = 0
+        self.PV = 0
+        self.PA = 0
         self.I = Vector([0, 0, 0])
         self.Torque = Vector([0, 0, 0])
         self.Output = Vector([0,0,0,0])
-        self.ARef = Vector([0,0,0])
+        self.VRef = Vector([0,0,0])
+        self.Thrust = Vector([0,0,0])
     
     def setI(self, I):
         self.I = Matrix([[I[0],0,0],[0,I[1],0],[0,0,I[2]]])
@@ -47,9 +51,9 @@ class PSquare:
         self.PQ = v[0]
         self.POmega = v[1]
         
-    def setQRef(self, q, a):
+    def setQRef(self, q, v):
         self.QRef = q
-        self.ARef = a-Params.Gravity
+        self.VRef = v
     
     def setMotorCoefficient(self, m1, m2, m3, m4):
         self.Km1 = m1
@@ -63,25 +67,31 @@ class PSquare:
         self.b = b
         self.Mass = m
         
-    def computePP(self, qM, omegaM, aM):
-        if self.ARef[0]!=0 or self.ARef[1]!=0:
-            qRef = createRotation(self.ARef, Vector([0,0,1]))
+    def computePP(self, qM, omegaM, vM):
+        vErr = self.VRef-vM
+        
+        print "AReq " + (-Params.Gravity)
+        print "vErr " + vErr
+        #self.Thrust = (vErr*self.PV + self.ARef*self.PA)/self.Mass
+        self.Thrust = vErr
+        self.Thrust -= Params.Gravity
+        
+        print "Thrust " + self.Thrust
+        if self.Thrust[0]!=0 or self.Thrust[1]!=0:
+            qRef = createRotation(self.Thrust, Vector([0,0,1]))
             qRef.w = 1
             qRef.normalize()
         else:
             qRef = self.QRef
 
-        print "Aref " + self.ARef.rotate(qM)
-        print "AM " + aM
-        #T = (self.ARef.rotate(qM)-aM)
-        #T = (self.ARef.rotate(qM))
-        T = self.ARef.rotate(qM.conj())
-        print "T " + str(T)
-        T = T[2]*self.Mass
-
-        print "qM " + qM
-        print "omegaM " + omegaM
+        print "qm inv " + qM.conj()
         print "qRef " + qRef
+        T = self.Thrust.rotate(qM.conj())*self.Mass
+        
+        print "T " + T
+        T = T[2]
+
+        print "T " + str(T)
         qErr = qRef * qM.conj()
 
         if qErr[0]<0:
@@ -93,32 +103,12 @@ class PSquare:
         
         if Params.TorqueIsSet:
             return self.Torque
-        print "T " + str(T)
-        '''p1 = (self.Km3[0]*(self.Km2[1]*(self.Km4[4]*self.Torque[2]-self.Km4[3]*T)+self.Km4[1]*(self.Km2[2]*T-self.Km2[4]*self.Torque[2])+self.Torque[1]*(self.Km2[4]*self.Km4[3]-self.Km4[4]*self.Km2[2]))+self.Torque[0]*(self.Km2[1]*(self.Km3[4]*self.Km4[3]-self.Km4[4]*self.Km3[2])+self.Km4[1]*(self.Km2[4]*self.Km3[2]-self.Km3[4]*self.Km2[2])))/(self.Km1[0]*(self.Km2[1]*(self.Km3[4]*self.Km4[3]-self.Km4[4]*self.Km3[2])+self.Km4[1]*(self.Km2[4]*self.Km3[2]-self.Km3[4]*self.Km2[2]))+self.Km3[0]*(self.Km2[1]*(self.Km4[4]*self.Km1[2]-self.Km1[4]*self.Km4[3])+self.Km4[1]*(self.Km1[4]*self.Km2[2]-self.Km2[4]*self.Km1[2])))
-        p2=-(self.Km1[0]*(self.Km4[1]*(self.Km3[4]*self.Torque[2]-self.Km3[2]*T)+self.Torque[1]*(self.Km4[4]*self.Km3[2]-self.Km3[4]*self.Km4[2]))+self.Km3[0]*(self.Km4[1]*(self.Km1[2]*T-self.Km1[4]*self.Torque[2])+self.Torque[1]*(self.Km1[4]*self.Km4[2]-self.Km4[4]*self.Km1[2]))+self.Torque[0]*self.Km4[1]*(self.Km1[4]*self.Km3[2]-self.Km3[4]*self.Km1[2]))/(self.Km1[0]*(self.Km2[1]*(self.Km3[4]*self.Km4[2]-self.Km4[4]*self.Km3[2])+self.Km4[1]*(self.Km2[4]*self.Km3[2]-self.Km3[4]*self.Km2[2]))+self.Km3[0]*(self.Km2[1]*(self.Km4[4]*self.Km1[2]-self.Km1[4]*self.Km4[2])+self.Km4[1]*(self.Km1[4]*self.Km2[2]-self.Km2[4]*self.Km1[2])))
-        p3=-(self.Km1[0]*(self.Km2[1]*(self.Km4[4]*self.Torque[2]-self.Km4[2]*T)+self.Km4[1]*(self.Km2[2]*T-self.Km2[4]*self.Torque[2])+self.Torque[1]*(self.Km2[4]*self.Km4[2]-self.Km4[4]*self.Km2[2]))+self.Torque[0]*(self.Km2[1]*(self.Km1[4]*self.Km4[2]-self.Km4[4]*self.Km1[2])+self.Km4[1]*(self.Km2[4]*self.Km1[2]-self.Km1[4]*self.Km2[2])))/(self.Km1[0]*(self.Km2[1]*(self.Km3[4]*self.Km4[2]-self.Km4[4]*self.Km3[2])+self.Km4[1]*(self.Km2[4]*self.Km3[2]-self.Km3[4]*self.Km2[2]))+self.Km3[0]*(self.Km2[1]*(self.Km4[4]*self.Km1[2]-self.Km1[4]*self.Km4[2])+self.Km4[1]*(self.Km1[4]*self.Km2[2]-self.Km2[4]*self.Km1[2])))
-        p4=(self.Km1[0]*(self.Km2[1]*(self.Km3[4]*self.Torque[2]-self.Km3[2]*T)+self.Torque[1]*(self.Km2[4]*self.Km3[2]-self.Km3[4]*self.Km2[2]))+self.Km3[0]*(self.Km2[1]*(self.Km1[2]*T-self.Km1[4]*self.Torque[2])+self.Torque[1]*(self.Km1[4]*self.Km2[2]-self.Km2[4]*self.Km1[2]))+self.Torque[0]*self.Km2[1]*(self.Km1[4]*self.Km3[2]-self.Km3[4]*self.Km1[2]))/(self.Km1[0]*(self.Km2[1]*(self.Km3[4]*self.Km4[2]-self.Km4[4]*self.Km3[2])+self.Km4[1]*(self.Km2[4]*self.Km3[2]-self.Km3[4]*self.Km2[2]))+self.Km3[0]*(self.Km2[1]*(self.Km4[4]*self.Km1[2]-self.Km1[4]*self.Km4[2])+self.Km4[1]*(self.Km1[4]*self.Km2[2]-self.Km2[4]*self.Km1[2])))'''
-        #(L*(b*T+k*self.Torque[2])+2*b*self.Torque[0])/(4*b*k*L),p2=-(L*(k*self.Torque[2]-b*T)-2*b*self.Torque[1])/(4*b*k*L),p3=(L*(b*T+k*self.Torque[2])-2*b*self.Torque[0])/(4*b*k*L),p4=-(L*(k*self.Torque[2]-b*T)+2*b*self.Torque[1])/(4*b*k*L)
-        print "Torque " + self.Torque
-        print self.Km1
-        print self.Km2
-        print self.Km3
-        print self.Km4
-        #T = 0
-        '''p1=((self.L)*((self.b)*T+(self.Torque[2])*(self.K))+2*(self.Torque[0])*(self.b))/(4*(self.b)*(self.K)*(self.L))
-        p2=-((self.L)*((self.Torque[2])*(self.K)-(self.b)*T)-2*(self.Torque[1])*(self.b))/(4*(self.b)*(self.K)*(self.L))
-        p3=((self.L)*((self.b)*T+(self.Torque[2])*(self.K))-2*(self.Torque[0])*(self.b))/(4*(self.b)*(self.K)*(self.L))
-        p4=-((self.L)*((self.Torque[2])*(self.K)-(self.b)*T)+2*(self.Torque[1])*(self.b))/(4*(self.b)*(self.K)*(self.L))'''
-        
         deno = ((self.Km1[0])*((self.Km2[1])*((self.Km3[2])*(self.Km4[3])+(self.Km4[2])*(self.Km3[3]))+(self.Km4[1])*((self.Km2[2])*(self.Km3[3])+(self.Km3[2])*(self.Km2[3])))+(self.Km3[0])*((self.Km2[1])*((self.Km1[2])*(self.Km4[3])+(self.Km4[2])*(self.Km1[3]))+(self.Km4[1])*((self.Km1[2])*(self.Km2[3])+(self.Km2[2])*(self.Km1[3]))))
-        print deno
         p1=((self.Km3[0])*((self.Km2[1])*((self.Km4[2])*T+(self.Torque[2])*(self.Km4[3]))+(self.Km4[1])*((self.Km2[2])*T+(self.Torque[2])*(self.Km2[3]))+(self.Torque[1])*((self.Km2[2])*(self.Km4[3])-(self.Km4[2])*(self.Km2[3])))+(self.Torque[0])*((self.Km2[1])*((self.Km3[2])*(self.Km4[3])+(self.Km4[2])*(self.Km3[3]))+(self.Km4[1])*((self.Km2[2])*(self.Km3[3])+(self.Km3[2])*(self.Km2[3]))))/deno
-        p2=-((self.Km1[0])*((self.Km4[1])*((self.Torque[2])*(self.Km3[3])-(self.Km3[2])*T)+(self.Torque[1])*(-(self.Km3[2])*(self.Km4[3])-(self.Km4[2])*(self.Km3[3])))+(self.Km3[0])*((self.Km4[1])*((self.Torque[2])*(self.Km1[3])-(self.Km1[2])*T)+(self.Torque[1])*(-(self.Km1[2])*(self.Km4[3])-(self.Km4[2])*(self.Km1[3])))+(self.Torque[0])*(self.Km4[1])*((self.Km3[2])*(self.Km1[3])-(self.Km1[2])*(self.Km3[3])))/((self.Km1[0])*((self.Km2[1])*((self.Km3[2])*(self.Km4[3])+(self.Km4[2])*(self.Km3[3]))+(self.Km4[1])*((self.Km2[2])*(self.Km3[3])+(self.Km3[2])*(self.Km2[3])))+(self.Km3[0])*((self.Km2[1])*((self.Km1[2])*(self.Km4[3])+(self.Km4[2])*(self.Km1[3]))+(self.Km4[1])*((self.Km1[2])*(self.Km2[3])+(self.Km2[2])*(self.Km1[3]))))
-        p3=-((self.Km1[0])*((self.Km2[1])*(-(self.Km4[2])*T-(self.Torque[2])*(self.Km4[3]))+(self.Km4[1])*(-(self.Km2[2])*T-(self.Torque[2])*(self.Km2[3]))+(self.Torque[1])*((self.Km4[2])*(self.Km2[3])-(self.Km2[2])*(self.Km4[3])))+(self.Torque[0])*((self.Km2[1])*((self.Km1[2])*(self.Km4[3])+(self.Km4[2])*(self.Km1[3]))+(self.Km4[1])*((self.Km1[2])*(self.Km2[3])+(self.Km2[2])*(self.Km1[3]))))/((self.Km1[0])*((self.Km2[1])*((self.Km3[2])*(self.Km4[3])+(self.Km4[2])*(self.Km3[3]))+(self.Km4[1])*((self.Km2[2])*(self.Km3[3])+(self.Km3[2])*(self.Km2[3])))+(self.Km3[0])*((self.Km2[1])*((self.Km1[2])*(self.Km4[3])+(self.Km4[2])*(self.Km1[3]))+(self.Km4[1])*((self.Km1[2])*(self.Km2[3])+(self.Km2[2])*(self.Km1[3]))))
-        p4=-((self.Km1[0])*((self.Km2[1])*((self.Torque[2])*(self.Km3[3])-(self.Km3[2])*T)+(self.Torque[1])*((self.Km2[2])*(self.Km3[3])+(self.Km3[2])*(self.Km2[3])))+(self.Km3[0])*((self.Km2[1])*((self.Torque[2])*(self.Km1[3])-(self.Km1[2])*T)+(self.Torque[1])*((self.Km1[2])*(self.Km2[3])+(self.Km2[2])*(self.Km1[3])))+(self.Torque[0])*(self.Km2[1])*((self.Km3[2])*(self.Km1[3])-(self.Km1[2])*(self.Km3[3])))/((self.Km1[0])*((self.Km2[1])*((self.Km3[2])*(self.Km4[3])+(self.Km4[2])*(self.Km3[3]))+(self.Km4[1])*((self.Km2[2])*(self.Km3[3])+(self.Km3[2])*(self.Km2[3])))+(self.Km3[0])*((self.Km2[1])*((self.Km1[2])*(self.Km4[3])+(self.Km4[2])*(self.Km1[3]))+(self.Km4[1])*((self.Km1[2])*(self.Km2[3])+(self.Km2[2])*(self.Km1[3]))))
+        p2=-((self.Km1[0])*((self.Km4[1])*((self.Torque[2])*(self.Km3[3])-(self.Km3[2])*T)+(self.Torque[1])*(-(self.Km3[2])*(self.Km4[3])-(self.Km4[2])*(self.Km3[3])))+(self.Km3[0])*((self.Km4[1])*((self.Torque[2])*(self.Km1[3])-(self.Km1[2])*T)+(self.Torque[1])*(-(self.Km1[2])*(self.Km4[3])-(self.Km4[2])*(self.Km1[3])))+(self.Torque[0])*(self.Km4[1])*((self.Km3[2])*(self.Km1[3])-(self.Km1[2])*(self.Km3[3])))/deno
+        p3=-((self.Km1[0])*((self.Km2[1])*(-(self.Km4[2])*T-(self.Torque[2])*(self.Km4[3]))+(self.Km4[1])*(-(self.Km2[2])*T-(self.Torque[2])*(self.Km2[3]))+(self.Torque[1])*((self.Km4[2])*(self.Km2[3])-(self.Km2[2])*(self.Km4[3])))+(self.Torque[0])*((self.Km2[1])*((self.Km1[2])*(self.Km4[3])+(self.Km4[2])*(self.Km1[3]))+(self.Km4[1])*((self.Km1[2])*(self.Km2[3])+(self.Km2[2])*(self.Km1[3]))))/deno
+        p4=-((self.Km1[0])*((self.Km2[1])*((self.Torque[2])*(self.Km3[3])-(self.Km3[2])*T)+(self.Torque[1])*((self.Km2[2])*(self.Km3[3])+(self.Km3[2])*(self.Km2[3])))+(self.Km3[0])*((self.Km2[1])*((self.Torque[2])*(self.Km1[3])-(self.Km1[2])*T)+(self.Torque[1])*((self.Km1[2])*(self.Km2[3])+(self.Km2[2])*(self.Km1[3])))+(self.Torque[0])*(self.Km2[1])*((self.Km3[2])*(self.Km1[3])-(self.Km1[2])*(self.Km3[3])))/deno
         self.Output = Vector([p1,p2,p3,p4])
-        print "Output " + self.Output
-        print "Tau_x " + str(self.L*self.K*(p1-p3))
         return self.Output
 
 

@@ -69,18 +69,11 @@ class Motor(object):
         #tau_z
         self.computeTauZ()
     
-    '''def power(self):
-        self.Power = (self.K_v/self.K_t)*self.Tau*self.Omega
-        return self.Power'''
-    
     def computeK(self):
         self.K = pow(self.K_v*self.K_tau*sqrt(2*self.Rho*self.A_swept)/self.K_t, 2)
-        print "K " + str(self.K)
 
     def computeB(self):
         self.B = (self.Radius*self.Rho*self.C_D*self.A_xsec*pow(self.Radius, 2)/2.)
-        print "B " + str(self.B)
-
     def computeOmega(self, dt):
         #newOmega = self.MaxOmega * self.Power
         if self.Power<0:

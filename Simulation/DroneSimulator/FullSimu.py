@@ -136,9 +136,6 @@ class Simu(object):
         self.t = self.t+self.dt
     
     def singleStep(self, t):
-        #set measurements
-        #self.b.setMotorMeasure([0,0,0,0], [0,0,0,0]) #from controller decision
-        #Get Input from arduino
         self.b.nextStep(self.dt)
         self.plot(t)
 
@@ -270,6 +267,6 @@ class Simu(object):
     def setRequiredTorque(self, t):
         self.b.setTorque(t)
         
-    def setReference(self, ref, a):
-        self.b.setReference(ref, a)
+    def setReference(self, ref, v):
+        self.b.setReference(ref, v)
         

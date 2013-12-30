@@ -5,9 +5,7 @@ from numpy.ma.core import cos, sin, arcsin, arctan
 def createRotation(origin, dest):
     q = Quaternion(origin.cross(dest))
     q.w = sqrt(origin.mag() * dest.mag()) + origin*dest;
-    print q
     q.normalize()
-    print q
     return q
 
 class Quaternion:

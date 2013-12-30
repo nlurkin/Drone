@@ -89,8 +89,8 @@ class Body(object):
         self.m3.setMeasure(omega[2], alpha[2])
         self.m4.setMeasure(omega[3], alpha[3])    
     
-    def setReference(self, qRef, aRef):
-        self.ctrl.setQRef(qRef, aRef)
+    def setReference(self, qRef, vRef):
+        self.ctrl.setQRef(qRef, vRef)
     
     def initController(self):
         self.ctrl.setI(self.I)
@@ -100,7 +100,7 @@ class Body(object):
             self.ctrl.setPs([20,4])
     
     def applyController(self):
-        t = self.ctrl.computePP(self.Quat, self.Omega, self.Acceleration)
+        t = self.ctrl.computePP(self.Quat, self.Omega, self.Velocity)
         if self.TorqueIsSet: 
             if t[0]>self.MaxTorque:
                 t[0] = self.MaxTorque
