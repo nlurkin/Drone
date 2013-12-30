@@ -1,5 +1,14 @@
 from math import atan2
+from numpy.lib.scimath import sqrt
 from numpy.ma.core import cos, sin, arcsin, arctan
+
+def createRotation(origin, dest):
+    q = Quaternion(origin.cross(dest))
+    q.w = sqrt(origin.mag() * dest.mag()) + origin*dest;
+    print q
+    q.normalize()
+    print q
+    return q
 
 class Quaternion:
     '''
@@ -30,6 +39,7 @@ class Quaternion:
             self.x = q[0]
             self.y = q[1]
             self.z = q[2]
+            #self.normalize()
         elif type(q)==list:
             if len(q)==4:
                 self.w = q[0]
@@ -102,7 +112,7 @@ class Quaternion:
         return (self.w*self.w + self.x*self.x + self.y*self.y + self.z*self.z)
     
     def normalize(self):
-        m = self.mag()
+        m = sqrt(self.mag())
         self.w = self.w/m
         self.x = self.x/m
         self.y = self.y/m
@@ -117,7 +127,7 @@ class Quaternion:
     
     def vector(self):
         return Vector([self.x, self.y, self.z])
-    
+        
     def __getitem__(self, key):
         if key==0:
             return self.w
@@ -274,6 +284,15 @@ class Vector:
     def __repr__(self):
         return self.__str__()
 
+    def cross(self, other):
+        v = Vector()
+        if self.size==other.size:
+            if self.size==3:
+                v[0] = self.components[1]*other[2]-self.components[2]*other[1]
+                v[1] = self.components[2]*other[0]-self.components[0]*other[2]
+                v[2] = self.components[0]*other[1]-self.components[1]*other[0]
+        return v
+        
 class Matrix:
     '''
     classdocs

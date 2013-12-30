@@ -9,10 +9,11 @@ import numpy
     
 class Simu(object):
     Rho = 1.2250 #kg.m^-3
-    K_v = 3000 #rpm.V^-1
-    K_v = K_v*2*pi/60 #rad.s^-1.V^-1
+    #K_v = 3000 #rpm.V^-1
+    K_v = 6.3E-5 #s.V.rad^-1
+    #K_v = K_v*2*pi/60 #rad.s^-1.V^-1
     #K_t = K_v #N.m.A^-1
-    K_t = 0.00308 #N.m.A^-1
+    K_t = 6.3E-3 #N.m.A^-1
     K_tau = 0.91 
     I_M = 104*10^-6 #
     Radius = 0.1 #m

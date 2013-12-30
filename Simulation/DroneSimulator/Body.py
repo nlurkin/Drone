@@ -101,18 +101,19 @@ class Body(object):
     
     def applyController(self):
         t = self.ctrl.computePP(self.Quat, self.Omega, self.Acceleration)
-        if t[0]>self.MaxTorque:
-            t[0] = self.MaxTorque
-        if t[1]>self.MaxTorque:
-            t[1] = self.MaxTorque
-        if t[2]>self.MaxTorque:
-            t[2] = self.MaxTorque
-        if t[0]<-self.MaxTorque:
-            t[0] = -self.MaxTorque
-        if t[1]<-self.MaxTorque:
-            t[1] = -self.MaxTorque
-        if t[2]<-self.MaxTorque:
-            t[2] = -self.MaxTorque
+        if self.TorqueIsSet: 
+            if t[0]>self.MaxTorque:
+                t[0] = self.MaxTorque
+            if t[1]>self.MaxTorque:
+                t[1] = self.MaxTorque
+            if t[2]>self.MaxTorque:
+                t[2] = self.MaxTorque
+            if t[0]<-self.MaxTorque:
+                t[0] = -self.MaxTorque
+            if t[1]<-self.MaxTorque:
+                t[1] = -self.MaxTorque
+            if t[2]<-self.MaxTorque:
+                t[2] = -self.MaxTorque
         self.CtrlInput = t
     
     def nextStep(self, dt):
@@ -152,13 +153,15 @@ class Body(object):
         self.m3.setConstants(Rho, K_v, K_t, K_tau, I_M, A_swept, A_xsec, Radius, C_D)
         self.m4.setConstants(Rho, K_v, K_t, K_tau, I_M, A_swept, A_xsec, Radius, C_D)
         if self.UseController:
-            self.ctrl.setMotorCoefficient([self.L*self.m1.K, 0, self.m1.B, 4*self.m1.K],
-                                          [0, self.L*self.m2.K, self.m2.B, 4*self.m2.K],
-                                          [-self.L*self.m3.K, 0, self.m3.B, 4*self.m3.K],
-                                          [0, -self.L*self.m4.K, self.m4.B, 4*self.m4.K])
+            self.ctrl.setMotorCoefficient([self.L*self.m1.K, 0, self.m1.B, self.m1.K],
+                                          [0, self.L*self.m2.K, self.m2.B, self.m2.K],
+                                          [self.L*self.m3.K, 0, self.m3.B, self.m3.K],
+                                          [0, self.L*self.m4.K, self.m4.B, self.m4.K])
+            self.ctrl.setParameters(self.m1.K, self.L, self.m1.B, self.Mass)
     
     def computeMotor(self, dt):
         if not self.TorqueIsSet:
+            print self.CtrlInput
             self.m1.setMeasure(self.CtrlInput[0], dt)
             self.m2.setMeasure(self.CtrlInput[1], dt)
             self.m3.setMeasure(self.CtrlInput[2], dt)
@@ -167,6 +170,15 @@ class Body(object):
     def computeTorque(self):
         if not self.TorqueIsSet:
             self.Torque = Vector([self.L*(self.m1.Thrust-self.m3.Thrust), self.L*(self.m2.Thrust-self.m4.Thrust), self.m1.Tau_z+self.m2.Tau_z+self.m3.Tau_z+self.m4.Tau_z])
+            print "M1 thrust " + str(self.L*self.m1.Thrust)
+            print "M2 thrust " + str(self.L*self.m2.Thrust)
+            print "M3 thrust " + str(self.L*self.m3.Thrust)
+            print "M4 thrust " + str(self.L*self.m4.Thrust)
+            print "M1 tauZ " + str(self.m1.Tau_z)
+            print "M2 tauZ " + str(self.m2.Tau_z)
+            print "M3 tauZ " + str(self.m3.Tau_z)
+            print "M4 tauZ " + str(self.m4.Tau_z)
+            print "Body torque " + self.Torque
         else:
             self.Torque = self.CtrlInput
         
@@ -217,6 +229,7 @@ class Body(object):
     def computeAcceleration(self):
         #rotate thrust
         T = self.Thrust.rotate(self.Quat)
+        print "Thrust " + T
         self.Acceleration = T/self.Mass
         self.Acceleration = Params.Gravity+T*(1/self.Mass)+self.Friction
     

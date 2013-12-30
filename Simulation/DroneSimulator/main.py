@@ -77,7 +77,7 @@ def sendNewTracking(anglesSet):
         quat = Quaternion([angle[0], angle[1], angle[2]])
     else:
         quat = Quaternion(anglesSet)
-        a = simu.b.Mass*Params.Gravity
+        a = Vector([1,2,3])
     simu.setReference(quat, a)
     
     if not Params.runLocally:
