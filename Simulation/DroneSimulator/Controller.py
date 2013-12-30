@@ -72,9 +72,7 @@ class PSquare:
         
         print "AReq " + (-Params.Gravity)
         print "vErr " + vErr
-        #self.Thrust = (vErr*self.PV + self.ARef*self.PA)/self.Mass
-        self.Thrust = vErr
-        self.Thrust -= Params.Gravity
+        self.Thrust = vErr - Params.Gravity
         
         print "Thrust " + self.Thrust
         if self.Thrust[0]!=0 or self.Thrust[1]!=0:

@@ -15,11 +15,11 @@ class Simu(object):
     #K_t = K_v #N.m.A^-1
     K_t = 6.3E-3 #N.m.A^-1
     K_tau = 0.91 
-    I_M = 104*10^-6 #
-    Radius = 0.1 #m
+    I_M = 104E-6 #
+    Radius = 0.5 #m
     A_swept = pi*pow(Radius,2)
     A_xsec = A_swept
-    C_D = 0.3
+    C_D = 2
     
     I = Params.I
     K_d = 0.0013

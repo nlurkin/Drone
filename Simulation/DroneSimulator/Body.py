@@ -83,12 +83,6 @@ class Body(object):
         self.MaxTorque = MaxTorque 
         self.UseController = UseController
     
-    def setMotorMeasure(self, omega, alpha):
-        self.m1.setMeasure(omega[0], alpha[0])
-        self.m2.setMeasure(omega[1], alpha[1])
-        self.m3.setMeasure(omega[2], alpha[2])
-        self.m4.setMeasure(omega[3], alpha[3])    
-    
     def setReference(self, qRef, vRef):
         self.ctrl.setQRef(qRef, vRef)
     
@@ -189,9 +183,6 @@ class Body(object):
         self.Alpha = Vector([(self.Torque[0] - (self.I[1]-self.I[2])*self.Omega[1]*self.Omega[2])/self.I[0],
                       (self.Torque[1] - (self.I[2]-self.I[0])*self.Omega[0]*self.Omega[2])/self.I[1],
                       (self.Torque[2] - (self.I[0]-self.I[1])*self.Omega[0]*self.Omega[1])/self.I[2]])
-        '''self.Alpha = Vector([(self.torque()[0])/self.I[0],
-                      (self.torque()[1])/self.I[1],
-                      (self.torque()[2])/self.I[2]])'''
     
     def computeOmega(self, dt):
         self.Omega = self.Omega + self.Alpha*dt

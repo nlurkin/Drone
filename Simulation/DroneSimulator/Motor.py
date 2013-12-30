@@ -74,6 +74,8 @@ class Motor(object):
 
     def computeB(self):
         self.B = (self.Radius*self.Rho*self.C_D*self.A_xsec*pow(self.Radius, 2)/2.)
+        print "B " + str(self.B)
+        
     def computeOmega(self, dt):
         #newOmega = self.MaxOmega * self.Power
         if self.Power<0:
@@ -82,8 +84,8 @@ class Motor(object):
             newOmega = sqrt(self.Power)
         if newOmega>self.MaxOmega:
             newOmega = self.MaxOmega
-        #self.Alpha = (newOmega - self.Omega)/dt
-        self.Alpha = 0
+            
+        self.Alpha = (newOmega - self.Omega)/dt
         self.Omega = newOmega
     
     def computeThrust(self):
