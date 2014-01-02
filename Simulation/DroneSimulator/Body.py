@@ -1,4 +1,5 @@
 from Controller import PID, PSquare
+from Calibrator import Calibrator
 from Motor import Motor
 from ParamsClass import Params
 from mathclasses import Matrix, Quaternion, Vector
@@ -24,6 +25,7 @@ class Body(object):
     position
     '''
     
+    cali = Calibrator()
     ctrl = None
     
     #set by controller
@@ -231,3 +233,24 @@ class Body(object):
     
     def computePosition(self, dt):
         self.Position += self.Velocity*dt
+    
+    def calibrate(self,dt):
+        self.UseController = False
+        
+        for i in range(0,12):
+            #set motor power
+            #self.m1.setMeasure(40+i*5, dt)
+            self.CtrlInput = [40+i*5, 0, 0, 0]
+            #get point
+            self.nextStep(dt)
+            self.nextStep(dt)
+            self.nextStep(dt)
+            self.nextStep(dt)
+            #set point
+            self.cali.newPoint(0, 40+i*5, self.Omega, self.Alpha)
+        
+        
+        print self.cali.fI
+        
+        self.UseController = False
+        
