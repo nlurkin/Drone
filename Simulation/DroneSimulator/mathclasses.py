@@ -310,12 +310,22 @@ class Matrix:
             self.components = v.components
             self.size = v.size
         elif type(v) == list:
-            self.components = []
-            for col in v:
-                c = []
-                for row in col:
-                    c.append(row)
-                self.components.append(c)
+            if len(v)==2 and type(v[0])!=list:
+                self.components = []
+                for i in range(0,v[0]):
+                    row = []
+                    for j in range(0,v[1]):
+                        row.append(0)
+                    self.components.append(row)
+                self.size = v
+            else:
+                self.components = []
+                for col in v:
+                    c = []
+                    for row in col:
+                        c.append(row)
+                    self.components.append(c)
+                self.size = [len(v),len(v[0])]
         
     def __mul__(self, other):
         if other.__class__ == Vector:
@@ -327,6 +337,15 @@ class Matrix:
                     v[i] += row*other[j]
                     j+=1
                 i+=1
+            return v
+        elif other.__class__== Matrix:
+            v = Matrix([self.size[0],other.size[1]])
+            for ir in range(0,self.size[0]):
+                for ic in range(0,other.size[1]):
+                    sum = 0
+                    for a,b in zip(self.row(ir), other.col(ic)):
+                        sum += a*b
+                    v.setitem(ir,ic,sum)
             return v
         else:
             v = Matrix()
@@ -352,11 +371,116 @@ class Matrix:
             s += '\n '
         s = s[:-2]
         return '[' + s + ']'
+    
+    def setrow(self,n,l):
+        self.components[n] = l
+    
+    def setcol(self,n,l):
+        for k in range(0,self.size[0]):
+            self.components[k][n] = l[k]
+    
+    def setitem(self,n,m,v):
+        self.components[n][m] = v
+    
+    def col(self,n):
+        return [el[n] for el in self.components]
+    
+    def row(self, n):
+        return self.components[n]
+    
+    def appendrow(self, r):
+        self.components.append(r)
+        self.size[0]+=1
+    
+    def maxcol(self,n):
+        col = self.col(n)
+        abscol = [abs(el) for el in col]
+        m = max(abscol)
+        i = abscol.index(m)
+        return [m, i]
+    
+    def swap(self,n,m):
+        temp = self.row(n)
+        self.setrow(n, self.row(m))
+        self.setrow(m,temp)
+        
+    def swapcol(self,n,m):
+        temp = self.col(n)
+        self.setcol(n, self.col(m))
+        self.setcol(m, temp)
+    
+    def dividerow(self,n,v):
+        self.components[n] = [el/float(v) for el in self.row(n)]
+    
+    def substractrow(self,n,mult,m):
+        self.components[n] = [el1-el2*mult for el1,el2 in zip(self.row(n),self.row(m))]
+        
+    def __getitem__(self,n):
+        return self.components[n]
+        
+    def invert(self):
+        pivrow = 0  #keeps track of current pivot row
+        pivrows = []  #keeps track of rows swaps to undo at end
+        n = self.size[0]
+        
+        inv = Matrix(self)
+        
+        for k in range(0,n):
+            #find pivot row, the row with biggest entry in current column
+            [m, pivrow] = inv.maxcol(k)
+
+            #check for singular matrix
+            if m == 0.0:
+                print "Inversion failed due to singular matrix"
+                return 0
+            
+            if pivrow != k:
+                inv.swap(k, pivrow)
+            
+            pivrows.append(pivrow)  #record row swap (even if no swap happened)
+            inv.dividerow(k, m)
+            
+            #Now eliminate all other entries in this column
+            for i in range(0,n):
+                if i != k:
+                    inv.substractrow(i, inv[i][k], k)
+        
+    
+        #Done, now need to undo pivot row swaps by doing column swaps in reverse order
+        for k in range(n-1,-1,-1):
+            if pivrows[k] != k:
+                inv.swapcol(k, pivrows[k])
+        return inv
+
                  
 if __name__ == "__main__":
     print '*** running test ***'
-    q = Quaternion([1,0,0,0])
-    v = Vector([1, 2, 3])
-    print q
-    print v
-    print q==q
+    x = Matrix([[1.,2.,3.],[1,5.,6.]])
+    print x
+    x.appendrow([7,8,9])
+    print x
+    x.setcol(0, [1.,4.,7.])
+    print x
+    x.setrow(2, [7.,8.,9.])
+    print x
+    print x.col(1)
+    print x.row(2)
+    x.swap(0, 2)
+    print x
+    x.dividerow(1, 2)
+    print x
+    print x.maxcol(0)
+    x.swapcol(0, 1)
+    print x
+    a = x.invert()
+    print a
+    print a*x
+    print x*a
+    
+    x = Matrix([[1,2,3],[4,5,6],[7,8,9]])
+    y = Matrix([[2,3,4],[5,6,7],[8,9,1]])
+    tot = Matrix([[1*2+2*5+3*8, 1*3+2*6+3*9, 1*4+2*7+3*1],[4*2+5*5+6*8,4*3+5*6+6*9,4*4+5*7+6*1],[7*2+8*5+9*8,7*3+8*6+9*9,7*4+8*7+9*1]])
+    print x
+    print y
+    print x*y
+    print tot
