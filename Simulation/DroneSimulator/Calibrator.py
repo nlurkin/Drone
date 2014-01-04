@@ -21,8 +21,9 @@ class Calibrator:
         self.fP[motor].append(p)
         self.fOmega[motor].append(omega)
         self.fAlpha[motor].append(alpha)
-
-        return self.calibrateIndividual(motor)
+        
+        print "Expected R1x : " + str(omega[1]*omega[2]/(p*p))
+        #return self.calibrateIndividual(motor)
 
     def calibrate(self):
         return True
@@ -37,7 +38,7 @@ class Calibrator:
     
         for i in range(0,4):
             for j in range(0,3):
-                b[j+3*i] = 0
+                b[j+3*i] = j
                 x[j+3*i] = 0
             
             a[0+3*i][0] = self.fAlpha[motor][i][0]
@@ -76,9 +77,12 @@ class Calibrator:
             a[2+3*i][9] = 0
             a[2+3*i][10] = 0
             a[2+3*i][11] = self.fP[motor][i]
-    
-        if a.invert()!=False:
-            x = a*b
+        
+        print a
+        j = a.invert()
+        print j
+        if j!=False:
+            x = j*b
             print x
             self.fI.setitem(0,0,x[0])
             self.fI.setitem(0,1,x[1])
