@@ -158,7 +158,7 @@ class Vector:
             self.components = [0, 0, 0]
             self.size = 3
         elif v.__class__ == Vector:
-            self.components = v.components
+            self.components = v.components[:]
             self.size = v.size
         elif v.__class__==Quaternion:
             self.components = [v[1], v[2], v[3]]

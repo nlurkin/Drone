@@ -1,9 +1,13 @@
-from Controller import PID, PSquare
+import sys
+
+from numpy.ma.core import sin, tan, cos
+from scipy.constants.constants import pi
+
 from Calibrator import Calibrator
+from Controller import PID, PSquare
 from Motor import Motor
 from ParamsClass import Params
 from mathclasses import Matrix, Quaternion, Vector
-from numpy.ma.core import sin, tan, cos
 
 
 class Body(object):
@@ -11,6 +15,7 @@ class Body(object):
     classdocs
     '''
 
+    oldomega = Vector()
     m1 = Motor()
     m2 = Motor()
     m3 = Motor()
@@ -79,6 +84,7 @@ class Body(object):
         self.K_d = K_d
         self.L = L
         self.Mass = Mass
+        print "inertia factor x " + str((self.I[1]-self.I[2])/self.I[0])
         
     def setParameters(self,TorqueIsSet, MaxTorque, UseController):
         self.TorqueIsSet = TorqueIsSet
@@ -117,6 +123,8 @@ class Body(object):
         if self.UseController:
             self.applyController()
         
+        ooldomega = Vector(self.Omega)
+        oldaplha = Vector(self.Alpha)
         #motor
         self.computeMotor(dt)
         #torque
@@ -141,6 +149,27 @@ class Body(object):
         self.computeAngles(dt)
         #quaternion
         self.computeQuaternion(dt)
+        
+        #print "oldomega " + oldomega
+        print "oldomega " + ooldomega
+        print "self.oldomega + " + self.oldomega
+        I = (oldaplha[0]-self.Alpha[0])/(ooldomega[1]*ooldomega[2]-self.Omega[1]*self.Omega[2])
+        print "I Body " + str(I)
+        I = (self.I[2]-self.I[1])/self.I[0]
+        rx = self.L*self.m1.K*pow(Params.MaxOmega,2)/(10000.*self.I[0])
+        '''print "true I " + str(I)
+        print "true rx " + str(rx)
+        print "true alpha " + str(self.Alpha)
+        print "omega motor " + str(self.m1.Omega)
+        print "omega ici " + str(self.m1.Power*Params.MaxOmega/100.)
+        print "torque " + str(self.Torque[0]/self.I[0])
+        print "torque ici " + str(rx*pow(self.m1.Power,2))
+        print "alpha second terme " + str(oldomega[1]*oldomega[2]*I)'''
+        alpha = pow(self.m1.Power,2)*rx - ooldomega[1]*ooldomega[2]*I
+        Rx = (self.Alpha[0]+ooldomega[1]*ooldomega[2]*I)/pow(self.m1.Power,2)
+        #print "calxulated alpha " + str(alpha)
+        print "Calculated rx " + str(Rx)
+        self.oldomega = Vector(ooldomega)
         
         
     def setMotorConstants(self, Rho, K_v, K_t, K_tau, I_M, A_swept, A_xsec, Radius, C_D):
@@ -182,9 +211,14 @@ class Body(object):
         self.Friction = -self.Velocity*self.K_d
     
     def computeAlpha(self, dt):
+        #print "Omega alpha: " + self.Omega
+        oldalpha = self.Alpha
         self.Alpha = Vector([(self.Torque[0] - (self.I[1]-self.I[2])*self.Omega[1]*self.Omega[2])/self.I[0],
                       (self.Torque[1] - (self.I[2]-self.I[0])*self.Omega[0]*self.Omega[2])/self.I[1],
                       (self.Torque[2] - (self.I[0]-self.I[1])*self.Omega[0]*self.Omega[1])/self.I[2]])
+        print "I factor apha " + str((self.Alpha[0] - oldalpha[0])/(self.Omega[1]*self.Omega[2] - self.oldomega[1]*self.oldomega[2]))
+        #print self.Alpha
+        #print "alpha second term(true) " + str((self.I[2]-self.I[1])*self.Omega[1]*self.Omega[2]/self.I[0])
     
     def computeOmega(self, dt):
         self.Omega = self.Omega + self.Alpha*dt
@@ -237,20 +271,46 @@ class Body(object):
     def calibrate(self,dt):
         self.UseController = False
         
-        for i in range(0,12):
+        for i in range(0,2):
             #set motor power
             #self.m1.setMeasure(40+i*5, dt)
-            self.CtrlInput = [40+i*5, 0, 0, 0]
+            self.CtrlInput = [3+i*2, 0, 0, 0]
             #get point
             self.nextStep(dt)
+            self.cali.estimateI(0, self.Alpha, self.Omega)
+            for i in range(0, int(10/dt)):
+                self.nextStep(dt)
+            self.cali.estimateI(0, self.Alpha, self.Omega)
             self.nextStep(dt)
-            self.nextStep(dt)
+            #self.cali.newOmega(0,self.Omega)
             self.nextStep(dt)
             #set point
-            self.cali.newPoint(0, 40+i*5, self.Omega, self.Alpha)
+            self.cali.newPoint(0, 3+i*2, self.Omega, self.Alpha)
         
         
         print self.cali.fI
         
         self.UseController = False
         
+
+if __name__ == "__main__":
+    K_d = 0.0013
+    I = Params.I
+    Rho = 1.2250 #kg.m^-3
+    #K_v = 3000 #rpm.V^-1
+    K_v = 6.3E-5 #s.V.rad^-1
+    #K_v = K_v*2*pi/60 #rad.s^-1.V^-1
+    #K_t = K_v #N.m.A^-1
+    K_t = 6.3E-3 #N.m.A^-1
+    K_tau = 0.91 
+    I_M = 104E-6 #
+    Radius = 0.5 #m
+    A_swept = pi*pow(Radius,2)
+    A_xsec = A_swept
+    C_D = 2
+    b = Body()
+    b.setModel(I, K_d, Params.L, Params.Mass)
+    b.setParameters(Params.TorqueIsSet, Params.MaxTorque, True)
+    b.setMotorConstants(Rho, K_v, K_t, K_tau, I_M, A_swept, A_xsec, Radius, C_D)
+    b.calibrate(0.01)
+    sys.exit(0);
