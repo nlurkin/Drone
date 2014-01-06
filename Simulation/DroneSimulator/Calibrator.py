@@ -29,7 +29,7 @@ class Calibrator:
         if len(self.fP)<2:
             return False
         
-        #This works if the time difference between both measurement is big enough and time step small enough
+        #This works if the time difference between both measurement is big enough and time step small enough and avoid angles closse to k*pi
         I1 = (self.Ialpha[1][0]-self.Ialpha[0][0])/(self.Iomega[1][1]*self.Iomega[1][2]-self.Iomega[0][1]*self.Iomega[0][2])
         I2 = (self.Ialpha[1][1]-self.Ialpha[0][1])/(self.Iomega[1][0]*self.Iomega[1][2]-self.Iomega[0][0]*self.Iomega[0][2])
         I3 = (self.Ialpha[1][2]-self.Ialpha[0][2])/(self.Iomega[1][0]*self.Iomega[1][1]-self.Iomega[0][0]*self.Iomega[0][1])

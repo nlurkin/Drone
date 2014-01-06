@@ -186,7 +186,7 @@ def main():
         elif s=="ref":
             sendNewTracking([1,1,0])
         elif s=="calib":
-            simu.calibration()
+            simu.calibration(plt)
 
             
         

@@ -150,11 +150,16 @@ class Body(object):
         #quaternion
         self.computeQuaternion(dt)
         
-        #print "oldomega " + oldomega
-        #print "oldomega " + ooldomega
-        #print "self.oldomega + " + self.oldomega
-        #I = (oldaplha[0]-self.Alpha[0])/(ooldomega[1]*ooldomega[2]-self.Omega[1]*self.Omega[2])
-        #print "I Body " + str(I)
+        I = (oldaplha[0]-self.Alpha[0])/(ooldomega[1]*ooldomega[2]-self.Omega[1]*self.Omega[2])
+        if I > 1:
+            #print "oldomega " + oldomega
+            print "oldomega " + ooldomega
+            print "omega " + self.Omega
+            print "oldalpha " + oldaplha
+            print "alpha " + self.Alpha
+            #print "self.oldomega + " + self.oldomega
+            print "diff " + str(ooldomega[1]*ooldomega[2]-self.Omega[1]*self.Omega[2]) 
+            print "I Body " + str(I)
         #I = (self.I[2]-self.I[1])/self.I[0]
         #rx = self.L*self.m1.K*pow(Params.MaxOmega,2)/(10000.*self.I[0])
         '''print "true I " + str(I)
@@ -166,8 +171,8 @@ class Body(object):
         print "torque ici " + str(rx*pow(self.m1.Power,2))
         print "alpha second terme " + str(oldomega[1]*oldomega[2]*I)'''
         #alpha = pow(self.m1.Power,2)*rx - ooldomega[1]*ooldomega[2]*I
-        I = -0.887005649718
-        Rx = (self.Alpha[0]+ooldomega[1]*ooldomega[2]*I)/pow(self.m1.Power,2)
+        #I = -0.887005649718
+        #Rx = (self.Alpha[0]+ooldomega[1]*ooldomega[2]*I)/pow(self.m1.Power,2)
         #print Rx
         #print "calxulated alpha " + str(alpha)
         #print "Calculated rx " + str(Rx)
@@ -269,19 +274,21 @@ class Body(object):
     def computePosition(self, dt):
         self.Position += self.Velocity*dt
     
-    def calibrate(self,dt):
+    def calibrate(self,dt,simu,plt):
         self.UseController = False
         
         for i in range(0,100):
             #set motor power
             #self.m1.setMeasure(40+i*5, dt)
-            self.CtrlInput = [3+i*2, 0, 0, 0]
+            self.CtrlInput = [3, 0, 0, 0]
             #get point
             for j in range(0, int(0.1/dt)):
-                self.nextStep(dt)
+                simu.nextStep()
+            plt.pause(0.0001)
             self.cali.newPoint(3, self.Omega, self.Alpha,0)
             for j in range(0, int(0.1/dt)):
-                self.nextStep(dt)
+                simu.nextStep()
+            plt.pause(0.0001)
             self.cali.newPoint(3, self.Omega, self.Alpha,0)
             self.cali.clearPoints()
         
