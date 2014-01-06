@@ -271,4 +271,4 @@ class Simu(object):
         self.b.setReference(ref, v)
     
     def calibration(self,plt):
-        self.b.calibrate(self.dt,self,plt)
+        self.b.calibrate(self.dt,self)

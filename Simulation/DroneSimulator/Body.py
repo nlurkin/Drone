@@ -150,7 +150,7 @@ class Body(object):
         #quaternion
         self.computeQuaternion(dt)
         
-        I = (oldaplha[0]-self.Alpha[0])/(ooldomega[1]*ooldomega[2]-self.Omega[1]*self.Omega[2])
+        ''''I = (oldaplha[0]-self.Alpha[0])/(ooldomega[1]*ooldomega[2]-self.Omega[1]*self.Omega[2])
         if I > 1:
             #print "oldomega " + oldomega
             print "oldomega " + ooldomega
@@ -159,7 +159,7 @@ class Body(object):
             print "alpha " + self.Alpha
             #print "self.oldomega + " + self.oldomega
             print "diff " + str(ooldomega[1]*ooldomega[2]-self.Omega[1]*self.Omega[2]) 
-            print "I Body " + str(I)
+            print "I Body " + str(I)'''
         #I = (self.I[2]-self.I[1])/self.I[0]
         #rx = self.L*self.m1.K*pow(Params.MaxOmega,2)/(10000.*self.I[0])
         '''print "true I " + str(I)
@@ -274,28 +274,62 @@ class Body(object):
     def computePosition(self, dt):
         self.Position += self.Velocity*dt
     
-    def calibrate(self,dt,simu,plt):
-        self.UseController = False
+    def calibrateI(self, dt,simu):
+        self.CtrlInput = [0, 0, 0, 0]
+        self.CtrlInput[0] = 3
         
-        for i in range(0,100):
+        for j in range(0, int(0.1/dt)):
+            simu.nextStep()
+        
+        for i in range(0,10):
             #set motor power
-            #self.m1.setMeasure(40+i*5, dt)
-            self.CtrlInput = [3, 0, 0, 0]
+            self.CtrlInput[0] = pow(-1,i)*3
             #get point
             for j in range(0, int(0.1/dt)):
                 simu.nextStep()
-            plt.pause(0.0001)
-            self.cali.newPoint(3, self.Omega, self.Alpha,0)
+            self.cali.newPoint(self.CtrlInput[0], self.Omega, self.Alpha)
             for j in range(0, int(0.1/dt)):
                 simu.nextStep()
-            plt.pause(0.0001)
-            self.cali.newPoint(3, self.Omega, self.Alpha,0)
+            self.cali.newPoint(self.CtrlInput[0], self.Omega, self.Alpha)
+            self.cali.calibrateI()
             self.cali.clearPoints()
         
+        self.CtrlInput[0] = -3
+        for j in range(0, int(0.1/dt)):
+            simu.nextStep()
         
-        print self.cali.fI
+        self.CtrlInput =  [0,0,0,0]
+
+    def calibrateMotor(self, motor, dt,simu):
+        self.CtrlInput = [0, 0, 0, 0]
+        self.CtrlInput[motor] = 3
         
+        for j in range(0, int(0.1/dt)):
+            simu.nextStep()
+        
+        #get point
+        for j in range(0, int(0.1/dt)):
+            simu.nextStep()
+        self.cali.newPoint(self.CtrlInput[motor], self.Omega, self.Alpha)
+        self.cali.calibrateR(motor)
+        self.cali.clearPoints()
+        
+        self.CtrlInput[motor] = -3
+        for j in range(0, int(0.1/dt)):
+            simu.nextStep()
+        self.CtrlInput =  [0,0,0,0]
+    
+    def calibrate(self,dt,simu):
         self.UseController = False
+        
+        self.calibrateI(dt,simu)
+        self.calibrateMotor(0, dt,simu)
+        self.calibrateMotor(1, dt,simu)
+        self.calibrateMotor(2, dt,simu)
+        self.calibrateMotor(3, dt,simu)
+        print self.cali.getAveragedI()
+        print self.cali.R
+        self.UseController = True
         
 
 if __name__ == "__main__":

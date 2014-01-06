@@ -18,7 +18,7 @@ class Params:
     waveTimes = [0.5, 1, 1.5]
     flipTimes = [1, 2, 3]
     
-    dt = 0.001
+    dt = 0.01
     
     moveType = 1
     MaxTorque = 5
