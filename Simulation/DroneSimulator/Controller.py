@@ -106,6 +106,8 @@ class PSquare:
             axisErr = Vector(qErr)
         
         Torque = self.I*(axisErr*self.PQ - omegaM*self.POmega)
+        #Iinv = Matrix([[self.I[0][0],0,0],[0,self.I[1][1],0],[0,0,self.I[2][2]]])
+        #Torque = Iinv*(axisErr*self.PQ - omegaM*self.POmega)
         return Torque
         
     def computePP(self, qM, omegaM, aM, vM):
@@ -137,7 +139,12 @@ class PSquare:
         
         print "Requested T " + str(T)
         print "Requested Torque " + self.Torque
-        deno = ((self.Km1[0])*((self.Km2[1])*((self.Km3[2])*(self.Km4[3])+(self.Km4[2])*(self.Km3[3]))+(self.Km4[1])*((self.Km2[2])*(self.Km3[3])+(self.Km3[2])*(self.Km2[3])))+(self.Km3[0])*((self.Km2[1])*((self.Km1[2])*(self.Km4[3])+(self.Km4[2])*(self.Km1[3]))+(self.Km4[1])*((self.Km1[2])*(self.Km2[3])+(self.Km2[2])*(self.Km1[3]))))
+        print self.Km1
+        print self.Km2
+        print self.Km3
+        print self.Km4
+        deno = (self.Km1[0]*(self.Km2[1]*(self.Km3[2]*self.Km4[3]+self.Km4[2]*self.Km3[3])+self.Km4[1]*(self.Km2[2]*self.Km3[3]+self.Km3[2]*self.Km2[3]))+self.Km3[0]*(self.Km2[1]*(self.Km1[2]*self.Km4[3]+self.Km4[2]*self.Km1[3])+self.Km4[1]*(self.Km1[2]*self.Km2[3]+self.Km2[2]*self.Km1[3])))
+        print deno
         p1=((self.Km3[0])*((self.Km2[1])*((self.Km4[2])*T+(self.Torque[2])*(self.Km4[3]))+(self.Km4[1])*((self.Km2[2])*T+(self.Torque[2])*(self.Km2[3]))+(self.Torque[1])*((self.Km2[2])*(self.Km4[3])-(self.Km4[2])*(self.Km2[3])))+(self.Torque[0])*((self.Km2[1])*((self.Km3[2])*(self.Km4[3])+(self.Km4[2])*(self.Km3[3]))+(self.Km4[1])*((self.Km2[2])*(self.Km3[3])+(self.Km3[2])*(self.Km2[3]))))/deno
         p2=-((self.Km1[0])*((self.Km4[1])*((self.Torque[2])*(self.Km3[3])-(self.Km3[2])*T)+(self.Torque[1])*(-(self.Km3[2])*(self.Km4[3])-(self.Km4[2])*(self.Km3[3])))+(self.Km3[0])*((self.Km4[1])*((self.Torque[2])*(self.Km1[3])-(self.Km1[2])*T)+(self.Torque[1])*(-(self.Km1[2])*(self.Km4[3])-(self.Km4[2])*(self.Km1[3])))+(self.Torque[0])*(self.Km4[1])*((self.Km3[2])*(self.Km1[3])-(self.Km1[2])*(self.Km3[3])))/deno
         p3=-((self.Km1[0])*((self.Km2[1])*(-(self.Km4[2])*T-(self.Torque[2])*(self.Km4[3]))+(self.Km4[1])*(-(self.Km2[2])*T-(self.Torque[2])*(self.Km2[3]))+(self.Torque[1])*((self.Km4[2])*(self.Km2[3])-(self.Km2[2])*(self.Km4[3])))+(self.Torque[0])*((self.Km2[1])*((self.Km1[2])*(self.Km4[3])+(self.Km4[2])*(self.Km1[3]))+(self.Km4[1])*((self.Km1[2])*(self.Km2[3])+(self.Km2[2])*(self.Km1[3]))))/deno

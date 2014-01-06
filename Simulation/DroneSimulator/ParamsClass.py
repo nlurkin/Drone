@@ -12,13 +12,13 @@ class Params:
     I = Vector([0.177, 0.177, 0.334])
     #I = [0.177, 0.177, 0.334]
     L = 0.38
-    Mass = 4.493
+    Mass = 1.493
     
     stepTimes = [0.5, 4.5, 8.5]
     waveTimes = [0.5, 1, 1.5]
     flipTimes = [1, 2, 3]
     
-    dt = 0.01
+    dt = 0.1
     
     moveType = 1
     MaxTorque = 5
@@ -26,7 +26,7 @@ class Params:
     
     serialSleep = 0.05
     
-    MaxOmega = 100
+    MaxOmega = 1000
     Gravity = Vector([0, 0, -9.81])
     
     TorqueIsSet = False

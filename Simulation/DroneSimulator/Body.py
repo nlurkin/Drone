@@ -117,6 +117,7 @@ class Body(object):
             if t[2]<-self.MaxTorque:
                 t[2] = -self.MaxTorque
         self.CtrlInput = t
+        print "Controller input " + t
     
     def nextStep(self, dt):
         #controller
@@ -185,10 +186,14 @@ class Body(object):
         self.m3.setConstants(Rho, K_v, K_t, K_tau, I_M, A_swept, A_xsec, Radius, C_D)
         self.m4.setConstants(Rho, K_v, K_t, K_tau, I_M, A_swept, A_xsec, Radius, C_D)
         if self.UseController:
-            self.ctrl.setMotorCoefficient([self.L*self.m1.K, 0, self.m1.B, self.m1.K],
-                                          [0, self.L*self.m2.K, self.m2.B, self.m2.K],
-                                          [self.L*self.m3.K, 0, self.m3.B, self.m3.K],
-                                          [0, self.L*self.m4.K, self.m4.B, self.m4.K])
+            Rx = self.L*self.m1.K*pow(Params.MaxOmega,2)/(10000)
+            Ry = self.L*self.m1.K*pow(Params.MaxOmega,2)/(10000)
+            Rz = self.m1.B*pow(Params.MaxOmega,2)/(10000)
+            RT = self.m1.K*pow(Params.MaxOmega,2)/(10000)
+            self.ctrl.setMotorCoefficient([Rx, 0, Rz, RT],
+                                          [0, Ry, Rz, RT],
+                                          [Rx, 0, Rz, RT],
+                                          [0, Ry, Rz, RT])
             self.ctrl.setParameters(self.m1.K, self.L, self.m1.B, self.Mass)
     
     def computeMotor(self, dt):
@@ -208,8 +213,8 @@ class Body(object):
             print "M1 tauZ " + str(self.m1.Tau_z)
             print "M2 tauZ " + str(self.m2.Tau_z)
             print "M3 tauZ " + str(self.m3.Tau_z)
-            print "M4 tauZ " + str(self.m4.Tau_z)
-            print "Body torque " + self.Torque'''
+            print "M4 tauZ " + str(self.m4.Tau_z)'''
+            print "Body torque " + self.Torque
         else:
             self.Torque = self.CtrlInput
         
@@ -281,7 +286,7 @@ class Body(object):
         for j in range(0, int(0.1/dt)):
             simu.nextStep()
         
-        for i in range(0,10):
+        for i in range(0,2):
             #set motor power
             self.CtrlInput[0] = pow(-1,i)*3
             #get point
@@ -311,7 +316,7 @@ class Body(object):
         for j in range(0, int(0.1/dt)):
             simu.nextStep()
         self.cali.newPoint(self.CtrlInput[motor], self.Omega, self.Alpha)
-        self.cali.calibrateR(motor)
+        self.cali.calibrateR(motor,self.m1.K)
         self.cali.clearPoints()
         
         self.CtrlInput[motor] = -3
@@ -330,8 +335,8 @@ class Body(object):
         print self.cali.getAveragedI()
         print self.cali.R
         self.UseController = True
+        self.ctrl.setMotorCoefficient(self.cali.R[0],self.cali.R[1],self.cali.R[2],self.cali.R[3])
         
-
 if __name__ == "__main__":
     K_d = 0.0013
     I = Params.I

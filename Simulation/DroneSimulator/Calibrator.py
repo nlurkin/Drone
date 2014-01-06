@@ -40,7 +40,7 @@ class Calibrator:
             self.fI = self.fI+Vector([I1,I2,I3])
         self.number += 1
     
-    def calibrateR(self,motor):
+    def calibrateR(self,motor,K):
         I = self.fI/float(self.number)
         
         #This works if I is well known and simulation step is small enough so that the difference between oldomega and omega is small
@@ -51,7 +51,7 @@ class Calibrator:
         #print "Estimated Ry " + str(Ry)
         #print "Estimated Ry " + str(Rz)
         
-        self.R[motor] = Vector([Rx,Ry,Rz])
+        self.R[motor] = [Rx,Ry,Rz,K]
         
         return True
     

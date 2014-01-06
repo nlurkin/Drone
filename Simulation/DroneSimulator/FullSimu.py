@@ -1,12 +1,16 @@
+from random import random
+import sys
+
+import numpy
+from numpy.ma.core import sin
+from scipy.constants.constants import pi
+
 from Body import Body
 from ParamsClass import Params
 from mathclasses import Vector, Quaternion
-from numpy.ma.core import sin
-from random import random
-from scipy.constants.constants import pi
 import matplotlib.pyplot as plt
-import numpy
-    
+
+
 class Simu(object):
     Rho = 1.2250 #kg.m^-3
     #K_v = 3000 #rpm.V^-1
@@ -270,5 +274,15 @@ class Simu(object):
     def setReference(self, ref, v):
         self.b.setReference(ref, v)
     
-    def calibration(self,plt):
+    def calibration(self):
         self.b.calibrate(self.dt,self)
+        
+if __name__ == "__main__":
+    import matplotlib.pyplot as plt
+    s = Simu()
+    s.initBody(True)
+    s.plotSetup()
+    s.calibration()
+    while(True):
+        plt.pause(1)
+    sys.exit(0);

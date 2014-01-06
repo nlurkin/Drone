@@ -79,7 +79,7 @@ def sendNewTracking(anglesSet):
     else:
         quat = Quaternion(anglesSet)
         a = Vector([0,0,0])
-        v = Vector([-1,-2,0])
+        v = Vector([0,0,0])
         #v = Vector()
     simu.setReference(quat,v)
     
@@ -186,7 +186,7 @@ def main():
         elif s=="ref":
             sendNewTracking([1,1,0])
         elif s=="calib":
-            simu.calibration(plt)
+            simu.calibration()
 
             
         
