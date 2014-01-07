@@ -336,6 +336,7 @@ class Body(object):
         print self.cali.R
         self.UseController = True
         self.ctrl.setMotorCoefficient(self.cali.R[0],self.cali.R[1],self.cali.R[2],self.cali.R[3])
+        self.ctrl.setI(self.cali.getIAxis())
         
 if __name__ == "__main__":
     K_d = 0.0013

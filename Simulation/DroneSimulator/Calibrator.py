@@ -58,6 +58,13 @@ class Calibrator:
     def getAveragedI(self):
         return self.fI/float(self.number)
     
+    def getIAxis(self):
+        Ix = 0.5
+        Iy = Ix*(1-self.fI[0]*self.fI[1])/(self.fI[1]+1)
+        Iz = Ix*(self.fI[0]*self.fI[1]*self.fI[2] + self.fI[1]+1-self.fI[2])/(self.fI[1]+1)
+        
+        return Vector([Ix,Iy,Iz])
+    
     def clearPoints(self):
         self.Ialpha = []
         self.Iomega = []
