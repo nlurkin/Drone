@@ -59,7 +59,10 @@ class Motor(object):
         self.Rotation = Rotation
         
     def setMeasure(self, power, dt):
-        self.Power = sqrt(power)
+        if power<0:
+            self.Power = 0
+        else:
+            self.Power = sqrt(power)
         #Omega & Alpha
         self.computeOmega(dt)
         #thrust
@@ -77,7 +80,6 @@ class Motor(object):
         print "B " + str(self.B)
         
     def computeOmega(self, dt):
-        print self.Power
         newOmega = self.MaxOmega * self.Power/100.
         if self.Power<0:
             newOmega = 0

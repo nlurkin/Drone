@@ -65,6 +65,14 @@ class Calibrator:
         
         return Vector([Ix,Iy,Iz])
     
+    def getR(self,i):
+        R = self.R[i]
+        print R
+        R[0] = abs(R[0])*self.getIAxis()[0]
+        R[1] = abs(R[1])*self.getIAxis()[1]
+        R[2] = abs(R[2])*self.getIAxis()[2]
+        return R
+        
     def clearPoints(self):
         self.Ialpha = []
         self.Iomega = []

@@ -111,6 +111,11 @@ class PSquare:
         return Torque
         
     def computePP(self, qM, omegaM, aM, vM):
+        print "qM " + qM
+        print "omegaM " + omegaM
+        print "aM " + aM
+        print "vM " + vM
+        
         [vControl, aControl] = self.controlSignal()
         
         [self.Thrust, vQRef] = self.velocityControl(qM, aM, vM, vControl)

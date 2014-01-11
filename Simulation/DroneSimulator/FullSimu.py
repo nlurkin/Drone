@@ -66,6 +66,7 @@ class Simu(object):
     def deviate(self):
         r = Vector([random(),random(), random()]) 
         deviation = Params.MaxDeviation
+        r = Vector(0.2,0.3,0.4)
         self.b.setOmega(-deviation+(2*deviation*r))
     
     def heavyside(self, t, t0):
