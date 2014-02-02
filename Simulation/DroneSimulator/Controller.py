@@ -108,7 +108,7 @@ class PSquare:
     def attitudeControl(self, qM, omegaM, qRef, dt):
         qErr = qRef * qM.conj()
         
-        self.QInt = self.QInt + qErr*dt
+        self.QInt = self.QInt + qErr*dt*self.PInt
         if qErr[0]<0:
             intErr = -Vector(self.QInt)
         else:
@@ -121,7 +121,7 @@ class PSquare:
         
         
         #PInt>>0 -> precision; PInt<<0 -> Reaction speed
-        Torque = self.I*(axisErr*self.PQ - omegaM*self.POmega - intErr*self.PInt)
+        Torque = self.I*(axisErr*self.PQ - omegaM*self.POmega - intErr)
         #Iinv = Matrix([[self.I[0][0],0,0],[0,self.I[1][1],0],[0,0,self.I[2][2]]])
         #Torque = Iinv*(axisErr*self.PQ - omegaM*self.POmega)
         return Torque
