@@ -84,10 +84,16 @@ class Quaternion:
     
     def __mul__(self, other):
         q = Quaternion()
-        q.w = self.w*other.w - self.x*other.x - self.y*other.y - self.z*other.z
-        q.x = self.w*other.x + self.x*other.w - self.y*other.z + self.z*other.y
-        q.y = self.w*other.y + self.x*other.z + self.y*other.w - self.z*other.x
-        q.z = self.w*other.z - self.x*other.y + self.y*other.x + self.z*other.w
+        if other.__class__==Quaternion:
+            q.w = self.w*other.w - self.x*other.x - self.y*other.y - self.z*other.z
+            q.x = self.w*other.x + self.x*other.w - self.y*other.z + self.z*other.y
+            q.y = self.w*other.y + self.x*other.z + self.y*other.w - self.z*other.x
+            q.z = self.w*other.z - self.x*other.y + self.y*other.x + self.z*other.w
+        else:
+            q.w = self.w*other
+            q.x = self.x*other
+            q.y = self.y*other
+            q.z = self.z*other
         return q
     
     def __neg__(self):

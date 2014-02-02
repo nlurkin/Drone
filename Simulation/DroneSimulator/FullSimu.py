@@ -66,7 +66,7 @@ class Simu(object):
     def deviate(self):
         r = Vector([random(),random(), random()]) 
         deviation = Params.MaxDeviation
-        r = Vector(0.2,0.3,0.4)
+        r = Vector([0.2,0.3,0.4])
         self.b.setOmega(-deviation+(2*deviation*r))
     
     def heavyside(self, t, t0):
@@ -158,9 +158,9 @@ class Simu(object):
         plt.plot(self.t, self.b.Quat.x, 'rx')
         plt.plot(self.t, self.b.Quat.y, 'gx')
         plt.plot(self.t, self.b.Quat.z, 'bx')
-        plt.plot(self.t, self.b.ctrl.QRef.x, 'ro')
-        plt.plot(self.t, self.b.ctrl.QRef.y, 'go')
-        plt.plot(self.t, self.b.ctrl.QRef.z, 'bo')
+        plt.plot(self.t, self.b.ctrl.lastqRef.x, 'ro')
+        plt.plot(self.t, self.b.ctrl.lastqRef.y, 'go')
+        plt.plot(self.t, self.b.ctrl.lastqRef.z, 'bo')
 
         plt.subplot(2, 2 ,2)
         #theta
@@ -177,6 +177,9 @@ class Simu(object):
         plt.plot(t, self.b.Torque[0], 'rx')
         plt.plot(t, self.b.Torque[1], 'gx')
         plt.plot(t, self.b.Torque[2], 'bx')
+        plt.plot(t, self.b.ctrl.Torque[0], 'ro')
+        plt.plot(t, self.b.ctrl.Torque[1], 'go')
+        plt.plot(t, self.b.ctrl.Torque[2], 'bo')
         
 
         plotNbr+=1
@@ -189,6 +192,9 @@ class Simu(object):
         plt.plot(t, self.b.Velocity[0], 'rx')
         plt.plot(t, self.b.Velocity[1], 'gx')
         plt.plot(t, self.b.Velocity[2], 'bx')
+        plt.plot(t, self.b.ctrl.lastvRef[0], 'ro')
+        plt.plot(t, self.b.ctrl.lastvRef[1], 'go')
+        plt.plot(t, self.b.ctrl.lastvRef[2], 'bo')
         plt.subplot(2, 2 ,3)
         plt.plot(t, self.b.Acceleration[0], 'rx')
         plt.plot(t, self.b.Acceleration[1], 'gx')

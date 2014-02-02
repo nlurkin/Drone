@@ -31,6 +31,8 @@ class Params:
     
     TorqueIsSet = False
     
+    PCoeff = [20,4, 0]
+    
     def __init__(self):
         '''
         Constructor

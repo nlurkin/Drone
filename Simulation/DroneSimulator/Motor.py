@@ -90,7 +90,7 @@ class Motor(object):
         
         self.Alpha = (newOmega - self.Omega)/dt
         self.Omega = newOmega
-        print "omega " + str(self.Omega)
+        #print "omega " + str(self.Omega)
     
     def computeThrust(self):
         self.Thrust = self.K*pow(self.Omega, 2)

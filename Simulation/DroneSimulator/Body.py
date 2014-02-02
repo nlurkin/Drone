@@ -84,7 +84,7 @@ class Body(object):
         self.K_d = K_d
         self.L = L
         self.Mass = Mass
-        print "inertia factor x " + str((self.I[1]-self.I[2])/self.I[0])
+        #print "inertia factor x " + str((self.I[1]-self.I[2])/self.I[0])
         
     def setParameters(self,TorqueIsSet, MaxTorque, UseController):
         self.TorqueIsSet = TorqueIsSet
@@ -99,10 +99,10 @@ class Body(object):
         if Params.ctrlType==0:
             self.ctrl.setPs([10,15,2])
         elif Params.ctrlType==1:
-            self.ctrl.setPs([20,4])
+            self.ctrl.setPs(Params.PCoeff)
     
     def applyController(self):
-        t = self.ctrl.computePP(self.Quat, self.Omega, self.Acceleration, self.Velocity)
+        t = self.ctrl.computePP(self.Quat, self.Omega, self.Acceleration, self.Velocity, Params.dt)
         if self.TorqueIsSet: 
             if t[0]>self.MaxTorque:
                 t[0] = self.MaxTorque
@@ -117,7 +117,7 @@ class Body(object):
             if t[2]<-self.MaxTorque:
                 t[2] = -self.MaxTorque
         self.CtrlInput = t
-        print "Controller input " + t
+        #print "Controller input " + t
     
     def nextStep(self, dt):
         #controller
@@ -214,7 +214,7 @@ class Body(object):
             print "M2 tauZ " + str(self.m2.Tau_z)
             print "M3 tauZ " + str(self.m3.Tau_z)
             print "M4 tauZ " + str(self.m4.Tau_z)'''
-            print "Body torque " + self.Torque
+            #print "Body torque " + self.Torque
         else:
             self.Torque = self.CtrlInput
         
