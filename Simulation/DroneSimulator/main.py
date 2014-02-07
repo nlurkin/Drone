@@ -192,7 +192,10 @@ def main():
                 simu.dt = 0.001
             else:
                 simu.dt = 0.1
-                
+        elif s=="dump":
+            simu.b.exportCalib()
+        elif s=="load":
+            simu.b.importCalib()
 
             
         

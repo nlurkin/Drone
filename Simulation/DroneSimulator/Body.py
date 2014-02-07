@@ -1,13 +1,13 @@
-import sys
-
-from numpy.ma.core import sin, tan, cos
-from scipy.constants.constants import pi
-
 from Calibrator import Calibrator
 from Controller import PID, PSquare
 from Motor import Motor
 from ParamsClass import Params
 from mathclasses import Matrix, Quaternion, Vector
+from numpy.ma.core import sin, tan, cos
+from scipy.constants.constants import pi
+import sys
+import pickle
+
 
 
 class Body(object):
@@ -339,7 +339,21 @@ class Body(object):
         self.ctrl.setI(self.cali.getIAxis())
         
     def exportCalib(self):
-        print xxx
+        exportVals = {"R": [self.cali.getR(0),self.cali.getR(1),self.cali.getR(2),self.cali.getR(3)], "I":self.cali.getIAxis()}
+        oFile = open('calib.dat', "wb")
+        pickle.dump(exportVals, oFile)
+        oFile.close()
+    
+    def importCalib(self):
+        oFile = open('calib.dat', "rb")
+        vals = pickle.load(oFile)
+        oFile.close()
+        R = vals["R"]
+        I = vals["I"]
+        self.ctrl.setMotorCoefficient(R[0],R[1],R[2],R[3])
+        self.ctrl.setI(I)
+        
+        
         
         
 if __name__ == "__main__":
