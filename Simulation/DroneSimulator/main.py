@@ -187,6 +187,12 @@ def main():
             sendNewTracking([1,1,0])
         elif s=="calib":
             simu.calibration()
+        elif s=="dt":
+            if simu.dt==0.1:
+                simu.dt = 0.001
+            else:
+                simu.dt = 0.1
+                
 
             
         

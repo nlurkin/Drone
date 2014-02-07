@@ -338,6 +338,10 @@ class Body(object):
         self.ctrl.setMotorCoefficient(self.cali.getR(0),self.cali.getR(1),self.cali.getR(2),self.cali.getR(3))
         self.ctrl.setI(self.cali.getIAxis())
         
+    def exportCalib(self):
+        print xxx
+        
+        
 if __name__ == "__main__":
     K_d = 0.0013
     I = Params.I
