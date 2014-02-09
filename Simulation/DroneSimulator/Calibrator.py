@@ -41,7 +41,8 @@ class Calibrator:
         self.number += 1
     
     def calibrateR(self,motor,K):
-        I = self.fI/float(self.number)
+        #I = self.fI/float(self.number)
+        I = [0.177, 0.177, 0.334]
         
         #This works if I is well known and simulation step is small enough so that the difference between oldomega and omega is small
         Rx = (self.Ialpha[0][0] - self.Iomega[0][1]*self.Iomega[0][2]*I[0])/pow(self.fP[0],2)
@@ -67,7 +68,7 @@ class Calibrator:
     
     def getR(self,i):
         R = self.R[i]
-        print R
+        #print R
         R[0] = abs(R[0])*self.getIAxis()[0]
         R[1] = abs(R[1])*self.getIAxis()[1]
         R[2] = abs(R[2])*self.getIAxis()[2]

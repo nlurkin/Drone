@@ -140,6 +140,8 @@ def main():
         if plotting:
             if s=="p":
                 plotting = False
+            if s=="q":
+                break
             plt.pause(1)
             continue
         
@@ -196,6 +198,8 @@ def main():
             simu.b.exportCalib()
         elif s=="load":
             simu.b.importCalib()
+        elif s=="p":
+            plotting = True
 
             
         

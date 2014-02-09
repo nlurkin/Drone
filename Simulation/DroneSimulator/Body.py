@@ -190,6 +190,11 @@ class Body(object):
             Ry = self.L*self.m1.K*pow(Params.MaxOmega,2)/(10000)
             Rz = self.m1.B*pow(Params.MaxOmega,2)/(10000)
             RT = self.m1.K*pow(Params.MaxOmega,2)/(10000)
+            print "Real parameters :"
+            print "R1 " + str([Rx, 0, Rz, RT])
+            print "R2 " + str([0, Ry, Rz, RT])
+            print "R3 " + str([Rx, 0, Rz, RT])
+            print "R4 " + str([0, Ry, Rz, RT])
             self.ctrl.setMotorCoefficient([Rx, 0, Rz, RT],
                                           [0, Ry, Rz, RT],
                                           [Rx, 0, Rz, RT],
@@ -327,16 +332,16 @@ class Body(object):
     def calibrate(self,dt,simu):
         self.UseController = False
         
-        self.calibrateI(dt,simu)
+        #self.calibrateI(dt,simu)
         self.calibrateMotor(0, dt,simu)
-        self.calibrateMotor(1, dt,simu)
-        self.calibrateMotor(2, dt,simu)
-        self.calibrateMotor(3, dt,simu)
-        print self.cali.getAveragedI()
+        #self.calibrateMotor(1, dt,simu)
+        #self.calibrateMotor(2, dt,simu)
+        #self.calibrateMotor(3, dt,simu)
+        #print self.cali.getAveragedI()
         print self.cali.R
         self.UseController = True
-        self.ctrl.setMotorCoefficient(self.cali.getR(0),self.cali.getR(1),self.cali.getR(2),self.cali.getR(3))
-        self.ctrl.setI(self.cali.getIAxis())
+        #self.ctrl.setMotorCoefficient(self.cali.getR(0),self.cali.getR(1),self.cali.getR(2),self.cali.getR(3))
+        #self.ctrl.setI(self.cali.getIAxis())
         
     def exportCalib(self):
         exportVals = {"R": [self.cali.getR(0),self.cali.getR(1),self.cali.getR(2),self.cali.getR(3)], "I":self.cali.getIAxis()}
