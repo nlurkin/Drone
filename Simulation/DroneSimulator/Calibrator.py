@@ -41,13 +41,23 @@ class Calibrator:
         self.number += 1
     
     def calibrateR(self,motor,K):
-        #I = self.fI/float(self.number)
-        I = [0.177, 0.177, 0.334]
+        I = self.fI/float(self.number)
+        #OI = [0.177, 0.177, 0.334]
+        #I = [(OI[1]-OI[2])/OI[0], -(OI[0]-OI[2])/OI[1], (OI[0]-OI[1])/OI[2]]
         
         #This works if I is well known and simulation step is small enough so that the difference between oldomega and omega is small
-        Rx = (self.Ialpha[0][0] - self.Iomega[0][1]*self.Iomega[0][2]*I[0])/pow(self.fP[0],2)
-        Ry = (self.Ialpha[0][1] + self.Iomega[0][0]*self.Iomega[0][2]*I[1])/pow(self.fP[0],2)
-        Rz = (self.Ialpha[0][2] - self.Iomega[0][0]*self.Iomega[0][1]*I[2])/pow(self.fP[0],2)
+        
+        print self.Ialpha[0]
+        print self.Iomega[0]
+        print self.fP[0]
+        print I
+        
+        Rx = (self.Ialpha[0][0] - self.Iomega[0][1]*self.Iomega[0][2]*I[0])/self.fP[0]#pow(self.fP[0],2)
+        #Rx = ((self.Ialpha[1][0]-self.Ialpha[0][0]) - I[0]*(self.Iomega[1][1]*self.Iomega[1][2] - self.Iomega[0][1]*self.Iomega[0][2]))/(pow(self.fP[1],2)-pow(self.fP[0], 2))
+        Ry = (self.Ialpha[0][1] - self.Iomega[0][0]*self.Iomega[0][2]*I[1])/self.fP[0]#pow(self.fP[0],2)
+        #Ry = ((self.Ialpha[1][1]-self.Ialpha[0][1]) - I[1]*(self.Iomega[1][0]*self.Iomega[1][2] - self.Iomega[0][0]*self.Iomega[0][2]))/(pow(self.fP[1],2)-pow(self.fP[0], 2))
+        Rz = (self.Ialpha[0][2] - self.Iomega[0][0]*self.Iomega[0][1]*I[2])/self.fP[0]#pow(self.fP[0],2)
+        #Rz = ((self.Ialpha[1][2]-self.Ialpha[0][2]) - I[2]*(self.Iomega[1][0]*self.Iomega[1][1] - self.Iomega[0][0]*self.Iomega[0][1]))/(pow(self.fP[1],2)-pow(self.fP[0], 2))
         #print "Estimated Rx " + str(Rx)
         #print "Estimated Ry " + str(Ry)
         #print "Estimated Ry " + str(Rz)
@@ -60,18 +70,22 @@ class Calibrator:
         return self.fI/float(self.number)
     
     def getIAxis(self):
-        Ix = 0.5
-        Iy = Ix*(1-self.fI[0]*self.fI[1])/(self.fI[1]+1)
-        Iz = Ix*(self.fI[0]*self.fI[1]*self.fI[2] + self.fI[1]+1-self.fI[2])/(self.fI[1]+1)
+        
+        I = self.getAveragedI()
+        Ix = 0.177
+        Iy = Ix*(I[0]*I[1]*I[2] + I[1]+1-I[2])/(I[1]+1)
+        Iz = Ix*(1+I[0]*I[1])/(I[1]+1)
         
         return Vector([Ix,Iy,Iz])
+        #return [0.177, 0.177, 0.334]
     
     def getR(self,i):
-        R = self.R[i]
+        R = self.R[i][:]
         #print R
         R[0] = abs(R[0])*self.getIAxis()[0]
         R[1] = abs(R[1])*self.getIAxis()[1]
         R[2] = abs(R[2])*self.getIAxis()[2]
+        
         return R
         
     def clearPoints(self):

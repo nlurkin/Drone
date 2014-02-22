@@ -26,7 +26,7 @@ class Params:
     
     serialSleep = 0.05
     
-    MaxOmega = 2000
+    MaxOmega = 500
     Gravity = Vector([0, 0, -9.81])
     
     TorqueIsSet = False

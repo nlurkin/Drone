@@ -195,6 +195,10 @@ class Body(object):
             print "R2 " + str([0, Ry, Rz, RT])
             print "R3 " + str([Rx, 0, Rz, RT])
             print "R4 " + str([0, Ry, Rz, RT])
+            print Params.I
+            print "I_1 " + str((Params.I[1]-Params.I[2])/Params.I[0])
+            print "I_2 " + str((Params.I[0]-Params.I[2])/Params.I[1])
+            print "I_3 " + str((Params.I[0]-Params.I[1])/Params.I[2])
             self.ctrl.setMotorCoefficient([Rx, 0, Rz, RT],
                                           [0, Ry, Rz, RT],
                                           [Rx, 0, Rz, RT],
@@ -285,15 +289,17 @@ class Body(object):
         self.Position += self.Velocity*dt
     
     def calibrateI(self, dt,simu):
-        self.CtrlInput = [0, 0, 0, 0]
-        self.CtrlInput[0] = 3
+        minMotor = 3
+        dMotor = 1
+        self.CtrlInput = [minMotor, minMotor, minMotor, minMotor]
+        self.CtrlInput[0] = minMotor+dMotor
         
         for j in range(0, int(0.1/dt)):
             simu.nextStep()
         
         for i in range(0,2):
             #set motor power
-            self.CtrlInput[0] = pow(-1,i)*3
+            self.CtrlInput[0] = minMotor + pow(-1,i)*dMotor
             #get point
             for j in range(0, int(0.1/dt)):
                 simu.nextStep()
@@ -304,15 +310,17 @@ class Body(object):
             self.cali.calibrateI()
             self.cali.clearPoints()
         
-        self.CtrlInput[0] = -3
+        self.CtrlInput[0] = minMotor-dMotor
         for j in range(0, int(0.1/dt)):
             simu.nextStep()
         
         self.CtrlInput =  [0,0,0,0]
 
     def calibrateMotor(self, motor, dt,simu):
-        self.CtrlInput = [0, 0, 0, 0]
-        self.CtrlInput[motor] = 3
+        minMotor = 3
+        dMotor = 3
+        self.CtrlInput = [minMotor, minMotor, minMotor, minMotor]
+        self.CtrlInput[motor] = minMotor+dMotor
         
         for j in range(0, int(0.1/dt)):
             simu.nextStep()
@@ -320,28 +328,33 @@ class Body(object):
         #get point
         for j in range(0, int(0.1/dt)):
             simu.nextStep()
-        self.cali.newPoint(self.CtrlInput[motor], self.Omega, self.Alpha)
-        self.cali.calibrateR(motor,self.m1.K)
+        self.cali.newPoint(self.CtrlInput[motor]-minMotor, self.Omega, self.Alpha)
+        self.cali.calibrateR(motor,self.m1.K*pow(Params.MaxOmega,2)/(10000))
         self.cali.clearPoints()
         
-        self.CtrlInput[motor] = -3
+        self.CtrlInput[motor] = minMotor-dMotor
         for j in range(0, int(0.1/dt)):
             simu.nextStep()
         self.CtrlInput =  [0,0,0,0]
     
     def calibrate(self,dt,simu):
+        #dt = 0.001
         self.UseController = False
         
-        #self.calibrateI(dt,simu)
+        self.calibrateI(dt,simu)
         self.calibrateMotor(0, dt,simu)
-        #self.calibrateMotor(1, dt,simu)
-        #self.calibrateMotor(2, dt,simu)
-        #self.calibrateMotor(3, dt,simu)
-        #print self.cali.getAveragedI()
-        print self.cali.R
+        self.calibrateMotor(1, dt,simu)
+        self.calibrateMotor(2, dt,simu)
+        self.calibrateMotor(3, dt,simu)
+        print self.cali.getAveragedI()
+        print self.cali.getIAxis()
+        print self.cali.getR(0)
+        print self.cali.getR(1)
+        print self.cali.getR(2)
+        print self.cali.getR(3)
         self.UseController = True
-        #self.ctrl.setMotorCoefficient(self.cali.getR(0),self.cali.getR(1),self.cali.getR(2),self.cali.getR(3))
-        #self.ctrl.setI(self.cali.getIAxis())
+        self.ctrl.setMotorCoefficient(self.cali.getR(0),self.cali.getR(1),self.cali.getR(2),self.cali.getR(3))
+        self.ctrl.setI(self.cali.getIAxis())
         
     def exportCalib(self):
         exportVals = {"R": [self.cali.getR(0),self.cali.getR(1),self.cali.getR(2),self.cali.getR(3)], "I":self.cali.getIAxis()}
