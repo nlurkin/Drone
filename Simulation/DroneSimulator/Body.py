@@ -280,7 +280,7 @@ class Body(object):
         T = self.Thrust.rotate(self.Quat)
         #print "Thrust " + T
         self.Acceleration = T/self.Mass
-        self.Acceleration = Params.Gravity+T*(1/self.Mass)+self.Friction
+        self.Acceleration = Params.Gravity+T*(1/self.Mass)+self.Friction*(1/self.Mass)
     
     def computeVelocity(self, dt):
         self.Velocity += self.Acceleration*dt
@@ -289,7 +289,7 @@ class Body(object):
         self.Position += self.Velocity*dt
     
     def calibrateI(self, dt,simu):
-        minMotor = 3
+        minMotor = 800
         dMotor = 1
         self.CtrlInput = [minMotor, minMotor, minMotor, minMotor]
         self.CtrlInput[0] = minMotor+dMotor
@@ -303,10 +303,10 @@ class Body(object):
             #get point
             for j in range(0, int(0.1/dt)):
                 simu.nextStep()
-            self.cali.newPoint(self.CtrlInput[0], self.Omega, self.Alpha)
+            self.cali.newPoint(self.CtrlInput[0], self.Omega, self.Alpha, 0, 0)
             for j in range(0, int(0.1/dt)):
                 simu.nextStep()
-            self.cali.newPoint(self.CtrlInput[0], self.Omega, self.Alpha)
+            self.cali.newPoint(self.CtrlInput[0], self.Omega, self.Alpha, 0, 0)
             self.cali.calibrateI()
             self.cali.clearPoints()
         
@@ -317,7 +317,7 @@ class Body(object):
         self.CtrlInput =  [0,0,0,0]
 
     def calibrateMotor(self, motor, dt,simu):
-        minMotor = 3
+        minMotor = 800
         dMotor = 3
         self.CtrlInput = [minMotor, minMotor, minMotor, minMotor]
         self.CtrlInput[motor] = minMotor+dMotor
@@ -328,8 +328,18 @@ class Body(object):
         #get point
         for j in range(0, int(0.1/dt)):
             simu.nextStep()
-        self.cali.newPoint(self.CtrlInput[motor]-minMotor, self.Omega, self.Alpha)
-        self.cali.calibrateR(motor,self.m1.K*pow(Params.MaxOmega,2)/(10000))
+        self.cali.newPoint(self.CtrlInput[motor]-minMotor, self.Omega, self.Alpha, self.Acceleration, self.Quat)
+
+        self.CtrlInput[motor] = minMotor+dMotor+3
+        
+        for j in range(0, int(0.1/dt)):
+            simu.nextStep()
+        
+        #get point
+        for j in range(0, int(0.1/dt)):
+            simu.nextStep()
+        self.cali.newPoint(self.CtrlInput[motor]-minMotor, self.Omega, self.Alpha, self.Acceleration, self.Quat)
+        self.cali.calibrateR(motor,Params.Mass)#self.m1.K*pow(Params.MaxOmega,2)/(10000))
         self.cali.clearPoints()
         
         self.CtrlInput[motor] = minMotor-dMotor

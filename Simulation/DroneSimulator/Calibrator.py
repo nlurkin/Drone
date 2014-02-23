@@ -1,4 +1,4 @@
-from mathclasses import Matrix, Vector
+from mathclasses import Matrix, Vector, Quaternion
 
 
 class Calibrator:
@@ -11,6 +11,8 @@ class Calibrator:
     fP = []
     Iomega = []
     Ialpha = []
+    Ia = []
+    Iq = []
     number = 0
 
     def __init__(self):
@@ -18,10 +20,12 @@ class Calibrator:
         Constructor
         '''
     
-    def newPoint(self, p, omega, alpha):
+    def newPoint(self, p, omega, alpha, a, q):
         self.fP.append(p)
         self.Iomega.append(omega)
         self.Ialpha.append(alpha)
+        self.Ia.append(a)
+        self.Iq.append(q)
 
     def calibrateI(self):
         if len(self.fP)<2:
@@ -47,11 +51,6 @@ class Calibrator:
         
         #This works if I is well known and simulation step is small enough so that the difference between oldomega and omega is small
         
-        print self.Ialpha[0]
-        print self.Iomega[0]
-        print self.fP[0]
-        print I
-        
         Rx = (self.Ialpha[0][0] - self.Iomega[0][1]*self.Iomega[0][2]*I[0])/self.fP[0]#pow(self.fP[0],2)
         #Rx = ((self.Ialpha[1][0]-self.Ialpha[0][0]) - I[0]*(self.Iomega[1][1]*self.Iomega[1][2] - self.Iomega[0][1]*self.Iomega[0][2]))/(pow(self.fP[1],2)-pow(self.fP[0], 2))
         Ry = (self.Ialpha[0][1] - self.Iomega[0][0]*self.Iomega[0][2]*I[1])/self.fP[0]#pow(self.fP[0],2)
@@ -61,8 +60,23 @@ class Calibrator:
         #print "Estimated Rx " + str(Rx)
         #print "Estimated Ry " + str(Ry)
         #print "Estimated Ry " + str(Rz)
+
         
-        self.R[motor] = [Rx,Ry,Rz,K]
+        q1 = self.Iq[0]
+        a1 = self.Ia[0]
+        a1 = a1.rotate(q1.conj())
+        q2 = self.Iq[1]
+        a2 = self.Ia[1]
+        a2 = a2.rotate(q2.conj())
+        
+        g = Vector([0,0, 9.81])
+        g1 = g.rotate(q1)
+        g2 = g.rotate(q2)
+        
+        #Ok but needs to be with very small velocity to neglect friction
+        Rt = (K*(a1- a2) + K*(g1-g2))/(self.fP[0]-self.fP[1])
+        
+        self.R[motor] = [Rx,Ry,Rz,Rt[2]]
         
         return True
     
@@ -92,4 +106,6 @@ class Calibrator:
         self.Ialpha = []
         self.Iomega = []
         self.fP = []
+        self.Ia = []
+        self.Iq = []
     
