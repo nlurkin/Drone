@@ -54,29 +54,90 @@ public:
 		z = nz;
 	}
 
-	Quaternion getProduct(Quaternion q) {
-		// Quaternion multiplication is defined by:
-		//     (Q1 * Q2).w = (w1w2 - x1x2 - y1y2 - z1z2)
-		//     (Q1 * Q2).x = (w1x2 + x1w2 + y1z2 - z1y2)
-		//     (Q1 * Q2).y = (w1y2 - x1z2 + y1w2 + z1x2)
-		//     (Q1 * Q2).z = (w1z2 + x1y2 - y1x2 + z1w2
-		return Quaternion(
-				w*q.w - x*q.x - y*q.y - z*q.z,  // new w
-				w*q.x + x*q.w + y*q.z - z*q.y,  // new x
-				w*q.y - x*q.z + y*q.w + z*q.x,  // new y
-				w*q.z + x*q.y - y*q.x + z*q.w); // new z
+	Quaternion(Quaternion q){
+		w = q.w;
+		x = q.x;
+		y = q.y;
+		z = q.z;
 	}
 
-	Quaternion getConjugate() {
+	Quaternion(VectorFloat v){
+		w = 0.0f;
+		x = v.x;
+		y = v.y;
+		z = v.z;
+	}
+
+	void set(float nw, float nx, float ny, float nz) {
+		w = nw;
+		x = nx;
+		y = ny;
+		z = nz;
+	}
+
+	void print(){
+		Serial.print("(");
+		Serial.print(w);
+		Serial.print(",");
+		Serial.print(x);
+		Serial.print(",");
+		Serial.print(y);
+		Serial.print(",");
+		Serial.print(z);
+		Serial.println(")");
+	}
+
+	Quaternion operator+(Quaternion q){
+		Quaternion r;
+		r.w = w + q.w;
+		r.x = x + q.x;
+		r.y = y + q.y;
+		r.z = z + q.z;
+		r.normalize();
+		return r;
+	}
+
+	Quaternion operator-(Quaternion q){
+		Quaternion r;
+		r.w = w - q.w;
+		r.x = x - q.x;
+		r.y = y - q.y;
+		r.z = z - q.z;
+		r.normalize();
+		return r;
+	}
+
+	Quaternion operator*(Quaternion q){
+		return getProduct(q);
+	}
+	Quaternion getProduct(Quaternion q) {
+		Quaternion r;
+		r.w = w*q.w - x*q.x - y*q.y - z*q.z;
+		r.x = w*q.x + x*q.w - y*q.z + z*q.y;
+		r.y = w*q.y + x*q.z + y*q.w - z*q.x;
+		r.z = w*q.z - x*q.y + y*q.x + z*q.w;
+
+		return r;
+	}
+
+	Quaternion operator*(float v){
+		return Quaternion(v*w, v*x, v*y, v*z);
+	}
+
+	Quaternion operator-(){
+		return Quaternion(-w,-x,-y,-z);
+	}
+
+	Quaternion conjugate() {
 		return Quaternion(w, -x, -y, -z);
 	}
 
-	float getMagnitude() {
+	float mag() {
 		return sqrt(w*w + x*x + y*y + z*z);
 	}
 
 	void normalize() {
-		float m = getMagnitude();
+		float m = sqrt(mag());
 		w /= m;
 		x /= m;
 		y /= m;
@@ -89,19 +150,38 @@ public:
 		return r;
 	}
 
-	Quaternion operator*(Quaternion q){
-		return getProduct(q);
+	VectorFloat getAngles(){
+		VectorFloat a;
+		a[0] = atan(2*(w*x + y*z)/(1-2*(x*x + y*y)));
+		a[1] = asin(2*(w*y - z*x));
+		a[2] = atan(2*(w*z + x*y)/(1-2*(y*y + z*z)));
+		return a;
 	}
 
-	void print(){
-		Serial.print(w);
-		Serial.print(" ");
-		Serial.print(x);
-		Serial.print(" ");
-		Serial.print(y);
-		Serial.print(" ");
-		Serial.print(z);
-		Serial.println("");
+	VectorFloat getVector(){
+		return VectorFloat(x, y, z);
+	}
+
+	float &operator[](int i){
+		switch(i){
+		case 0:
+			return w;
+			break;
+		case 0:
+			return x;
+			break;
+		case 0:
+			return y;
+			break;
+		case 0:
+			return z;
+			break;
+		}
+		return 0;
+	}
+
+	bool operator==(Quaternion q){
+		return ((w==q.w) && (x==q.x) && (y==q.y) && (z==q.z));
 	}
 
 };
@@ -124,49 +204,36 @@ public:
 		z = nz;
 	}
 
-	float getMagnitude() {
+	/*float getMagnitude() {
 		return sqrt(x*x + y*y + z*z);
-	}
+	}*/
 
-	void normalize() {
+	/*void normalize() {
 		float m = getMagnitude();
 		x /= m;
 		y /= m;
 		z /= m;
-	}
+	}*/
 
-	VectorInt16 getNormalized() {
+	/*VectorInt16 getNormalized() {
 		VectorInt16 r(x, y, z);
 		r.normalize();
 		return r;
-	}
+	}*/
 
-	void rotate(Quaternion *q) {
-		// http://www.cprogramming.com/tutorial/3d/quaternions.html
-		// http://www.euclideanspace.com/maths/algebra/realNormedAlgebra/quaternions/transforms/index.htm
-		// http://content.gpwiki.org/index.php/OpenGL:Tutorials:Using_Quaternions_to_represent_rotation
-		// ^ or: http://webcache.googleusercontent.com/search?q=cache:xgJAp3bDNhQJ:content.gpwiki.org/index.php/OpenGL:Tutorials:Using_Quaternions_to_represent_rotation&hl=en&gl=us&strip=1
-
-		// P_out = q * P_in * conj(q)
-		// - P_out is the output vector
-		// - q is the orientation quaternion
-		// - P_in is the input vector (a*aReal)
-		// - conj(q) is the conjugate of the orientation quaternion (q=[w,x,y,z], q*=[w,-x,-y,-z])
+	void rotate(Quaternion q) {
+		VectorFloat r;
 		Quaternion p(0, x, y, z);
 
-		// quaternion multiplication: q * p, stored back in p
-		p = q -> getProduct(p);
+		p = q*p;
+		p = p*q.conjugate();
 
-		// quaternion multiplication: p * conj(q), stored back in p
-		p = p.getProduct(q -> getConjugate());
-
-		// p quaternion is now [0, x', y', z']
 		x = p.x;
 		y = p.y;
 		z = p.z;
 	}
 
-	VectorInt16 getRotated(Quaternion *q) {
+	VectorInt16 getRotated(Quaternion q) {
 		VectorInt16 r(x, y, z);
 		r.rotate(q);
 		return r;
@@ -190,9 +257,9 @@ public:
 	float z;
 
 	VectorFloat() {
-		x = 0;
-		y = 0;
-		z = 0;
+		x = 0.0f;
+		y = 0.0f;
+		z = 0.0f;
 	}
 
 	VectorFloat(float nx, float ny, float nz) {
@@ -201,18 +268,46 @@ public:
 		z = nz;
 	}
 
-	VectorFloat(Quaternion &q) {
+	VectorFloat(VectorFloat v){
+		x = v.x;
+		y = v.y;
+		z = v.z;
+	}
+
+	VectorFloat(Quaternion q) {
 		x = q.x;
 		y = q.y;
 		z = q.z;
 	}
 
-	float getMagnitude() {
+	void set(float nx, float ny, float nz){
+		x = nx;
+		y = ny;
+		z = nz;
+	}
+
+	float &operator[](int i){
+		if(i==0) return x;
+		else if(i==1) return y;
+		else return z;
+	}
+
+	void print(){
+		Serial.print("(");
+		Serial.print(x);
+		Serial.print(",");
+		Serial.print(y);
+		Serial.print(",");
+		Serial.print(z);
+		Serial.println(")");
+	}
+
+	float mag() {
 		return sqrt(x*x + y*y + z*z);
 	}
 
 	void normalize() {
-		float m = getMagnitude();
+		float m = mag();
 		x /= m;
 		y /= m;
 		z /= m;
@@ -224,96 +319,62 @@ public:
 		return r;
 	}
 
-	void rotate(Quaternion *q) {
+	void rotate(Quaternion q) {
+		VectorFloat r;
 		Quaternion p(0, x, y, z);
 
-		// quaternion multiplication: q * p, stored back in p
-		p = q -> getProduct(p);
+		p = q*p;
+		p = p*q.conjugate();
 
-		// quaternion multiplication: p * conj(q), stored back in p
-		p = p.getProduct(q -> getConjugate());
-
-		// p quaternion is now [0, x', y', z']
 		x = p.x;
 		y = p.y;
 		z = p.z;
 	}
 
-	VectorFloat getRotated(Quaternion *q) {
+	VectorFloat getRotated(Quaternion q) {
 		VectorFloat r(x, y, z);
 		r.rotate(q);
 		return r;
 	}
 
+	VectorFloat operator-(VectorFloat s){
+		return VectorFloat(x-s.x, y-s.y, z-s.z);
+	}
+	VectorFloat operator+(VectorFloat s){
+		return VectorFloat(x+s.x, y+s.y, z+s.z);
+	}
+	VectorFloat operator-(float s){
+		return VectorFloat(x-s, y-s, z-s);
+	}
+	VectorFloat operator+(float s){
+		return VectorFloat(x+s, y+s, z+s);
+	}
+	VectorFloat operator-(){
+		return VectorFloat(-x,-y,-z);
+	}
+
 	VectorFloat operator*(float s){
-		VectorFloat r(x,y,z);
-		r.x = r.x * s;
-		r.y = r.y * s;
-		r.z = r.z * s;
-		return r;
+		return VectorFloat(x*s, y*s, z*s);
+	}
+	float operator*(VectorFloat s){
+		return (x*s.x + y*s.y + z*s.z);
 	}
 
 	VectorFloat operator/(float s){
-		VectorFloat r(x,y,z);
-		r.x = r.x / s;
-		r.y = r.y / s;
-		r.z = r.z / s;
-		return r;
+		return VectorFloat(x/s, y/s, z/s);
 	}
 
-	VectorFloat operator-(float s){
-		VectorFloat r(x,y,z);
-		r.x = r.x - s;
-		r.y = r.y - s;
-		r.z = r.z - s;
-		return r;
-	}
-	VectorFloat operator+(float s){
-		VectorFloat r(x,y,z);
-		r.x = r.x + s;
-		r.y = r.y + s;
-		r.z = r.z + s;
-		return r;
+	bool operator==(VectorFloat v){
+		return ((x==v.x) && (y==v.y) && (z==v.z));
 	}
 
-	VectorFloat operator-(VectorFloat s){
-		VectorFloat r(x,y,z);
-		r.x = r.x - s.x;
-		r.y = r.y - s.y;
-		r.z = r.z - s.z;
-		return r;
+	VectorFloat cross(VectorFloat v){
+		v = VectorFloat();
+		v[0] = y*v.z-z*v.y;
+		v[1] = z*v.x-x*v.z;
+		v[2] = x*v.y-y*v.x;
+		return v;
 	}
-	VectorFloat operator+(VectorFloat s){
-		VectorFloat r(x,y,z);
-		r.x = r.x + s.z;
-		r.y = r.y + s.y;
-		r.z = r.z + s.z;
-		return r;
-	}
-
-	VectorFloat operator-(){
-		VectorFloat r(x,y,z);
-		r.x = -r.x;
-		r.y = -r.y;
-		r.z = -r.z;
-		return r;
-	}
-
-	float &operator[](int i){
-		if(i==0) return x;
-		else if(i==1) return y;
-		else return z;
-	}
-
-	void print(){
-		Serial.print(x);
-		Serial.print(" ");
-		Serial.print(y);
-		Serial.print(" ");
-		Serial.print(z);
-		Serial.println("");
-	}
-
 };
 
 template<class T, int I, int J>
@@ -401,6 +462,35 @@ private:
 	};// Allocates double the old space
 };
 
+
+class MotorResponse{
+	float Rx, Ry, Rz, Rt;
+
+	float &operator[](int i){
+		switch(i){
+		case 0:
+			return Rx;
+			break;
+		case 0:
+			return Ry;
+			break;
+		case 0:
+			return Rz;
+			break;
+		case 0:
+			return Rt;
+			break;
+		}
+		return 0;
+	}
+
+	void set(float x, float y, float z, float t){
+		Rx = x;
+		Ry = y;
+		Rz = z;
+		Rt = t;
+	}
+};
 
 
 #endif /* _HELPER_3DMATH_H_ */

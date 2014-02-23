@@ -569,7 +569,7 @@ uint8_t MPU6050DMP::dmpGetLinearAccelInWorld(VectorInt16 *v, VectorInt16 *vReal,
     // rotate measured 3D acceleration vector into original state
     // frame of reference based on orientation quaternion
     memcpy(v, vReal, sizeof(VectorInt16));
-    v -> rotate(q);
+    v -> rotate(*q);
     return 0;
 }
 // uint8_t MPU6050DMP::dmpGetGyroAndAccelSensor(long *data, const uint8_t* packet);

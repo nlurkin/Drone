@@ -92,7 +92,7 @@ VectorFloat AccGyroData::getLinearAcceleration(){
 VectorFloat AccGyroData::getGravity(){
 	VectorFloat r(0., 0., 1.);
 
-	r.rotate(&fQuaternion);
+	r.rotate(fQuaternion);
 
 	r = r*fFullScaleAccelerometer;
 	return r;

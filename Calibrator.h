@@ -17,19 +17,27 @@ public:
 	Calibrator();
 	virtual ~Calibrator();
 
-	bool newPoint(int motor, float p, VectorFloat omega, VectorFloat alpha);
+	void newPoint(int motor, float p, VectorFloat omega, VectorFloat alpha, VectorFloat acceleration, Quaternion q);
 	bool calibrate();
+	bool calibrateI();
+	bool calibrateR();
+	VectorFloat getAveragedI();
+	VectorFloat getIAxis();
+	void finalizeI();
+	MotorResponse getR(int i);
 
 	void clearPoints();
 
 private:
-	bool calibrateIndividual(int motor);
-
-	MatrixNic<int, 3, 3> fI;
-	VectorFloat R[4];
+	VectorFloat fI, fIAxis;
+	MotorResponse fR[4];
 
 	vector<int> fP[4];
-	vector<VectorFloat> fOmega[4], fAlpha[4];
+	vector<VectorFloat> fOmega[4], fAlpha[4], fA[4];
+	vector<Quaternion> fQ[4];
+
+	int dataPoints;
+	float mass;
 };
 
 #endif /* CALIBRATOR_H_ */
