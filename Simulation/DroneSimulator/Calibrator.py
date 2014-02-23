@@ -70,8 +70,8 @@ class Calibrator:
         a2 = a2.rotate(q2.conj())
         
         g = Vector([0,0, 9.81])
-        g1 = g.rotate(q1)
-        g2 = g.rotate(q2)
+        g1 = g.rotate(q1.conj())
+        g2 = g.rotate(q2.conj())
         
         #Ok but needs to be with very small velocity to neglect friction
         Rt = (K*(a1- a2) + K*(g1-g2))/(self.fP[0]-self.fP[1])
