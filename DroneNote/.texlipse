@@ -1,0 +1,14 @@
+#TeXlipse project settings
+#Mon Feb 24 11:22:36 GMT 2014
+markTmpDer=true
+builderNum=2
+outputDir=
+makeIndSty=
+bibrefDir=
+outputFormat=pdf
+tempDir=tmp
+mainTexFile=DroneNote.tex
+outputFile=DroneNote.pdf
+langSpell=en
+markDer=true
+srcDir=
