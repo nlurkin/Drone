@@ -25,8 +25,7 @@ void Calibrator::newPoint(int motor, float p, VectorFloat omega, VectorFloat alp
 	fQ[motor].push_back(q);
 }
 
-bool Calibrator::calibrateI(){
-	int motor =0;
+bool Calibrator::calibrateI(int motor){
 	if(fP[motor].size()<2) return false;
 	VectorFloat I;
 
@@ -50,9 +49,8 @@ bool Calibrator::calibrate() {
 	return true;
 }
 
-bool Calibrator::calibrateR() {
+bool Calibrator::calibrateR(int motor) {
 	VectorFloat I = getAveragedI();
-	int motor = 0;
 	VectorFloat a1, a2, g1, g2, g;
 	VectorFloat Rt;
 

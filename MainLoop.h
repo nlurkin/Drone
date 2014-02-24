@@ -9,6 +9,7 @@
 #define MAINLOOP_H_
 #include "AccGyro.h"
 #include "AttitudeLoop.h"
+#include "Calibrator.h"
 
 class MainLoop {
 public:
@@ -18,24 +19,34 @@ public:
 	void setup();
 	void loop();
 
-	void initLoop();
+	void idleLoop();
+	void initializationLoop();
+	void calibrationLoop();
 	void flightLoop();
 
-	void setCalibration();
+	/*void setCalibration();
 	void setCalibrationSerial();
 	void setCalibrationLocal();
 	void calibrateSerial();
 	void calibrateSensor();
-	void calibrate();
+	void calibrate();*/
 
 private:
+	enum States {kIDLE, kINITIALIZED, kCALIBRATING, kFLYING};
+
 	AccGyro sensor;
 	AttitudeLoop ctl;
+	SimpleControl sCtl;
 	SerialInterface ser;
+	MotorControl mCtrl;
+	Calibrator calib;
+
 	bool fSimulate;
-	bool fCalibrated;
-	bool fInitialized;
-	bool fCalibrationRequested;
+	//bool fCalibrated;
+	//bool fInitialized;
+	//bool fCalibrationRequested;
+
+	States fState;
 };
 
 #endif /* MAINLOOP_H_ */

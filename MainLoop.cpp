@@ -12,9 +12,10 @@
 MainLoop::MainLoop(): sensor(0X68) {
 	// TODO Auto-generated constructor stub
 	fSimulate = false;
-	fCalibrated = false;
-	fInitialized = false;
-	fCalibrationRequested = false;
+	//fCalibrated = false;
+	//fCalibrationRequested = false;
+
+	fState = kIDLE;
 }
 
 MainLoop::~MainLoop() {
@@ -27,26 +28,52 @@ void MainLoop::setup(){
 	sensor.setSimulate(true);
 	ctl.setQRef(Quaternion(1, 0, 0, 0));
 	ctl.setP(20, 4);
+
+	//Reset all motors
+	mCtrl.disableAll();
 }
 
 void MainLoop::loop(){
 	ser.read();
-	if(!fInitialized){
-		initLoop();
-	}
+	if(fState==kIDLE) idleLoop();
+	else if(fState==kINITIALIZED) initializationLoop();
+	else if(fState==kCALIBRATING) calibrationLoop();
+	else if(fState==kFLYING) flightLoop();
 	else{
-		flightLoop();
+		//Error, do something
 	}
 }
 
-void MainLoop::initLoop(){
-	if(!fCalibrated) setCalibration();
-	else{
-		ctl.printI();
-		fInitialized = true;
-	}
+void MainLoop::initializationLoop(){
 }
 
+void MainLoop::calibrationLoop(){
+	bool calibrate = true;
+	if(calibrate){
+		// Take of
+		sCtl.takeOff();
+
+		// Stabilise altitude
+		sCtl.levelOff();
+
+		//Calibrate Inertia
+
+
+		//Calibrate motors
+		//1
+		//2
+		//3
+		//4
+
+		//Dump on memory (not necessarily)
+	}
+	else {
+		//Or load from memory
+	}
+
+	//Apply configuration to controller
+}
+/*
 void MainLoop::setCalibration() {
 	if(fSimulate) setCalibrationSerial();
 	else setCalibrationLocal();
@@ -70,7 +97,7 @@ void MainLoop::calibrateSerial() {
 }
 
 void MainLoop::calibrateSensor() {
-}
+}*/
 
 void MainLoop::flightLoop() {
 	VectorFloat tau;
@@ -86,7 +113,7 @@ void MainLoop::flightLoop() {
 	}
 }
 
-void MainLoop::calibrate() {
+/*void MainLoop::calibrate() {
 	Calibrator cc;
 	int motorIndex=0;
 	bool cont = false;
@@ -116,3 +143,4 @@ void MainLoop::calibrate() {
 		}
 	}
 }
+*/

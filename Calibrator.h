@@ -19,8 +19,8 @@ public:
 
 	void newPoint(int motor, float p, VectorFloat omega, VectorFloat alpha, VectorFloat acceleration, Quaternion q);
 	bool calibrate();
-	bool calibrateI();
-	bool calibrateR();
+	bool calibrateI(int motor);
+	bool calibrateR(int motor);
 	VectorFloat getAveragedI();
 	VectorFloat getIAxis();
 	void finalizeI();
