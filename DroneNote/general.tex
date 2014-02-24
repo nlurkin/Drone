@@ -1,0 +1,96 @@
+In the following section all the forces will be epxressed in the reference frame
+of the quadcopter (the body frame) with the x and y axis along the perpendicular
+arms and the z axis at the center of the model and pointing upwards as depicted
+on \fig{RefFrame}. The computation is much simpler in this frame because all the
+forces and torques involved are oriented along the z axis. On the other hand all
+the positions, speeds and orientations are expressed in the inertial frame and
+represent the motion of the body frame observed in the inertial frame. Moving
+from the body frame to the inertial one can be done by using the rotation
+matrices associated to the roll-pitch-yaw angles $\v{\theta} =
+(\phi,\theta,\psi)$ describing the orientation of the body frame in the inertial frame.
+\begin{equation}
+	R_{b,i} = \matrix{
+	c\phi c\psi - c\theta s\phi s\psi & -c\psi s\phi - c\phi c\theta s\psi &
+	s\theta s\psi\\
+	c\theta c\psi s\phi+c\phi s\psi & c\phi c\theta c\psi-s\phi s\psi &
+	-c\psi s\theta\\
+	s\phi s\theta & c\phi s\theta & c\theta
+	}
+\end{equation}
+Moving from the inertial frame to the body frame is done using the inverse
+matrix $R^{-1}$.
+
+\subsection{Quaternion representation}
+We will however avoid using angles whenever possible because of their intrinsic
+gimbal-lock problem\todo{reference}. We will rather use the
+unit quaternion\todo{reference} representation which has several advantages:
+\begin{itemize}
+  \item Not subject to gimbal lock
+  \item More compact
+  \item Easier to compose
+  \item Numerically more stable and computationally less costly
+\end{itemize}
+The quaternion is formed of three complex coordinates x,y,z (the
+vector part) and a real coordinate w: $\q{q} = w + x\mathbf{i} + y\mathbf{j} +
+z\mathbf{k}$. The norm of the quaternion is defined as:
+\begin{equation}
+	||\q{q}|| = w^2 + x^2 + y^2 + z^2
+\end{equation}
+It basically represents a
+single axis in 3D space around which the rotation is done. In order to represent rotations the quaternion must
+always be a unit quaternion, i.e. its norm is 1.
+
+Constructing the quaternion from the \v{\theta} angles is done with the
+following operation:
+\begin{equation}
+	\matrix{w\\x\\y\\z} = \matrix{
+		c(\phi/2)c(\theta/2)c(\psi/2)+s(\phi/2)s(\theta/2)s(\psi/2)\\
+		s(\phi/2)c(\theta/2)c(\psi/2)-c(\phi/2)s(\theta/2)s(\psi/2)\\
+		c(\phi/2)s(\theta/2)c(\psi/2)+s(\phi/2)c(\theta/2)s(\psi/2)\\
+		c(\phi/2)c(\theta/2)s(\psi/2)-s(\phi/2)s(\theta/2)c(\psi/2)
+	}
+\end{equation}
+ Going back to the angles is done with:
+ \begin{equation}
+	\matrix{\phi\\\theta\\\psi} = \matrix{
+		arctan(\frac{2(wx + yz)}{1-2(x^2 + y^2)})\\
+		arcsin(2(wy - zx))\\
+		arctan(\frac{2(wz + xy)}{1-2(y^2y + z^2)})
+	}
+\end{equation}
+
+Composition of rotations is simply done by multiplying the quaternions
+representing each rotation. The product of two quaternions $\q{q} =
+(w_1,x_1,y_1,z_1)$ and $\q{p} = (w_2,x_2,y_2,z_2)$ is defined by the Hamilton
+product:
+\begin{equation}
+	\q{q}\otimes\q{p} = \q{q}\q{p} = \matrix{
+	w_1w_2 - x_1x_2 - y_1y_2 - z_1z_2\\
+	w_1x_2 + x_1w_2 - y_1z_2 + z_1y_2\\
+	w_1y_2 + x_1z_2 + y_1w_2 - z_1x_2\\
+	w_1z_2 - x_1y_2 + y_1x_2 + z_1w_2
+	}
+\end{equation}
+If \q{q_1},\q{q_2},\q{q_3},\ldots are the quaternions representing the
+rotations then the composed rotation \q{q_{123\ldots}} is
+\begin{equation}
+	\q{q_{123\ldots}} = \ldots\q{q_3}\q{q_2}\q{q_1}
+\end{equation}
+It is worth noting that similarly to the composition of rotations, the
+quaternion multiplication is not commutative. In the example above, we have
+executed the rotation 1, followed by the rotation 2, followed by the rotation 3,
+\ldots.
+
+The reverse rotation is done by taking the inverse quaternion which is equal to
+its conjugate since it is a unit quaternion:
+\begin{equation}
+	\q{q^{-1}} = \q{q^{*}} = \matrix{w\\-x\\-y\\-z} 
+\end{equation}
+
+Finally applying a rotation \q{q} to a vector \v{v} is done by evaluating its
+conjugation by \q{q}. The vector is considered as a quaternion with a null real
+coordinate $\q{v} = (0,\v{v})$.
+\begin{equation}
+	\q{v'} = \matrix{0\\\v{v'}} = \q{q}\q{v}\q{q^{*}}
+\end{equation}
+

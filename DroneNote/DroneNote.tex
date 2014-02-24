@@ -1,19 +1,40 @@
 %%This is a very basic article template.
 %%There is just one section and two subsections.
 \documentclass{article}
+\usepackage{amsmath}
+
+\input{stdCommands}
+\input{extCommands}
+
+\title{Drone Note}
+\author{Nicolas Lurkin}
 
 \begin{document}
+\maketitle
 
+\begin{abstract}
+The purpose of this document is to describe the implementation of a quadricopter
+controller. All the steps will be described from the physics of the model to its
+simulation followed by the implementation of the calibration, of the
+proportional-integral-derivative (PID) controller and finally the full design of
+the embedded supervision program.
+\end{abstract}
 
-\section{Title}
+\section{Introduction}\labelsec{Introduction} 
 
-\subsection{Subtitle}
+\section{General considerations}\labelsec{General}
+\input{general}
 
-Plain text.
+\section{Simulation}\labelsec{Simulation}
+\input{physics}
 
-\subsection{Another subtitle}
+\section{PID controller}\labelsec{Controller}
 
-More plain text.
+\section{Calibration procedure}\labelsec{Calibration}
+
+\section{Supervision program}\labelsec{Supervision}
+
+\thebibliography{}
 
 
 \end{document}
