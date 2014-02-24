@@ -100,4 +100,4 @@ class Motor(object):
 
     def computeTauZ(self):
         #Mettre le -1 en global ou pas?
-        self.Tau_z = self.Rotation*self.Tau_D# + self.I_M*self.Alpha     
+        self.Tau_z = self.Rotation*self.Tau_D + self.I_M*self.Alpha     
