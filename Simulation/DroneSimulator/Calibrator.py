@@ -84,7 +84,6 @@ class Calibrator:
         return self.fI/float(self.number)
     
     def getIAxis(self):
-        
         I = self.getAveragedI()
         Ix = 0.177
         Iy = Ix*(I[0]*I[1]*I[2] + I[1]+1-I[2])/(I[1]+1)
