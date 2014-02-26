@@ -59,6 +59,12 @@ following operation:
 	}
 \end{equation}
 
+The reverse rotation is done by taking the inverse quaternion which is equal to
+its conjugate since it is a unit quaternion:
+\begin{equation}
+	\q{q^{-1}} = \q{q^{*}} = \matrix{w\\-x\\-y\\-z} 
+\end{equation}
+
 Composition of rotations is simply done by multiplying the quaternions
 representing each rotation. The product of two quaternions $\q{q} =
 (w_1,x_1,y_1,z_1)$ and $\q{p} = (w_2,x_2,y_2,z_2)$ is defined by the Hamilton
@@ -81,16 +87,17 @@ quaternion multiplication is not commutative. In the example above, we have
 executed the rotation 1, followed by the rotation 2, followed by the rotation 3,
 \ldots.
 
-The reverse rotation is done by taking the inverse quaternion which is equal to
-its conjugate since it is a unit quaternion:
-\begin{equation}
-	\q{q^{-1}} = \q{q^{*}} = \matrix{w\\-x\\-y\\-z} 
-\end{equation}
-
-Finally applying a rotation \q{q} to a vector \v{v} is done by evaluating its
+Applying a rotation \q{q} to a vector \v{v} is done by evaluating its
 conjugation by \q{q}. The vector is considered as a quaternion with a null real
-coordinate $\q{v} = (0,\v{v})$.
+coordinate $\q{v} = (0,\v{v})$ (vector quaternion).
 \begin{equation}
 	\q{v'} = \matrix{0\\\v{v'}} = \q{q}\q{v}\q{q^{*}}
 \end{equation}
 
+The opposite operation, finding the quaternion that will move the origin vector $\v{v}_o$ onto the final vector
+$\v{v}_{f}$ is done in two steps. First creating a quaternion \q{q_{of}} whose vector part is the vector product of the
+two vectors and the real part is the sum of their norm and their scalar product.
+\begin{equation}
+	\q{q_{of}} = \matrix{||\v{v}_o|| + ||\v{v}_f|| + \v{v}_o\cdot\v{v}_f\\\v{v}_o\times\v{v}_f}
+\end{equation}
+Then the quaternion must be normalized to represent a rotation.
