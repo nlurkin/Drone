@@ -95,11 +95,19 @@ class PSquare:
             vErr = Vector([aM[0], aM[1], 0])
             self.lastvRef = Vector([0,0,0])
         
+        #TODO: try having a real PID with here rather than P with Kp=1
+        
         #print "AReq " + (-Params.Gravity)
         #print "vErr " + vErr
+        
+        #TODO: try multiplying by the mass here as this is actually computing the acceleration
         Thrust = vErr - Params.Gravity
         
         qRef = createRotation(Thrust, Vector([0,0,1]))
+        #This is required to keep the z component compensating for gravity. 
+        #If not, the norm is kept when rotating and the z component is reduced accordingly.
+        #Maybe try by creating the rotation between z and the error and adding the gravity after!
+        #TODO: ou alors c'est fait plus loin en divisant par z' et celui-ci ne sert à rien?
         qRef.w = 1
         qRef.normalize()
         
@@ -145,6 +153,9 @@ class PSquare:
         #print "Thrust " + self.Thrust*self.Mass + " (" + str(sqrt(self.Thrust.mag())) + ")"
         #print "Rotation " + qM
         
+        #TODO: remove the -qM as -qM==qM
+        #TODO: je pense qu'en ce qui concerne l'axe z ici, comme on rotate z et qu'on prends la composante z, q ou q* donne les meme resultat
+        #TODO: je pense que c'est ca qui rescale T pour contrer correctement la gravite. 
         T = self.Thrust*self.Mass*(1/(Vector([0,0,1]).rotate(-qM.conj())[2]))
         #T = self.Thrust.rotate(-qM.conj())*self.Mass
         
