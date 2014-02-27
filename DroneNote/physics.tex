@@ -58,7 +58,7 @@ on the y axis and 2 and 4 on the x axis:
 \end{equation}
 Where the $L_i$ are the distances between the center of the body and the motors.
 From this point the angular movement can be computed. The angular acceleration is extracted from
-\begin{equation}
+\begin{equation}\labeleq{torqueEquation}
 	\v{\tau} = I\v{\dot{\omega}} + \v{\omega}\times(I\v{\omega})
 \end{equation}
 Isolating $\dot{\omega}$ in this equation supposes to invert the inertia matrix $I$. The off-diagonal terms will be
@@ -93,7 +93,7 @@ The angular acceleration is then
 		\frac{\tau_z}{I_{yy}} - I_3\omega_x\omega_y
 	}
 \end{align}
-Where $I_1 = \frac{I_{yy}-I_{zz}}{I_{xx}}$, $I_2 = \frac{I_{zz}-I_{xx}}{I_{yy}}$, $I_3 = \frac{I_{xx}-I_{yy}}{I_{zz}}$
+Where $I_1 = \frac{I_{zz}-I_{yy}}{I_{xx}}$, $I_2 = \frac{I_{zz}-I_{xx}}{I_{yy}}$, $I_3 = \frac{I_{yy}-I_{xx}}{I_{zz}}$
 are the reduced inertia parameters.
 
 The angular velocity is obtained by numerically integrating the angular acceleration
