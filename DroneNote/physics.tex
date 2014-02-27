@@ -3,15 +3,15 @@ Speak about dt
 Speak about step N. When omitted means we take it at step N.
 
 \subsection{Motor Physics}
-The model is equipped with brushless motors that can be modelled using a serie
-of parameters depending on its eletrical properties and on the propeller
+The model is equipped with brushless motors that can be modelled using a series
+of parameters depending on its electrical properties and on the propeller
 properties. The following equations will only make use of proportionality
 constants that are combinations of these parameters. The full derivation can be
 found in \app{motorDerivation}.
 Each motor is generating two effects: the thrust and the torque, both being directed along the z axis.
 	
 The motor response is regulated by its rotation speed $\om$. From a hardware
-point of view, the control is done by variating the electrical current sent to
+point of view, the control is done by varying the electrical current sent to
 the motor but we will assume a proportional relation between them. The
 supervision program will simply have to remap the output of the controller to
 the current sent to the motor.
@@ -21,12 +21,12 @@ The thrust for the motor $i$ is given by
 	T_i = \left(\frac{K_vK_\tau\sqrt{2\rho A_S}}{K_t}\right)^2\om^2
 	= k\om^2
 \end{equation}
-and the torque is
+And the torque is
 \begin{equation}\labeleq{motorTau}
 	\tau_i = (-1)^{d}\frac{R^3\rho C_D A_X}{2}\om^2 + I_i\omd = (-1)^{d}b_i\om^2
 	+ I_i\omd
 \end{equation}
-where $d=0$ for motors spinning clockwise and $d=1$ for those spinning
+Where $d=0$ for motors spinning clockwise and $d=1$ for those spinning
 counter-clockwise and $I_i$ is the moment of inertia of the motor $i$ around the z
 axis. The motor angular acceleration is given by taking the numerical derivative
 \begin{equation}
@@ -84,7 +84,7 @@ inverse.
 	}
 \end{equation}
 
-The angular aceleration is then
+The angular acceleration is then
 \begin{align}
 	\v{\dot{\omega}} &= I^{-1}(\v{\tau} - \v{\omega}\times(I\v{\omega})) \\
 	&= \matrix{
@@ -93,7 +93,7 @@ The angular aceleration is then
 		\frac{\tau_z}{I_{yy}} - I_3\omega_x\omega_y
 	}
 \end{align}
-where $I_1 = \frac{I_{yy}-I_{zz}}{I_{xx}}$, $I_2 = \frac{I_{zz}-I_{xx}}{I_{yy}}$, $I_3 = \frac{I_{xx}-I_{yy}}{I_{zz}}$
+Where $I_1 = \frac{I_{yy}-I_{zz}}{I_{xx}}$, $I_2 = \frac{I_{zz}-I_{xx}}{I_{yy}}$, $I_3 = \frac{I_{xx}-I_{yy}}{I_{zz}}$
 are the reduced inertia parameters.
 
 The angular velocity is obtained by numerically integrating the angular acceleration
@@ -135,7 +135,7 @@ inertial frame (as this translational force is acting to move the body frame):
 \begin{equation}
 	\q{T'} = \q{q}\q{T}\q{q^*}
 \end{equation}
-where \q{q} is the quaternion representing the current rotation of the body
+Where \q{q} is the quaternion representing the current rotation of the body
 frame and determined earlier with the rotational component.
 The linear acceleration is extracted from the equation of motion
 \begin{equation}
