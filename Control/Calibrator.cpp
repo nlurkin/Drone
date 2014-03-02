@@ -70,7 +70,7 @@ bool Calibrator::calibrateR(int motor) {
 	g2 = g.rotate(fQ[motor][1].conjugate());
 
 	//Ok but needs to be with very small velocity to neglect friction
-	Rt = (mass*(a1- a2) + mass*(g1-g2))/(fP[motor][0]-fP[motor][1]);
+	Rt = ((a1- a2)*mass + (g1-g2)*mass)/(fP[motor][0]-fP[motor][1]);
 
 	fR[motor][3] = Rt[2];
 

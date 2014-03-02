@@ -37,17 +37,18 @@ public:
 	void calibrate();*/
 
 private:
-	static enum MainStates {kINITIALIZING, kIDLE, kCALIBRATING, kFLYING};
+	enum MainStates {kINITIALIZING, kIDLE, kCALIBRATING, kFLYING};
 
-	CalibrationLoop lCalib;
+	CalibrationLoop fLoopCalib;
 
 
-	AccGyro sensor;
-	AttitudeLoop ctl;
-	SimpleControl sCtl;
-	SerialInterface ser;
-	MotorControl mCtrl;
-	Calibrator calib;
+	GenericSensor *fSensor;
+	MotorControl *fMotorCtrl;
+	//AttitudeLoop ctl;
+	//SimpleControl sCtl;
+	SerialInterface *fSerial;
+
+	//Calibrator calib;
 
 	bool fSimulate;
 

@@ -8,6 +8,10 @@
 #ifndef CALIBRATIONLOOP_H_
 #define CALIBRATIONLOOP_H_
 
+#include "Calibrator.h"
+class GenericSensor;
+class MotorControl;
+
 class CalibrationLoop {
 public:
 	enum Path {kFILE, kPROCEDURE};

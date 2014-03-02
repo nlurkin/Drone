@@ -6,6 +6,8 @@
  */
 
 #include "CalibrationLoop.h"
+#include "GenericSensor.h"
+#include "MotorControl.h"
 
 CalibrationLoop::CalibrationLoop() {
 	// TODO Auto-generated constructor stub

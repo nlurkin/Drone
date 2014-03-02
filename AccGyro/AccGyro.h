@@ -14,8 +14,9 @@
 //#include "MPU6050.h"
 #include "MPU6050DMP.h"
 #include "SerialInterface.h"
+#include "GenericSensor.h"
 
-class AccGyro: public MPU6050DMP {
+class AccGyro: public MPU6050DMP, public GenericSensor {
 public:
 	AccGyro(int devAddr);
 	virtual ~AccGyro();
