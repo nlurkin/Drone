@@ -30,7 +30,7 @@ class Calibrator:
     def calibrateI(self):
         if len(self.fP)<2:
             return False
-        
+        #TODO: Review I_i conventions everywhere to have something coherent (and the corresponding signs everywhere)
         #This works if the time difference between both measurement is big enough and time step small enough and avoid angles closse to k*pi
         I1 = (self.Ialpha[1][0]-self.Ialpha[0][0])/(self.Iomega[1][1]*self.Iomega[1][2]-self.Iomega[0][1]*self.Iomega[0][2])
         I2 = (self.Ialpha[1][1]-self.Ialpha[0][1])/(self.Iomega[1][0]*self.Iomega[1][2]-self.Iomega[0][0]*self.Iomega[0][2])
@@ -44,7 +44,7 @@ class Calibrator:
             self.fI = self.fI+Vector([I1,I2,I3])
         self.number += 1
     
-    def calibrateR(self,motor,K):
+    def calibrateR(self,motor,Mass):
         I = self.fI/float(self.number)
         #OI = [0.177, 0.177, 0.334]
         #I = [(OI[1]-OI[2])/OI[0], -(OI[0]-OI[2])/OI[1], (OI[0]-OI[1])/OI[2]]
@@ -74,7 +74,7 @@ class Calibrator:
         g2 = g.rotate(q2.conj())
         
         #Ok but needs to be with very small velocity to neglect friction
-        Rt = (K*(a1- a2) + K*(g1-g2))/(self.fP[0]-self.fP[1])
+        Rt = Mass*((a1- a2) + (g1-g2))/(self.fP[0]-self.fP[1])
         
         self.R[motor] = [Rx,Ry,Rz,Rt[2]]
         

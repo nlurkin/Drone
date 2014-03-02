@@ -117,6 +117,7 @@ class PSquare:
         qErr = qRef * qM.conj()
         
         self.QInt = self.QInt + qErr*dt*self.PInt
+        #TODO: QInt here?
         if qErr[0]<0:
             intErr = -Vector(self.QInt)
         else:
