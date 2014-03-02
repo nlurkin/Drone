@@ -18,6 +18,7 @@ public:
 	void setMotorPower(double power, int i);
 
 	int getFirstMotor();
+	int getLastMotor();
 };
 
 #endif /* MOTORCONTROL_H_ */

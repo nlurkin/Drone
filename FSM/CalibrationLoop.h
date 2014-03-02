@@ -16,7 +16,8 @@ class CalibrationLoop {
 public:
 	enum Path {kFILE, kPROCEDURE};
 	enum CalibrationState {kIDLE, kWAITING, kSCANNING, kTAKEOFF, kSTABILIZING, kIDISTURBED, kIMEASUREP, kIMEASUREM,
-	 kMDISTURBED, kMMEASURES, kMMEASURED, kMBALANCED, kMBALANCES};
+		kMDISTURBED, kMMEASURES, kMMEASURED, kMBALANCED, kMBALANCES,
+		kAPPLY, kLOAD};
 
 	CalibrationLoop();
 	virtual ~CalibrationLoop();
@@ -32,11 +33,21 @@ private:
 	void wait();
 
 	//I
-	void disturbed();
+	void iDisturbed();
 	void measureP();
 	void measureM();
 
 	//Motor
+	void mDisturbed();
+	void measureS();
+	void measureD();
+	void mBalancedD();
+	void mBalancedS();
+
+	//Computing
+	void load();
+	void compute();
+	void apply();
 
 	Path fPath;
 	CalibrationState fState;
@@ -55,6 +66,12 @@ private:
 	CalibrationState fNextState;
 	int fLoopIndex;
 	int fMaxLoop;
+
+	int fCurrentMotor;
+	int fMPInterval;
+	unsigned long fMTInterval;
+
 };
 
 #endif /* CALIBRATIONLOOP_H_ */
+
