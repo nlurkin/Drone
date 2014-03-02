@@ -35,8 +35,8 @@ void MainLoop::setup(){
 
 void MainLoop::loop(){
 	ser.read();
-	if(fState==kIDLE) idleLoop();
-	else if(fState==kINITIALIZED) initializationLoop();
+	if(fState==kINITIALIZING) initializationLoop();
+	else if(fState==kIDLE) idleLoop();
 	else if(fState==kCALIBRATING) calibrationLoop();
 	else if(fState==kFLYING) flightLoop();
 	else{
@@ -47,32 +47,27 @@ void MainLoop::loop(){
 void MainLoop::initializationLoop(){
 }
 
-void MainLoop::calibrationLoop(){
-	bool calibrate = true;
-	if(calibrate){
-		// Take of
-		sCtl.takeOff();
-
-		// Stabilise altitude
-		sCtl.levelOff();
-
-		//Calibrate Inertia
-
-
-		//Calibrate motors
-		//1
-		//2
-		//3
-		//4
-
-		//Dump on memory (not necessarily)
-	}
-	else {
-		//Or load from memory
-	}
-
-	//Apply configuration to controller
+void MainLoop::idleLoop(){
 }
+
+void MainLoop::calibrationLoop(){
+	if(lCalib.processLoop()) moveToIdle();
+}
+
+void MainLoop::flightLoop() {
+	/*VectorFloat tau;
+	if(ser.isAttitudeReady()){
+		ctl.setQRef(ser.getAttitude());
+	}
+	if(sensor.checkDataAvailable()){
+		if(sensor.fillValues()){
+			sensor.exportValueToSerial();
+			tau = ctl.ComputePP(sensor.getQuaternion(), sensor.getOmega());
+			ser.cmdTorque(tau);
+		}
+	}*/
+}
+
 /*
 void MainLoop::setCalibration() {
 	if(fSimulate) setCalibrationSerial();
@@ -98,20 +93,6 @@ void MainLoop::calibrateSerial() {
 
 void MainLoop::calibrateSensor() {
 }*/
-
-void MainLoop::flightLoop() {
-	VectorFloat tau;
-	if(ser.isAttitudeReady()){
-		ctl.setQRef(ser.getAttitude());
-	}
-	if(sensor.checkDataAvailable()){
-		if(sensor.fillValues()){
-			sensor.exportValueToSerial();
-			tau = ctl.ComputePP(sensor.getQuaternion(), sensor.getOmega());
-			ser.cmdTorque(tau);
-		}
-	}
-}
 
 /*void MainLoop::calibrate() {
 	Calibrator cc;
@@ -143,4 +124,17 @@ void MainLoop::flightLoop() {
 		}
 	}
 }
-*/
+ */
+
+void MainLoop::moveToIdle() {
+	fState = kIDLE;
+}
+
+void MainLoop::moveToCalibration() {
+	lCalib.setCalibPath(CalibrationLoop::kPROCEDURE);
+	fState = kCALIBRATING;
+}
+
+void MainLoop::moveToFlight() {
+	fState = kFLYING;
+}

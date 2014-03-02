@@ -14,6 +14,10 @@ public:
 	virtual ~MotorControl();
 
 	void disableAll();
+	void setMotorPowerAll(double power);
+	void setMotorPower(double power, int i);
+
+	int getFirstMotor();
 };
 
 #endif /* MOTORCONTROL_H_ */

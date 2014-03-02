@@ -25,6 +25,8 @@ public:
 	void exportTeaPot();
 	Quaternion getQuaternion();
 	VectorFloat getOmega();
+	VectorFloat getAcceleration();
+	VectorFloat getPosition();
 
 	bool checkDataAvailable();
 	bool fillValues();
