@@ -8,6 +8,7 @@
 #include "CalibrationLoop.h"
 #include "GenericSensor.h"
 #include "MotorControl.h"
+#include <EEPROM.h>
 
 CalibrationLoop::CalibrationLoop() {
 	// TODO Auto-generated constructor stub
@@ -203,6 +204,15 @@ void CalibrationLoop::mBalancedD(){
 void CalibrationLoop::mBalancedS(){
 	fCalibrator.calibrateR(fCurrentMotor);
 	if(fCurrentMotor==fMotorControl->getLastMotor()){
+		for(int i=0; i<4; i++){
+			EEPROM_writeAnything(eepromAddress[0+i*4], fCalibrator.fR[i].Rx);
+			EEPROM_writeAnything(eepromAddress[1+i*4], fCalibrator.fR[i].Ry);
+			EEPROM_writeAnything(eepromAddress[2+i*4], fCalibrator.fR[i].Rz);
+			EEPROM_writeAnything(eepromAddress[3+i*4], fCalibrator.fR[i].Rt);
+		}
+		EEPROM_writeAnything(eepromAddress[16], fCalibrator.fIAxis.x);
+		EEPROM_writeAnything(eepromAddress[17], fCalibrator.fIAxis.y);
+		EEPROM_writeAnything(eepromAddress[18], fCalibrator.fIAxis.z);
 		fState = kAPPLY;
 	}
 	else{
@@ -212,7 +222,15 @@ void CalibrationLoop::mBalancedS(){
 }
 
 void CalibrationLoop::load() {
-
+	for(int i=0; i<4; i++){
+		EEPROM_readAnything(eepromAddress[0+i*4], fCalibrator.fR[i].Rx);
+		EEPROM_readAnything(eepromAddress[1+i*4], fCalibrator.fR[i].Ry);
+		EEPROM_readAnything(eepromAddress[2+i*4], fCalibrator.fR[i].Rz);
+		EEPROM_readAnything(eepromAddress[3+i*4], fCalibrator.fR[i].Rt);
+	}
+	EEPROM_readAnything(eepromAddress[16], fCalibrator.fIAxis.x);
+	EEPROM_readAnything(eepromAddress[17], fCalibrator.fIAxis.y);
+	EEPROM_readAnything(eepromAddress[18], fCalibrator.fIAxis.z);
 }
 
 void CalibrationLoop::apply() {
