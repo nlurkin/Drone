@@ -14,8 +14,8 @@
 MainLoop::MainLoop(){
 	// TODO Auto-generated constructor stub
 	fSensor = new AccGyro(0x68);
-	fMotorCtrl = new MotorControl();
 	fSerial = new SerialInterface();
+	fMotorCtrl = fSerial;
 
 	fSimulate = false;
 	//fCalibrated = false;
@@ -30,7 +30,7 @@ MainLoop::~MainLoop() {
 
 void MainLoop::setup(){
 	fSimulate = true;
-	fSensor->setSerialInterface(fSerial);
+	//fSensor->setSerialInterface(fSerial);
 	//fSensor->setSimulate(true);
 	//ctl.setQRef(Quaternion(1, 0, 0, 0));
 	//ctl.setP(20, 4);
@@ -74,63 +74,7 @@ void MainLoop::flightLoop() {
 	}*/
 }
 
-/*
-void MainLoop::setCalibration() {
-	if(fSimulate) setCalibrationSerial();
-	else setCalibrationLocal();
-}
 
-void MainLoop::setCalibrationSerial() {
-	if(!fCalibrationRequested){
-		ser.cmdRequestI();
-		fCalibrationRequested = true;
-	}
-	if(ser.isIReady()){
-		ctl.setI(ser.getI());
-		fCalibrated = true;
-	}
-}
-
-void MainLoop::setCalibrationLocal() {
-}
-
-void MainLoop::calibrateSerial() {
-}
-
-void MainLoop::calibrateSensor() {
-}*/
-
-/*void MainLoop::calibrate() {
-	Calibrator cc;
-	int motorIndex=0;
-	bool cont = false;
-	bool calibrated = false;
-
-	while(!calibrated){
-		//cc.clearPoints();
-		for(int power=100; power<1000; power += 100){
-			//Set motor power
-			ser.cmdPower(motorIndex, power);
-			//Measure few values
-			for(int count=0; count<5; count++){
-				while(!cont){
-					cont = sensor.checkDataAvailable();
-					if(cont){
-						cont = sensor.fillValues();
-					}
-				}
-				cont = false;
-				Serial.println(count);
-			}
-
-			//Add new point
-			Serial.print("New point");
-			//calibrated = cc.newPoint(motorIndex, power, data.getAngularRate(), data.getAlpha());
-			Serial.println(calibrated);
-		}
-	}
-}
- */
 
 void MainLoop::moveToIdle() {
 	fState = kIDLE;

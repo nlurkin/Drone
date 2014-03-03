@@ -11,19 +11,25 @@
 #include <EEPROM.h>
 
 CalibrationLoop::CalibrationLoop() {
-	// TODO Auto-generated constructor stub
 	fState = kIDLE;
 	fCurrentPower = 0;
 }
 
 CalibrationLoop::~CalibrationLoop() {
-	// TODO Auto-generated destructor stub
 }
 
+/**
+ * Setting calibration path (execute the procedure or load from memory)
+ * @param p
+ */
 void CalibrationLoop::setCalibPath(Path p) {
 	fPath = p;
 }
 
+/**
+ * Entry point for the FSM. Determine which method should be applied as function of the state.
+ * @return true if in IDLE state. Else false.
+ */
 bool CalibrationLoop::processLoop() {
 	bool ret = false;
 
@@ -81,7 +87,11 @@ bool CalibrationLoop::processLoop() {
 	return ret;
 }
 
+/**
+ * Scanning value of power until vertical linear acceleration is positive.
+ */
 void CalibrationLoop::scanP(){
+	if(!fSensor->checkDataAvailable()) return;
 	double az = fSensor->getAcceleration()[2];
 	if(az<=0){
 		fCurrentPower++;
@@ -92,14 +102,22 @@ void CalibrationLoop::scanP(){
 	}
 }
 
+/**
+ * Keeping the value of power until height calibHeight is reached.
+ */
 void CalibrationLoop::takeOff() {
+	if(!fSensor->checkDataAvailable()) return;
 	double height = fSensor->getPosition()[2];
 	if(height == calibHeight){
 		fState = kSTABILIZING;
 	}
 }
 
+/**
+ * Decrease the value of power until the vertical acceleration is small.
+ */
 void CalibrationLoop::stabilize() {
+	if(!fSensor->checkDataAvailable()) return;
 	double az = fSensor->getAcceleration()[2];
 	if(az>0){
 		fCurrentPower--;
@@ -113,10 +131,16 @@ void CalibrationLoop::stabilize() {
 	}
 }
 
+/**
+ * Wait until the time fStopTime is reached.
+ */
 void CalibrationLoop::wait() {
 	if(millis()>=fStopTime) fState = fNextState;
 }
 
+/**
+ * The model is in the disturbed state (to avoid measuring at 0 rad). Ready to start the measurement.
+ */
 void CalibrationLoop::iDisturbed(){
 	fMotorControl->setMotorPower(fCurrentPower+fIPInterval, fMotorControl->getFirstMotor());
 	fStopTime = millis()+fITInterval;
@@ -124,7 +148,11 @@ void CalibrationLoop::iDisturbed(){
 	fState = kWAITING;
 }
 
+/**
+ * First matrix measurement.
+ */
 void CalibrationLoop::measureP() {
+	if(!fSensor->checkDataAvailable()) return;
 	fCalibrator.newPoint(fMotorControl->getFirstMotor(),
 			fCurrentPower+fIPInterval,
 			fSensor->getOmega(),
@@ -137,13 +165,19 @@ void CalibrationLoop::measureP() {
 	fState = kWAITING;
 }
 
+/**
+ * Second matrix measurement
+ */
 void CalibrationLoop::measureM() {
+	if(!fSensor->checkDataAvailable()) return;
 	fCalibrator.newPoint(fMotorControl->getFirstMotor(),
 			fCurrentPower-fIPInterval,
 			fSensor->getOmega(),
 			fSensor->getAlpha(),
 			fSensor->getAcceleration(),
 			fSensor->getQuaternion());
+
+	//Do we restart the loop for the average?
 	if(fLoopIndex<fMaxLoop){
 		fMotorControl->setMotorPower(fCurrentPower+fIPInterval, fMotorControl->getFirstMotor());
 		fStopTime = millis()+fITInterval;
@@ -169,6 +203,7 @@ void CalibrationLoop::mDisturbed() {
 }
 
 void CalibrationLoop::measureS() {
+	if(!fSensor->checkDataAvailable()) return;
 	fCalibrator.newPoint(fCurrentMotor,
 			fCurrentPower+fMPInterval,
 			fSensor->getOmega(),
@@ -182,6 +217,7 @@ void CalibrationLoop::measureS() {
 }
 
 void CalibrationLoop::measureD() {
+	if(!fSensor->checkDataAvailable()) return;
 	fCalibrator.newPoint(fCurrentMotor,
 			fCurrentPower+2*fMPInterval,
 			fSensor->getOmega(),

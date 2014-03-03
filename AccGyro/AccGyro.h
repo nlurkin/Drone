@@ -11,7 +11,6 @@
 #include <Wire.h>
 #include <HardwareSerial.h>
 #include "AccGyroData.h"
-//#include "MPU6050.h"
 #include "MPU6050DMP.h"
 #include "SerialInterface.h"
 #include "GenericSensor.h"
@@ -28,6 +27,7 @@ public:
 	VectorFloat getOmega();
 	VectorFloat getAcceleration();
 	VectorFloat getPosition();
+	VectorFloat getAlpha();
 
 	bool checkDataAvailable();
 	bool fillValues();

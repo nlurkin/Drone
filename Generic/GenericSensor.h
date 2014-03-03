@@ -12,17 +12,18 @@
 
 class GenericSensor {
 public:
-	GenericSensor();
+	virtual GenericSensor();
 	virtual ~GenericSensor();
 
-	Quaternion getQuaternion();
-	VectorFloat getOmega();
-	VectorFloat getAcceleration();
-	VectorFloat getPosition();
-	VectorFloat getAlpha();
+	virtual Quaternion getQuaternion()=0;
+	virtual VectorFloat getOmega()=0;
+	virtual VectorFloat getAcceleration()=0;
+	virtual VectorFloat getPosition()=0;
+	virtual VectorFloat getAlpha()=0;
 
-	//void setSimulate(bool simulate) {Serial.print(F("Setting simulation mode:")); Serial.println(simulate); fSimulate = simulate;}
-	void setSerialInterface(SerialInterface *s);
+	//virtual void setSerialInterface(SerialInterface *s)=0;
+
+	virtual bool checkDataAvailable()=0;
 };
 
 #endif /* GENERICSENSOR_H_ */
