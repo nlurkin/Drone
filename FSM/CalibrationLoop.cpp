@@ -241,14 +241,14 @@ void CalibrationLoop::mBalancedS(){
 	fCalibrator.calibrateR(fCurrentMotor);
 	if(fCurrentMotor==fMotorControl->getLastMotor()){
 		for(int i=0; i<4; i++){
-			EEPROM_writeAnything(eepromAddress[0+i*4], fCalibrator.fR[i].Rx);
-			EEPROM_writeAnything(eepromAddress[1+i*4], fCalibrator.fR[i].Ry);
-			EEPROM_writeAnything(eepromAddress[2+i*4], fCalibrator.fR[i].Rz);
-			EEPROM_writeAnything(eepromAddress[3+i*4], fCalibrator.fR[i].Rt);
+			EEPROM_writeAnything<float>(eepromAddress[0+i*4], fCalibrator.getR(i)[0]);
+			EEPROM_writeAnything<float>(eepromAddress[1+i*4], fCalibrator.getR(i)[1]);
+			EEPROM_writeAnything<float>(eepromAddress[2+i*4], fCalibrator.getR(i)[2]);
+			EEPROM_writeAnything<float>(eepromAddress[3+i*4], fCalibrator.getR(i)[3]);
 		}
-		EEPROM_writeAnything(eepromAddress[16], fCalibrator.fIAxis.x);
-		EEPROM_writeAnything(eepromAddress[17], fCalibrator.fIAxis.y);
-		EEPROM_writeAnything(eepromAddress[18], fCalibrator.fIAxis.z);
+		EEPROM_writeAnything<float>(eepromAddress[16], fCalibrator.getIAxis().x);
+		EEPROM_writeAnything<float>(eepromAddress[17], fCalibrator.getIAxis().y);
+		EEPROM_writeAnything<float>(eepromAddress[18], fCalibrator.getIAxis().z);
 		fState = kAPPLY;
 	}
 	else{
@@ -259,14 +259,14 @@ void CalibrationLoop::mBalancedS(){
 
 void CalibrationLoop::load() {
 	for(int i=0; i<4; i++){
-		EEPROM_readAnything(eepromAddress[0+i*4], fCalibrator.fR[i].Rx);
-		EEPROM_readAnything(eepromAddress[1+i*4], fCalibrator.fR[i].Ry);
-		EEPROM_readAnything(eepromAddress[2+i*4], fCalibrator.fR[i].Rz);
-		EEPROM_readAnything(eepromAddress[3+i*4], fCalibrator.fR[i].Rt);
+		EEPROM_readAnything<float>(eepromAddress[0+i*4], fCalibrator.getR(i)[0]);
+		EEPROM_readAnything<float>(eepromAddress[1+i*4], fCalibrator.getR(i)[1]);
+		EEPROM_readAnything<float>(eepromAddress[2+i*4], fCalibrator.getR(i)[2]);
+		EEPROM_readAnything<float>(eepromAddress[3+i*4], fCalibrator.getR(i)[3]);
 	}
-	EEPROM_readAnything(eepromAddress[16], fCalibrator.fIAxis.x);
-	EEPROM_readAnything(eepromAddress[17], fCalibrator.fIAxis.y);
-	EEPROM_readAnything(eepromAddress[18], fCalibrator.fIAxis.z);
+	EEPROM_readAnything<float>(eepromAddress[16], fCalibrator.getIAxis()[0]);
+	EEPROM_readAnything<float>(eepromAddress[17], fCalibrator.getIAxis()[1]);
+	EEPROM_readAnything<float>(eepromAddress[18], fCalibrator.getIAxis()[2]);
 }
 
 void CalibrationLoop::apply() {

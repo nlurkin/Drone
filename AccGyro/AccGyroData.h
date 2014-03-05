@@ -41,6 +41,8 @@ public:
 
 	VectorFloat getAlpha();
 
+	VectorFloat getPosition();
+
 	Quaternion getQuaternion();
 	uint8_t *getTeaPotPacket();
 

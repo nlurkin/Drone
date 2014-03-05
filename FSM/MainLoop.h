@@ -11,6 +11,8 @@
 #include "AttitudeLoop.h"
 #include "Calibrator.h"
 #include "CalibrationLoop.h"
+#include "SerialInterface.h"
+#include "Constants.h"
 
 class MainLoop {
 public:
@@ -58,6 +60,7 @@ private:
 
 	MainStates fState;
 	//MainStates fNextState;
+	Constants::CtrlCommand::ECtrlCommand fCtrlCommand;
 
 };
 

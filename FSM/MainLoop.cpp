@@ -13,9 +13,10 @@
 
 MainLoop::MainLoop(){
 	// TODO Auto-generated constructor stub
-	fSensor = new AccGyro(0x68);
+	//fSensor = new AccGyro(0x68);
 	fSerial = new SerialInterface();
 	fMotorCtrl = fSerial;
+	fSensor = fSerial;
 
 	fSimulate = false;
 	//fCalibrated = false;
@@ -41,6 +42,7 @@ void MainLoop::setup(){
 
 void MainLoop::loop(){
 	fSerial->read();
+	if(fSerial->isCtrlCommandReady()) fCtrlCommand = fSerial->getCtrlCommand();
 	if(fState==kINITIALIZING) initializationLoop();
 	else if(fState==kIDLE) idleLoop();
 	else if(fState==kCALIBRATING) calibrationLoop();
@@ -51,9 +53,11 @@ void MainLoop::loop(){
 }
 
 void MainLoop::initializationLoop(){
+	moveToIdle();
 }
 
 void MainLoop::idleLoop(){
+	if(fCtrlCommand==Constants::CtrlCommand::kDOCALIB) moveToCalibration();
 }
 
 void MainLoop::calibrationLoop(){
@@ -79,12 +83,10 @@ void MainLoop::flightLoop() {
 void MainLoop::moveToIdle() {
 	fState = kIDLE;
 }
-
 void MainLoop::moveToCalibration() {
 	fLoopCalib.setCalibPath(CalibrationLoop::kPROCEDURE);
 	fState = kCALIBRATING;
 }
-
 void MainLoop::moveToFlight() {
 	fState = kFLYING;
 }

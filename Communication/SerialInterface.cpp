@@ -81,6 +81,9 @@ void SerialInterface::readCmd(String s) {
 	if(s.startsWith("TRCK:")){				//Setting a new attitude reference
 		readNewAttitude(s.substring(5));
 	}
+	if(s.startsWith("CTRL:")){				//Control command
+		readCtrlCommand(s.substring(5));
+	}
 }
 
 /**
@@ -148,8 +151,11 @@ VectorFloat SerialInterface::getI() {
  * Did we receive a full sensor buffer?
  * @return true if full sensor buffer received.
  */
-bool SerialInterface::isSensorReady() {
-	return (fBufferCount==10);
+bool SerialInterface::isSensorReady(){
+	//TODO faire comme ça ou pas?
+	bool isReady = (fBufferCount==10);
+	fBufferCount = 0;
+	return false;
 }
 
 /**
@@ -238,6 +244,25 @@ int SerialInterface::getLastMotor() {
 }
 
 /**
+ * Parse a control command
+ * @param s : control command line
+ */
+void SerialInterface::readCtrlCommand(String s) {
+	fCtrlCommandReady = true;
+	if(s.startsWith("GOCALIB")) fCtrlCommand = Constants::CtrlCommand::kDOCALIB;
+	else fCtrlCommandReady = false;
+}
+
+bool SerialInterface::isCtrlCommandReady() {
+	return fCtrlCommandReady;
+}
+
+Constants::CtrlCommand::ECtrlCommand SerialInterface::getCtrlCommand() {
+	fCtrlCommandReady = false;
+	return fCtrlCommand;
+}
+
+/**
  * Return the received sensor buffer.
  * @return sensor buffer
  */
@@ -250,3 +275,4 @@ float* SerialInterface::getBuffer() {
 	Serial.println("");
 	return fBuffer;
 }
+

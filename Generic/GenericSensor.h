@@ -8,11 +8,10 @@
 #ifndef GENERICSENSOR_H_
 #define GENERICSENSOR_H_
 #include "mathClasses.h"
-#include "SerialInterface.h"
 
 class GenericSensor {
 public:
-	virtual GenericSensor();
+	GenericSensor();
 	virtual ~GenericSensor();
 
 	virtual Quaternion getQuaternion()=0;

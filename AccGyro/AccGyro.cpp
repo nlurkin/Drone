@@ -4,7 +4,7 @@
  *  Created on: 17 août 2013
  *      Author: Nicolas
  */
-
+/*
 #include "AccGyro.h"
 #include <Arduino.h>
 #include "Calibrator.h"
@@ -194,3 +194,4 @@ void AccGyro::setSerialInterface(SerialInterface *s) {
 	ser = s;
 }
 
+*/

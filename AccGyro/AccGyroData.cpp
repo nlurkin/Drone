@@ -142,6 +142,10 @@ uint8_t *AccGyroData::getTeaPotPacket(){
 	return teapotPacket;
 }
 
+VectorFloat AccGyroData::getPosition() {
+	return VectorFloat();
+}
+
 void AccGyroData::computeAlpha(int timestamp, VectorFloat oldGyroscope) {
 	fAlpha = (getAngularRate() - oldGyroscope)/(timestamp-fTimestamp);
 	fTimestamp = timestamp;

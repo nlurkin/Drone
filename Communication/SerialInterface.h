@@ -11,6 +11,10 @@
 #include <Wire.h>
 #include <Arduino.h>
 #include "mathClasses.h"
+#include "GenericSensor.h"
+#include "MotorControl.h"
+#include "AccGyroData.h"
+#include "Constants.h"
 
 class SerialInterface: public GenericSensor, public MotorControl {
 public:
@@ -22,8 +26,14 @@ public:
 	VectorFloat getAcceleration();
 	VectorFloat getPosition();
 	VectorFloat getAlpha();
+	Constants::CtrlCommand::ECtrlCommand getCtrlCommand();
 
 	bool checkDataAvailable();
+
+	bool isIReady();
+	bool isSensorReady();
+	bool isAttitudeReady();
+	bool isCtrlCommandReady();
 
 	void disableAll();
 	void setMotorPowerAll(double power);
@@ -32,12 +42,12 @@ public:
 	int getFirstMotor();
 	int getLastMotor();
 
+	bool read();
+
 private:
 	void cmdPower(int motor, int power);
 	void cmdRequestI();
 	void cmdTorque(VectorFloat tau);
-
-	bool read();
 
 	void readData(String s);
 	void readCmd(String s);
@@ -45,10 +55,7 @@ private:
 	void readSensor(String s);
 	void readIMat(String s);
 	void readNewAttitude(String s);
-
-	bool isIReady();
-	bool isSensorReady();
-	bool isAttitudeReady();
+	void readCtrlCommand(String s);
 
 	VectorFloat getI();
 	float* getBuffer();
@@ -64,6 +71,9 @@ private:
 
 	int fFirstMotor;
 	int fLastMotor;
+
+	Constants::CtrlCommand::ECtrlCommand fCtrlCommand;
+	bool fCtrlCommandReady;
 };
 
 #endif /* SERIALINTERFACE_H_ */

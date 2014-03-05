@@ -7,7 +7,7 @@
 
 #ifndef ACCGYRO_H_
 #define ACCGYRO_H_
-
+/*
 #include <Wire.h>
 #include <HardwareSerial.h>
 #include "AccGyroData.h"
@@ -65,5 +65,5 @@ private:
 
 	SerialInterface *ser;
 };
-
+*/
 #endif /* ACCGYRO_H_ */

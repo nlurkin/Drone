@@ -9,6 +9,8 @@
 #define CALIBRATIONLOOP_H_
 
 #include "Calibrator.h"
+#include <EEPROM.h>
+
 class GenericSensor;
 class MotorControl;
 
