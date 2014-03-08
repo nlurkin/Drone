@@ -12,6 +12,13 @@ SerialInterface::SerialInterface() {
 	fICount = 0;
 	fBufferCount = 0;
 	fQuatCount = 0;
+
+	fCtrlCommand = Constants::CtrlCommand::kNONE;
+	fCtrlCommandReady = false;
+
+	fTime = 0;
+	fFirstMotor = 0;
+	fLastMotor = 3;
 }
 
 SerialInterface::~SerialInterface() {
@@ -106,8 +113,9 @@ void SerialInterface::readSensor(String s) {
 	else if(s.startsWith("BUF7:")) fBuffer[7] = s.substring(5).toInt();
 	else if(s.startsWith("BUF8:")) fBuffer[8] = s.substring(5).toInt();
 	else if(s.startsWith("BUF9:")) fBuffer[9] = s.substring(5).toInt();
+	else if(s.startsWith("TIME:")) fTime = s.substring(5).toInt();
 	fBufferCount++;
-	if(fBufferCount==10){
+	if(fBufferCount==11){
 		Serial.println("Full buffer received");
 		fData.setFromSerial(fBuffer, millis());
 	}
@@ -153,9 +161,9 @@ VectorFloat SerialInterface::getI() {
  */
 bool SerialInterface::isSensorReady(){
 	//TODO faire comme ça ou pas?
-	bool isReady = (fBufferCount==10);
+	bool isReady = (fBufferCount==11);
 	fBufferCount = 0;
-	return false;
+	return isReady;
 }
 
 /**

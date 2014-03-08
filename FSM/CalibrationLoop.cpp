@@ -6,13 +6,29 @@
  */
 
 #include "CalibrationLoop.h"
+#include "GenericMotor.h"
 #include "GenericSensor.h"
-#include "MotorControl.h"
 #include <EEPROM.h>
 
 CalibrationLoop::CalibrationLoop() {
 	fState = kIDLE;
 	fCurrentPower = 0;
+	calibHeight = 50;
+
+	fCurrentMotor = 0;
+	fNextState = kIDLE;
+	fIPInterval = 1;
+	fITInterval = 100;
+
+	fStopTime = 0;
+
+	fMTInterval = 100;
+	fMPInterval = 3;
+
+	fMaxLoop = 2;
+	fLoopIndex = 0;
+
+	fPath = kPROCEDURE;
 }
 
 CalibrationLoop::~CalibrationLoop() {
@@ -91,11 +107,11 @@ bool CalibrationLoop::processLoop() {
  * Scanning value of power until vertical linear acceleration is positive.
  */
 void CalibrationLoop::scanP(){
-	if(!fSensor->checkDataAvailable()) return;
-	double az = fSensor->getAcceleration()[2];
+	if(!sSensor->checkDataAvailable()) return;
+	double az = sSensor->getAcceleration()[2];
 	if(az<=0){
 		fCurrentPower++;
-		fMotorControl->setMotorPowerAll(fCurrentPower);
+		sMotor->setMotorPowerAll(fCurrentPower);
 	}
 	else{
 		fState = kTAKEOFF;
@@ -106,8 +122,8 @@ void CalibrationLoop::scanP(){
  * Keeping the value of power until height calibHeight is reached.
  */
 void CalibrationLoop::takeOff() {
-	if(!fSensor->checkDataAvailable()) return;
-	double height = fSensor->getPosition()[2];
+	if(!sSensor->checkDataAvailable()) return;
+	double height = sSensor->getPosition()[2];
 	if(height == calibHeight){
 		fState = kSTABILIZING;
 	}
@@ -117,14 +133,14 @@ void CalibrationLoop::takeOff() {
  * Decrease the value of power until the vertical acceleration is small.
  */
 void CalibrationLoop::stabilize() {
-	if(!fSensor->checkDataAvailable()) return;
-	double az = fSensor->getAcceleration()[2];
+	if(!sSensor->checkDataAvailable()) return;
+	double az = sSensor->getAcceleration()[2];
 	if(az>0){
 		fCurrentPower--;
-		fMotorControl->setMotorPowerAll(fCurrentPower);
+		sMotor->setMotorPowerAll(fCurrentPower);
 	}
 	else{
-		fMotorControl->setMotorPower(fCurrentPower+fIPInterval, fMotorControl->getFirstMotor());
+		sMotor->setMotorPower(fCurrentPower+fIPInterval, sMotor->getFirstMotor());
 		fStopTime = millis()+fITInterval;
 		fNextState = kIDISTURBED;
 		fState = kWAITING;
@@ -142,7 +158,7 @@ void CalibrationLoop::wait() {
  * The model is in the disturbed state (to avoid measuring at 0 rad). Ready to start the measurement.
  */
 void CalibrationLoop::iDisturbed(){
-	fMotorControl->setMotorPower(fCurrentPower+fIPInterval, fMotorControl->getFirstMotor());
+	sMotor->setMotorPower(fCurrentPower+fIPInterval, sMotor->getFirstMotor());
 	fStopTime = millis()+fITInterval;
 	fNextState = kIMEASUREP;
 	fState = kWAITING;
@@ -152,14 +168,14 @@ void CalibrationLoop::iDisturbed(){
  * First matrix measurement.
  */
 void CalibrationLoop::measureP() {
-	if(!fSensor->checkDataAvailable()) return;
-	fCalibrator.newPoint(fMotorControl->getFirstMotor(),
+	if(!sSensor->checkDataAvailable()) return;
+	fCalibrator.newPoint(sMotor->getFirstMotor(),
 			fCurrentPower+fIPInterval,
-			fSensor->getOmega(),
-			fSensor->getAlpha(),
-			fSensor->getAcceleration(),
-			fSensor->getQuaternion());
-	fMotorControl->setMotorPower(fCurrentPower-fIPInterval, fMotorControl->getFirstMotor());
+			sSensor->getOmega(),
+			sSensor->getAlpha(),
+			sSensor->getAcceleration(),
+			sSensor->getQuaternion());
+	sMotor->setMotorPower(fCurrentPower-fIPInterval, sMotor->getFirstMotor());
 	fStopTime = millis()+fITInterval;
 	fNextState = kIMEASUREM;
 	fState = kWAITING;
@@ -169,69 +185,69 @@ void CalibrationLoop::measureP() {
  * Second matrix measurement
  */
 void CalibrationLoop::measureM() {
-	if(!fSensor->checkDataAvailable()) return;
-	fCalibrator.newPoint(fMotorControl->getFirstMotor(),
+	if(!sSensor->checkDataAvailable()) return;
+	fCalibrator.newPoint(sMotor->getFirstMotor(),
 			fCurrentPower-fIPInterval,
-			fSensor->getOmega(),
-			fSensor->getAlpha(),
-			fSensor->getAcceleration(),
-			fSensor->getQuaternion());
+			sSensor->getOmega(),
+			sSensor->getAlpha(),
+			sSensor->getAcceleration(),
+			sSensor->getQuaternion());
 
 	//Do we restart the loop for the average?
 	if(fLoopIndex<fMaxLoop){
-		fMotorControl->setMotorPower(fCurrentPower+fIPInterval, fMotorControl->getFirstMotor());
+		sMotor->setMotorPower(fCurrentPower+fIPInterval, sMotor->getFirstMotor());
 		fStopTime = millis()+fITInterval;
 		fNextState = kIMEASUREP;
 		fState = kWAITING;
 	}
 	else{
-		fCalibrator.calibrateI(fMotorControl->getFirstMotor());
+		fCalibrator.calibrateI(sMotor->getFirstMotor());
 		fCalibrator.clearPoints();
-		fMotorControl->setMotorPower(fCurrentPower-fIPInterval, fMotorControl->getFirstMotor());
+		sMotor->setMotorPower(fCurrentPower-fIPInterval, sMotor->getFirstMotor());
 		fStopTime = millis()+fITInterval;
-		fCurrentMotor = fMotorControl->getFirstMotor();
+		fCurrentMotor = sMotor->getFirstMotor();
 		fNextState = kMDISTURBED;
 		fState = kWAITING;
 	}
 }
 
 void CalibrationLoop::mDisturbed() {
-	fMotorControl->setMotorPower(fCurrentPower+fMPInterval, fCurrentMotor);
+	sMotor->setMotorPower(fCurrentPower+fMPInterval, fCurrentMotor);
 	fStopTime = millis()+fMTInterval;
 	fNextState = kMMEASURES;
 	fState = kWAITING;
 }
 
 void CalibrationLoop::measureS() {
-	if(!fSensor->checkDataAvailable()) return;
+	if(!sSensor->checkDataAvailable()) return;
 	fCalibrator.newPoint(fCurrentMotor,
 			fCurrentPower+fMPInterval,
-			fSensor->getOmega(),
-			fSensor->getAlpha(),
-			fSensor->getAcceleration(),
-			fSensor->getQuaternion());
-	fMotorControl->setMotorPower(fCurrentPower+2*fMPInterval, fCurrentMotor);
+			sSensor->getOmega(),
+			sSensor->getAlpha(),
+			sSensor->getAcceleration(),
+			sSensor->getQuaternion());
+	sMotor->setMotorPower(fCurrentPower+2*fMPInterval, fCurrentMotor);
 	fStopTime = millis()+fMTInterval;
 	fNextState = kMMEASURED;
 	fState = kWAITING;
 }
 
 void CalibrationLoop::measureD() {
-	if(!fSensor->checkDataAvailable()) return;
+	if(!sSensor->checkDataAvailable()) return;
 	fCalibrator.newPoint(fCurrentMotor,
 			fCurrentPower+2*fMPInterval,
-			fSensor->getOmega(),
-			fSensor->getAlpha(),
-			fSensor->getAcceleration(),
-			fSensor->getQuaternion());
-	fMotorControl->setMotorPower(fCurrentPower-2*fMPInterval, fCurrentMotor);
+			sSensor->getOmega(),
+			sSensor->getAlpha(),
+			sSensor->getAcceleration(),
+			sSensor->getQuaternion());
+	sMotor->setMotorPower(fCurrentPower-2*fMPInterval, fCurrentMotor);
 	fStopTime = millis()+fMTInterval;
 	fNextState = kMBALANCED;
 	fState = kWAITING;
 }
 
 void CalibrationLoop::mBalancedD(){
-	fMotorControl->setMotorPower(fCurrentPower-2*fMPInterval, fCurrentMotor);
+	sMotor->setMotorPower(fCurrentPower-2*fMPInterval, fCurrentMotor);
 	fStopTime = millis()+fMTInterval;
 	fNextState = kMBALANCES;
 	fState = kWAITING;
@@ -239,7 +255,7 @@ void CalibrationLoop::mBalancedD(){
 
 void CalibrationLoop::mBalancedS(){
 	fCalibrator.calibrateR(fCurrentMotor);
-	if(fCurrentMotor==fMotorControl->getLastMotor()){
+	if(fCurrentMotor==sMotor->getLastMotor()){
 		for(int i=0; i<4; i++){
 			EEPROM_writeAnything<float>(eepromAddress[0+i*4], fCalibrator.getR(i)[0]);
 			EEPROM_writeAnything<float>(eepromAddress[1+i*4], fCalibrator.getR(i)[1]);

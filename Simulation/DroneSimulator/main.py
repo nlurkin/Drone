@@ -43,6 +43,7 @@ def sendSensor():
     quat = simu.b.Quat
     gyro = simu.b.Omega
     acc = simu.b.Acceleration
+    t = simu.time
     ser.write(prefix + "BUF0:" + str(quat.w) + "\r\n")
     sleep(Params.serialSleep)
     ser.write(prefix + "BUF1:" + str(quat.x) + "\r\n")
@@ -61,7 +62,10 @@ def sendSensor():
     sleep(Params.serialSleep)
     ser.write(prefix + "BUF8:" + str(int(acc[1]*8192*2)) + "\r\n")
     sleep(Params.serialSleep)
-    ser.write(prefix + "BUF9:" + str(int(acc[2]*8192*2)) + "\r\n")  
+    ser.write(prefix + "BUF9:" + str(int(acc[2]*8192*2)) + "\r\n")
+    sleep(Params.serialSleep)
+    ser.write(prefix + "TIME:" + str(int(time)) + "\r\n")
+      
 
 def sendI():
     I = simu.I
@@ -117,6 +121,10 @@ def serialLoop():
             #elif s[1]=="power":
                 #changeMotorPower(s[2], s[3])
 
+def sendInstruction(cmd):
+    prefix = "CMD:CTRL:"
+    ser.write(prefix + cmd + "\r\n")
+    
 def main():
     global torqueSet
     global reqTorque
@@ -188,7 +196,10 @@ def main():
         elif s=="ref":
             sendNewTracking([1,1,0])
         elif s=="calib":
-            simu.calibration()
+            if Params.runLocally==True:
+                simu.calibration()
+            else:
+                sendInstruction("GOCALIB");
         elif s=="dt":
             if simu.dt==0.1:
                 simu.dt = 0.001

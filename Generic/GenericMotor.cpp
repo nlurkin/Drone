@@ -1,18 +1,18 @@
 /*
- * MotorControl.cpp
+ * GenericMotor.cpp
  *
  *  Created on: 23 Feb 2014
  *      Author: Nicoas
  */
 
-#include "MotorControl.h"
+#include "GenericMotor.h"
 
-MotorControl::MotorControl() {
+GenericMotor::GenericMotor() {
 	// TODO Auto-generated constructor stub
 
 }
 
-MotorControl::~MotorControl() {
+GenericMotor::~GenericMotor() {
 	// TODO Auto-generated destructor stub
 }
 

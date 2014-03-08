@@ -9,10 +9,8 @@
 #define CALIBRATIONLOOP_H_
 
 #include "Calibrator.h"
+#include "Constants.h"
 #include <EEPROM.h>
-
-class GenericSensor;
-class MotorControl;
 
 class CalibrationLoop {
 public:
@@ -55,7 +53,7 @@ private:
 	int EEPROM_writeAnything(int ee, const T& value)
 	{
 	    const byte* p = (const byte*)(const void*)&value;
-	    int i;
+	    unsigned int i;
 	    for (i = 0; i < sizeof(value); i++)
 	        EEPROM.write(ee++, *p++);
 	    return i;
@@ -65,7 +63,7 @@ private:
 	int EEPROM_readAnything(int ee, T& value)
 	{
 	    byte* p = (byte*)(void*)&value;
-	    int i;
+	    unsigned int i;
 	    for (i = 0; i < sizeof(value); i++)
 	        *p++ = EEPROM.read(ee++);
 	    return i;
@@ -76,8 +74,6 @@ private:
 
 	int fCurrentPower;
 
-	GenericSensor *fSensor;
-	MotorControl *fMotorControl;
 	Calibrator fCalibrator;
 
 	double calibHeight;

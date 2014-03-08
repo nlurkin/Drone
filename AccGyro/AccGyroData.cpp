@@ -7,6 +7,11 @@
 
 #include "AccGyroData.h"
 
+/**
+ * Constructor.
+ * Initialize the teapotPacket array (explain).
+ * Set the default scale of gyroscope and accelerometer.
+ */
 AccGyroData::AccGyroData(){
 	teapotPacket[0] = '$';
 	teapotPacket[1] = 0x02;
@@ -27,11 +32,18 @@ AccGyroData::AccGyroData(){
 	setFullScaleGyroscope(0);
 }
 
+/**
+ * Destructor.
+ */
 AccGyroData::~AccGyroData() {
 
 }
 
-
+/**
+ * Parse the buffer to fill the internal structures
+ * @param buffer: input buffer (explain structure)
+ * @param timestamp: timestamp of the data for integration and derivative
+ */
 void AccGyroData::setFromBuffer(uint8_t *buffer, int timestamp){
 	VectorFloat oldGyro = getAngularRate();
 
@@ -60,6 +72,14 @@ void AccGyroData::setFromBuffer(uint8_t *buffer, int timestamp){
 	computeAlpha(timestamp, oldGyro);
 }
 
+/**
+ * Change the scale of the accelerometer.
+ * 0 = +/- 2g
+ * 1 = +/- 4g
+ * 2 = +/- 8g
+ * 3 = +/- 16g
+ * @param r: Scale (0 to 3)
+ */
 void AccGyroData::setFullScaleAccelerometer(uint8_t r){
 	if(r==0) fFullScaleAccelerometer = 8192.0 * 2;
 	if(r==1) fFullScaleAccelerometer = 4096.0 * 2;
@@ -67,6 +87,14 @@ void AccGyroData::setFullScaleAccelerometer(uint8_t r){
 	if(r==3) fFullScaleAccelerometer = 1024.0 * 2;
 }
 
+/**
+ * Change the scale of the gyroscope.
+ * 0 = +/- 250 degrees/sec
+ * 1 = +/- 500 degrees/sec
+ * 2 = +/- 1000 degrees/sec
+ * 3 = +/- 2000 degrees/sec
+ * @param r: Scale (0 to 3)
+ */
 void AccGyroData::setFullScaleGyroscope(uint8_t r){
 	if(r==0) fFullScaleGyroscope = 131.0 * 2;
 	if(r==1) fFullScaleAccelerometer = 65.5 * 2;
@@ -74,11 +102,18 @@ void AccGyroData::setFullScaleGyroscope(uint8_t r){
 	if(r==3) fFullScaleAccelerometer = 16.4 * 2;
 }
 
-
+/**
+ * Return the raw acceleration vector (as measured by the sensor)
+ * @return VectorInt16
+ */
 VectorInt16 AccGyroData::getRawAcceleration(){
 	return fAcceleration;
 }
 
+/**
+ * Return the linear acceleration vector (accelerometer full scale applied)
+ * @return VectorFloat
+ */
 VectorFloat AccGyroData::getLinearAcceleration(){
 	VectorFloat r;
 
@@ -89,6 +124,10 @@ VectorFloat AccGyroData::getLinearAcceleration(){
 	return r;
 }
 
+/**
+ * Return the gravity vector (in the sensor frame)
+ * @return VectorFloat
+ */
 VectorFloat AccGyroData::getGravity(){
 	VectorFloat r(0., 0., 1.);
 
@@ -98,6 +137,10 @@ VectorFloat AccGyroData::getGravity(){
 	return r;
 }
 
+/**
+ * Return the true acceleration (linear acceleration - gravity)
+ * @return VectorFloat
+ */
 VectorFloat AccGyroData::getTrueAcceleration(){
 	VectorFloat r;
 	r = getLinearAcceleration();
@@ -105,10 +148,19 @@ VectorFloat AccGyroData::getTrueAcceleration(){
 	return r;
 }
 
+/**
+ * Return the current attitude quaternion.
+ * @return Quaternion
+ */
 Quaternion AccGyroData::getQuaternion(){
 	return fQuaternion;
 }
 
+/**
+ * Parse the serial interface buffer to fill the internal structure.
+ * @param buffer : Serial float buffer (0-4:quaternion; 5-6:gyroscope; 7-9:accelerometer)
+ * @param timestamp : data timestamp for integration and derivation
+ */
 void AccGyroData::setFromSerial(float buffer[10], int timestamp) {
 
 	VectorFloat oldGyro = getAngularRate();
@@ -133,27 +185,53 @@ void AccGyroData::setFromSerial(float buffer[10], int timestamp) {
 	computeAlpha(timestamp, oldGyro);
 }
 
+/**
+ * Return the angular acceleration.
+ * @return VectorFloat
+ */
 VectorFloat AccGyroData::getAlpha() {
 	return fAlpha;
 }
 
+/**
+ * Return the teapotPacket structure
+ * @return address to uint8_t[13]
+ */
 uint8_t *AccGyroData::getTeaPotPacket(){
 	teapotPacket[11]++;
 	return teapotPacket;
 }
 
+/**
+ * Return the current (integrated) position (relative the the initial body position).
+ * @return VectorFloat
+ */
 VectorFloat AccGyroData::getPosition() {
 	return VectorFloat();
 }
 
+/**
+ * Compute the angular acceleration (by derivative of angular velocity)
+ * @param timestamp : current timestamp
+ * @param oldGyroscope : previous angular velocities.
+ */
 void AccGyroData::computeAlpha(int timestamp, VectorFloat oldGyroscope) {
 	fAlpha = (getAngularRate() - oldGyroscope)/(timestamp-fTimestamp);
 	fTimestamp = timestamp;
 }
+
+/**
+ * Return the raw angular velocity (as measured by the gyroscope)
+ * @return VectorInt16
+ */
 VectorInt16 AccGyroData::getRawAngularRate() {
 	return fGyroscope;
 }
 
+/**
+ * Return the angular velocity (gyroscope full scale applied).
+ * @return VectorFloat
+ */
 VectorFloat AccGyroData::getAngularRate() {
 	VectorFloat r;
 

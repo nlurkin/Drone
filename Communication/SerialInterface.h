@@ -12,11 +12,12 @@
 #include <Arduino.h>
 #include "mathClasses.h"
 #include "GenericSensor.h"
-#include "MotorControl.h"
+#include "GenericMotor.h"
+#include "GenericControl.h"
 #include "AccGyroData.h"
 #include "Constants.h"
 
-class SerialInterface: public GenericSensor, public MotorControl {
+class SerialInterface: public GenericSensor, public GenericMotor, public GenericControl {
 public:
 	SerialInterface();
 	virtual ~SerialInterface();
@@ -62,6 +63,7 @@ private:
 
 	VectorFloat fI;
 	float fBuffer[10];
+	int fTime;
 	Quaternion fRefQuat;
 	AccGyroData fData;
 

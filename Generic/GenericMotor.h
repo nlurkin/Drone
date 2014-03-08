@@ -1,17 +1,17 @@
 /*
- * MotorControl.h
+ * GenericMotor.h
  *
  *  Created on: 23 Feb 2014
  *      Author: Nicoas
  */
 
-#ifndef MOTORCONTROL_H_
-#define MOTORCONTROL_H_
+#ifndef GENERICMOTOR_H_
+#define GENERICMOTOR_H_
 
-class MotorControl {
+class GenericMotor {
 public:
-	MotorControl();
-	virtual ~MotorControl();
+	GenericMotor();
+	virtual ~GenericMotor();
 
 	virtual void disableAll()=0;
 	virtual void setMotorPowerAll(double power)=0;

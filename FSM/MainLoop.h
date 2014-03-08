@@ -43,23 +43,9 @@ private:
 
 	CalibrationLoop fLoopCalib;
 
-
-	GenericSensor *fSensor;
-	MotorControl *fMotorCtrl;
-	//AttitudeLoop ctl;
-	//SimpleControl sCtl;
-	SerialInterface *fSerial;
-
-	//Calibrator calib;
-
 	bool fSimulate;
 
-	//bool fCalibrated;
-	//bool fInitialized;
-	//bool fCalibrationRequested;
-
 	MainStates fState;
-	//MainStates fNextState;
 	Constants::CtrlCommand::ECtrlCommand fCtrlCommand;
 
 };

@@ -8,21 +8,22 @@
 #include "MainLoop.h"
 #include <Arduino.h>
 #include "Calibrator.h"
-#include "MotorControl.h"
-#include "GenericSensor.h"
+#include "Constants.h"
+#include "SerialInterface.h"
+#include "GenericControl.h"
 
 MainLoop::MainLoop(){
 	// TODO Auto-generated constructor stub
 	//fSensor = new AccGyro(0x68);
-	fSerial = new SerialInterface();
-	fMotorCtrl = fSerial;
-	fSensor = fSerial;
+	sControl = new SerialInterface();
+	sMotor = (SerialInterface*)sControl;
+	sSensor = (SerialInterface*)sControl;
 
 	fSimulate = false;
-	//fCalibrated = false;
-	//fCalibrationRequested = false;
 
 	fState = kIDLE;
+
+	fCtrlCommand = Constants::CtrlCommand::kNONE;
 }
 
 MainLoop::~MainLoop() {
@@ -37,12 +38,12 @@ void MainLoop::setup(){
 	//ctl.setP(20, 4);
 
 	//Reset all motors
-	fMotorCtrl->disableAll();
+	sMotor->disableAll();
 }
 
 void MainLoop::loop(){
-	fSerial->read();
-	if(fSerial->isCtrlCommandReady()) fCtrlCommand = fSerial->getCtrlCommand();
+	sControl->read();
+	if(sControl->isCtrlCommandReady()) fCtrlCommand = sControl->getCtrlCommand();
 	if(fState==kINITIALIZING) initializationLoop();
 	else if(fState==kIDLE) idleLoop();
 	else if(fState==kCALIBRATING) calibrationLoop();
@@ -81,12 +82,15 @@ void MainLoop::flightLoop() {
 
 
 void MainLoop::moveToIdle() {
+	fCtrlCommand = Constants::CtrlCommand::kNONE;
 	fState = kIDLE;
 }
 void MainLoop::moveToCalibration() {
+	fCtrlCommand = Constants::CtrlCommand::kNONE;
 	fLoopCalib.setCalibPath(CalibrationLoop::kPROCEDURE);
 	fState = kCALIBRATING;
 }
 void MainLoop::moveToFlight() {
+	fCtrlCommand = Constants::CtrlCommand::kNONE;
 	fState = kFLYING;
 }
