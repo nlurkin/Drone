@@ -291,7 +291,18 @@ class Body(object):
     
     def computePosition(self, dt):
         self.Position += self.Velocity*dt
-    
+        if(self.Position[2]<0):
+            #On the ground. Reset all values
+            self.Position[2]=0
+            self.Velocity = Vector([0,0,0])
+            self.Acceleration = Vector([0,0,0])
+            self.Alpha = Vector([0,0,0])
+            self.Omega = Vector([0,0,0])
+            self.ThetaDot = Vector([0,0,0])
+            self.Angles = Vector([0,0,0])
+            self.Quat = Quaternion([self.Angles[0], self.Angles[1], self.Angles[2]])
+        
+            
     def calibrateI(self, dt,simu, minMotor):
         dMotor = 1
         self.CtrlInput = [minMotor, minMotor, minMotor, minMotor]
