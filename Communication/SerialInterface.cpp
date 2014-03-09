@@ -6,9 +6,10 @@
  */
 
 #include "SerialInterface.h"
+#include "SerialOutput.h"
 
 SerialInterface::SerialInterface() {
-	Serial.println("Drone serial interface initialized");
+	cout << "Drone serial interface initialized" << SerialOutput::endl;
 	fICount = 0;
 	fBufferCount = 0;
 	fQuatCount = 0;
@@ -30,17 +31,16 @@ SerialInterface::~SerialInterface() {
  * @param power: new power
  */
 void SerialInterface::cmdPower(int motor, int power) {
-	Serial.print("CMD:power:");
-	Serial.print(motor);
-	Serial.print(":");
-	Serial.println(power);
+	PRINTOUT("cmdPower");
+	cout << "CMD:power:" << motor << ":" << power << SerialOutput::endl;
 }
 
 /**
  * Command to request the simulator to send the I matrix
  */
 void SerialInterface::cmdRequestI(){
-	Serial.println("CMD:sendI");
+	PRINTOUT("cmdRequestI");
+	cout << "CMD:sendI" << SerialOutput::endl;
 }
 
 /**
@@ -48,13 +48,13 @@ void SerialInterface::cmdRequestI(){
  * @return false
  */
 bool SerialInterface::read(){
+	PRINTOUT("read");
 	String s;
 	bool r = false;
 
 	while(Serial.available()>0){
 		s = Serial.readStringUntil('\n');
-		Serial.print("Receiving from Serial: ");
-		Serial.println(s);
+		cout << "Receiving from Serial: " << s << SerialOutput::endl;
 		//Does it look like a command
 		if(s.startsWith("CMD:")){
 			readCmd(s.substring(4));
@@ -72,6 +72,7 @@ bool SerialInterface::read(){
  * @param s: data line
  */
 void SerialInterface::readData(String s) {
+	PRINTOUT("readData");
 	if(s.startsWith("SENS:")){		//Sensor values
 		readSensor(s.substring(5));
 	}
@@ -85,6 +86,7 @@ void SerialInterface::readData(String s) {
  * @param s: command line
  */
 void SerialInterface::readCmd(String s) {
+	PRINTOUT("readCmd");
 	if(s.startsWith("TRCK:")){				//Setting a new attitude reference
 		readNewAttitude(s.substring(5));
 	}
@@ -98,7 +100,8 @@ void SerialInterface::readCmd(String s) {
  * @param s: sensor line
  */
 void SerialInterface::readSensor(String s) {
-	if(fBufferCount==10) fBufferCount=0;
+	PRINTOUT("readSensor");
+	if(fBufferCount==11) fBufferCount=0;
 
 	if(s.startsWith("BUF0:")) {
 		fBuffer[0] = atof(s.substring(5).c_str());
@@ -115,8 +118,9 @@ void SerialInterface::readSensor(String s) {
 	else if(s.startsWith("BUF9:")) fBuffer[9] = s.substring(5).toInt();
 	else if(s.startsWith("TIME:")) fTime = s.substring(5).toInt();
 	fBufferCount++;
+	cout << "Count is " << fBufferCount << SerialOutput::endl;
 	if(fBufferCount==11){
-		Serial.println("Full buffer received");
+		cout << "Full buffer received" << SerialOutput::endl;
 		fData.setFromSerial(fBuffer, millis());
 	}
 }
@@ -126,6 +130,7 @@ void SerialInterface::readSensor(String s) {
  * @param s: matrix line
  */
 void SerialInterface::readIMat(String s) {
+	PRINTOUT("readIMat");
 	if(fICount==3) fICount=0;
 
 	if(s.startsWith("IXX:")){
@@ -143,6 +148,7 @@ void SerialInterface::readIMat(String s) {
  * @return true if full matrix received.
  */
 bool SerialInterface::isIReady() {
+	PRINTOUT("isIReady");
 	return (fICount==3);
 }
 
@@ -151,6 +157,7 @@ bool SerialInterface::isIReady() {
  * @return I matrix
  */
 VectorFloat SerialInterface::getI() {
+	PRINTOUT("getI");
 	fICount = 0;
 	return fI;
 }
@@ -160,9 +167,13 @@ VectorFloat SerialInterface::getI() {
  * @return true if full sensor buffer received.
  */
 bool SerialInterface::isSensorReady(){
+	PRINTOUT("isSensorReady");
 	//TODO faire comme ça ou pas?
 	bool isReady = (fBufferCount==11);
-	fBufferCount = 0;
+	if(isReady) {
+		cout << "Sensor data is ready" << SerialOutput::endl;
+		fBufferCount = 0;
+	}
 	return isReady;
 }
 
@@ -171,12 +182,10 @@ bool SerialInterface::isSensorReady(){
  * @param tau: torque
  */
 void SerialInterface::cmdTorque(VectorFloat tau) {
-	Serial.print("CMD:TAUS:TAUX:");
-	Serial.println(tau.x);
-	Serial.print("CMD:TAUS:TAUY:");
-	Serial.println(tau.y);
-	Serial.print("CMD:TAUS:TAUZ:");
-	Serial.println(tau.z);
+	PRINTOUT("cmdTorque");
+	cout << "CMD:TAUS:TAUX:" << tau.x << SerialOutput::endl;
+	cout << "CMD:TAUS:TAUY:" << tau.y << SerialOutput::endl;
+	cout << "CMD:TAUS:TAUZ:" << tau.z << SerialOutput::endl;
 }
 
 /**
@@ -184,6 +193,7 @@ void SerialInterface::cmdTorque(VectorFloat tau) {
  * @param s: attitude quaternion line
  */
 void SerialInterface::readNewAttitude(String s) {
+	PRINTOUT("readNewAttitude");
 	if(fQuatCount==4) fQuatCount=0;
 
 	if(s.startsWith("QUAW:")){
@@ -194,7 +204,7 @@ void SerialInterface::readNewAttitude(String s) {
 	else if(s.startsWith("QUAY:")) fRefQuat.y = atof(s.substring(5).c_str());
 	else if(s.startsWith("QUAZ:")) fRefQuat.z = atof(s.substring(5).c_str());
 	fQuatCount++;
-	if(fQuatCount==4) Serial.println("Full attitude quaternion received");
+	if(fQuatCount==4) cout << "Full attitude quaternion received" << SerialOutput::endl;
 }
 
 /**
@@ -202,52 +212,64 @@ void SerialInterface::readNewAttitude(String s) {
  * @return true if full new attitude quaternion received
  */
 bool SerialInterface::isAttitudeReady() {
+	PRINTOUT("isAttitudeReady");
 	return (fQuatCount==4);
 }
 
 Quaternion SerialInterface::getQuaternion() {
+	PRINTOUT("getQuaternion");
 	return fData.getQuaternion();
 }
 
 VectorFloat SerialInterface::getOmega() {
+	PRINTOUT("getOmega");
 	return fData.getAngularRate();
 }
 
 VectorFloat SerialInterface::getAcceleration() {
+	PRINTOUT("getAcceleration");
 	return fData.getLinearAcceleration();
 }
 
 VectorFloat SerialInterface::getPosition() {
+	PRINTOUT("getPosition");
 	return fData.getPosition();
 }
 
 VectorFloat SerialInterface::getAlpha() {
+	PRINTOUT("getAlpha");
 	return fData.getAlpha();
 }
 
 bool SerialInterface::checkDataAvailable() {
+	PRINTOUT("checkDataAvailable");
 	return isSensorReady();
 }
 
 void SerialInterface::disableAll() {
+	PRINTOUT("disableAll");
 	setMotorPowerAll(0);
 }
 
 void SerialInterface::setMotorPowerAll(double power) {
-	for(int i=fFirstMotor; i<fLastMotor; ++i){
+	PRINTOUT("setMotorPowerAll");
+	for(int i=fFirstMotor; i<=fLastMotor; ++i){
 		cmdPower(i, power);
 	}
 }
 
 void SerialInterface::setMotorPower(double power, int i) {
+	PRINTOUT("setMotorPower");
 	cmdPower(i, power);
 }
 
 int SerialInterface::getFirstMotor() {
+	PRINTOUT("getFirstMotor");
 	return fFirstMotor;
 }
 
 int SerialInterface::getLastMotor() {
+	PRINTOUT("getLastMotor");
 	return fLastMotor;
 }
 
@@ -256,16 +278,22 @@ int SerialInterface::getLastMotor() {
  * @param s : control command line
  */
 void SerialInterface::readCtrlCommand(String s) {
+	PRINTOUT("readCtrlCommand");
+	cout << "Reading control " << s << SerialOutput::endl;
+
 	fCtrlCommandReady = true;
 	if(s.startsWith("GOCALIB")) fCtrlCommand = Constants::CtrlCommand::kDOCALIB;
+	else if(s.startsWith("GODEBUG")) fCtrlCommand = Constants::CtrlCommand::kDODEBUG;
 	else fCtrlCommandReady = false;
 }
 
 bool SerialInterface::isCtrlCommandReady() {
+	PRINTOUT("isCtrlCommandReady");
 	return fCtrlCommandReady;
 }
 
 Constants::CtrlCommand::ECtrlCommand SerialInterface::getCtrlCommand() {
+	PRINTOUT("getCtrlCommand");
 	fCtrlCommandReady = false;
 	return fCtrlCommand;
 }
@@ -275,6 +303,7 @@ Constants::CtrlCommand::ECtrlCommand SerialInterface::getCtrlCommand() {
  * @return sensor buffer
  */
 float* SerialInterface::getBuffer() {
+	PRINTOUT("getBuffer");
 	fBufferCount = 0;
 	for(int i=0; i<10; i++){
 		Serial.print(fBuffer[i]);

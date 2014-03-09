@@ -11,6 +11,7 @@
 #include "Constants.h"
 #include "SerialInterface.h"
 #include "GenericControl.h"
+#include "SerialOutput.h"
 
 MainLoop::MainLoop(){
 	// TODO Auto-generated constructor stub
@@ -18,6 +19,7 @@ MainLoop::MainLoop(){
 	sControl = new SerialInterface();
 	sMotor = (SerialInterface*)sControl;
 	sSensor = (SerialInterface*)sControl;
+	//cout = new SerialOutput();
 
 	fSimulate = false;
 
@@ -43,7 +45,12 @@ void MainLoop::setup(){
 
 void MainLoop::loop(){
 	sControl->read();
-	if(sControl->isCtrlCommandReady()) fCtrlCommand = sControl->getCtrlCommand();
+	if(sControl->isCtrlCommandReady()){
+		fCtrlCommand = sControl->getCtrlCommand();
+		cout << "Control command received " << (int)fCtrlCommand << SerialOutput::endl;
+		delay(100);
+		if(fCtrlCommand==Constants::CtrlCommand::kDODEBUG) bigDebug = !bigDebug;
+	}
 	if(fState==kINITIALIZING) initializationLoop();
 	else if(fState==kIDLE) idleLoop();
 	else if(fState==kCALIBRATING) calibrationLoop();
@@ -82,15 +89,20 @@ void MainLoop::flightLoop() {
 
 
 void MainLoop::moveToIdle() {
+	cout << "Moving to IDLE" << SerialOutput::endl;
 	fCtrlCommand = Constants::CtrlCommand::kNONE;
 	fState = kIDLE;
 }
 void MainLoop::moveToCalibration() {
+	cout << "Moving to CALIBRATION" << SerialOutput::endl;
+	delay(100);
 	fCtrlCommand = Constants::CtrlCommand::kNONE;
 	fLoopCalib.setCalibPath(CalibrationLoop::kPROCEDURE);
+	fLoopCalib.start();
 	fState = kCALIBRATING;
 }
 void MainLoop::moveToFlight() {
+	cout << "Moving to FLIGHT" << SerialOutput::endl;
 	fCtrlCommand = Constants::CtrlCommand::kNONE;
 	fState = kFLYING;
 }

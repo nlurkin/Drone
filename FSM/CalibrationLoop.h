@@ -24,6 +24,7 @@ public:
 
 	void setCalibPath(Path p);
 	bool processLoop();
+	void start();
 
 private:
 	//Init

@@ -9,6 +9,7 @@
 #include "GenericMotor.h"
 #include "GenericSensor.h"
 #include <EEPROM.h>
+#include "Constants.h"
 
 CalibrationLoop::CalibrationLoop() {
 	fState = kIDLE;
@@ -39,6 +40,8 @@ CalibrationLoop::~CalibrationLoop() {
  * @param p
  */
 void CalibrationLoop::setCalibPath(Path p) {
+	PRINTOUT("setCalibPath");
+	cout << "Setting calibration path to " << p << SerialOutput::endl;
 	fPath = p;
 }
 
@@ -47,8 +50,8 @@ void CalibrationLoop::setCalibPath(Path p) {
  * @return true if in IDLE state. Else false.
  */
 bool CalibrationLoop::processLoop() {
+	PRINTOUT("processLoop");
 	bool ret = false;
-
 	switch(fState){
 	case kIDLE:
 		ret = true;
@@ -107,6 +110,7 @@ bool CalibrationLoop::processLoop() {
  * Scanning value of power until vertical linear acceleration is positive.
  */
 void CalibrationLoop::scanP(){
+	PRINTOUT("scanP");
 	if(!sSensor->checkDataAvailable()) return;
 	double az = sSensor->getAcceleration()[2];
 	if(az<=0){
@@ -122,6 +126,7 @@ void CalibrationLoop::scanP(){
  * Keeping the value of power until height calibHeight is reached.
  */
 void CalibrationLoop::takeOff() {
+	PRINTOUT("takeOff");
 	if(!sSensor->checkDataAvailable()) return;
 	double height = sSensor->getPosition()[2];
 	if(height == calibHeight){
@@ -133,6 +138,7 @@ void CalibrationLoop::takeOff() {
  * Decrease the value of power until the vertical acceleration is small.
  */
 void CalibrationLoop::stabilize() {
+	PRINTOUT("stabilize");
 	if(!sSensor->checkDataAvailable()) return;
 	double az = sSensor->getAcceleration()[2];
 	if(az>0){
@@ -151,6 +157,7 @@ void CalibrationLoop::stabilize() {
  * Wait until the time fStopTime is reached.
  */
 void CalibrationLoop::wait() {
+	PRINTOUT("wait");
 	if(millis()>=fStopTime) fState = fNextState;
 }
 
@@ -158,6 +165,7 @@ void CalibrationLoop::wait() {
  * The model is in the disturbed state (to avoid measuring at 0 rad). Ready to start the measurement.
  */
 void CalibrationLoop::iDisturbed(){
+	PRINTOUT("iDisturbed");
 	sMotor->setMotorPower(fCurrentPower+fIPInterval, sMotor->getFirstMotor());
 	fStopTime = millis()+fITInterval;
 	fNextState = kIMEASUREP;
@@ -168,6 +176,7 @@ void CalibrationLoop::iDisturbed(){
  * First matrix measurement.
  */
 void CalibrationLoop::measureP() {
+	PRINTOUT("measureP");
 	if(!sSensor->checkDataAvailable()) return;
 	fCalibrator.newPoint(sMotor->getFirstMotor(),
 			fCurrentPower+fIPInterval,
@@ -185,6 +194,7 @@ void CalibrationLoop::measureP() {
  * Second matrix measurement
  */
 void CalibrationLoop::measureM() {
+	PRINTOUT("measureM");
 	if(!sSensor->checkDataAvailable()) return;
 	fCalibrator.newPoint(sMotor->getFirstMotor(),
 			fCurrentPower-fIPInterval,
@@ -212,6 +222,7 @@ void CalibrationLoop::measureM() {
 }
 
 void CalibrationLoop::mDisturbed() {
+	PRINTOUT("mDisturbed");
 	sMotor->setMotorPower(fCurrentPower+fMPInterval, fCurrentMotor);
 	fStopTime = millis()+fMTInterval;
 	fNextState = kMMEASURES;
@@ -219,6 +230,7 @@ void CalibrationLoop::mDisturbed() {
 }
 
 void CalibrationLoop::measureS() {
+	PRINTOUT("measureS");
 	if(!sSensor->checkDataAvailable()) return;
 	fCalibrator.newPoint(fCurrentMotor,
 			fCurrentPower+fMPInterval,
@@ -233,6 +245,7 @@ void CalibrationLoop::measureS() {
 }
 
 void CalibrationLoop::measureD() {
+	PRINTOUT("measureD");
 	if(!sSensor->checkDataAvailable()) return;
 	fCalibrator.newPoint(fCurrentMotor,
 			fCurrentPower+2*fMPInterval,
@@ -247,6 +260,7 @@ void CalibrationLoop::measureD() {
 }
 
 void CalibrationLoop::mBalancedD(){
+	PRINTOUT("mBalancedD");
 	sMotor->setMotorPower(fCurrentPower-2*fMPInterval, fCurrentMotor);
 	fStopTime = millis()+fMTInterval;
 	fNextState = kMBALANCES;
@@ -254,6 +268,7 @@ void CalibrationLoop::mBalancedD(){
 }
 
 void CalibrationLoop::mBalancedS(){
+	PRINTOUT("mBalancedS");
 	fCalibrator.calibrateR(fCurrentMotor);
 	if(fCurrentMotor==sMotor->getLastMotor()){
 		for(int i=0; i<4; i++){
@@ -274,6 +289,7 @@ void CalibrationLoop::mBalancedS(){
 }
 
 void CalibrationLoop::load() {
+	PRINTOUT("load");
 	for(int i=0; i<4; i++){
 		EEPROM_readAnything<float>(eepromAddress[0+i*4], fCalibrator.getR(i)[0]);
 		EEPROM_readAnything<float>(eepromAddress[1+i*4], fCalibrator.getR(i)[1]);
@@ -285,6 +301,21 @@ void CalibrationLoop::load() {
 	EEPROM_readAnything<float>(eepromAddress[18], fCalibrator.getIAxis()[2]);
 }
 
+void CalibrationLoop::start() {
+	PRINTOUT("start");
+	if(fPath==kPROCEDURE){
+		cout << "Starting calibration procedure" << SerialOutput::endl;
+		fCurrentPower = 1;
+		fState = kSCANNING;
+	}
+	else fState = kLOAD;
+}
+
+void CalibrationLoop::compute() {
+	PRINTOUT("compute");
+}
+
 void CalibrationLoop::apply() {
+	PRINTOUT("apply");
 
 }
