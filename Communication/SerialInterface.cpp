@@ -118,7 +118,6 @@ void SerialInterface::readSensor(String s) {
 	else if(s.startsWith("BUF9:")) fBuffer[9] = s.substring(5).toInt();
 	else if(s.startsWith("TIME:")) fTime = s.substring(5).toInt();
 	fBufferCount++;
-	cout << "Count is " << fBufferCount << SerialOutput::endl;
 	if(fBufferCount==11){
 		cout << "Full buffer received" << SerialOutput::endl;
 		fData.setFromSerial(fBuffer, millis());
@@ -249,6 +248,7 @@ bool SerialInterface::checkDataAvailable() {
 void SerialInterface::disableAll() {
 	PRINTOUT("disableAll");
 	setMotorPowerAll(0);
+	cmdNextStep();
 }
 
 void SerialInterface::setMotorPowerAll(double power) {
@@ -256,11 +256,13 @@ void SerialInterface::setMotorPowerAll(double power) {
 	for(int i=fFirstMotor; i<=fLastMotor; ++i){
 		cmdPower(i, power);
 	}
+	cmdNextStep();
 }
 
 void SerialInterface::setMotorPower(double power, int i) {
 	PRINTOUT("setMotorPower");
 	cmdPower(i, power);
+	cmdNextStep();
 }
 
 int SerialInterface::getFirstMotor() {
@@ -296,6 +298,10 @@ Constants::CtrlCommand::ECtrlCommand SerialInterface::getCtrlCommand() {
 	PRINTOUT("getCtrlCommand");
 	fCtrlCommandReady = false;
 	return fCtrlCommand;
+}
+
+void SerialInterface::cmdNextStep() {
+	cout << "CMD:NEXT" << SerialOutput::endl;
 }
 
 /**

@@ -31,12 +31,12 @@ public:
 	void setFullScaleAccelerometer(uint8_t r);
 	void setFullScaleGyroscope(uint8_t r);
 
-	VectorInt16 getRawAcceleration();
+	VectorInt<int32_t> getRawAcceleration();
 	VectorFloat getLinearAcceleration();
 	VectorFloat getTrueAcceleration();
 	VectorFloat getGravity();
 
-	VectorInt16 getRawAngularRate();
+	VectorInt<int32_t> getRawAngularRate();
 	VectorFloat getAngularRate();
 
 	VectorFloat getAlpha();
@@ -53,8 +53,8 @@ private:
 
 	int fTimestamp;
 	Quaternion fQuaternion;
-	VectorInt16 fAcceleration;
-	VectorInt16 fGyroscope;
+	VectorInt<int32_t> fAcceleration;
+	VectorInt<int32_t> fGyroscope;
 	VectorFloat fAlpha;
 	//int16_t fTemperature;
 	uint8_t teapotPacket[14];

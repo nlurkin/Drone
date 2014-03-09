@@ -113,11 +113,13 @@ void CalibrationLoop::scanP(){
 	PRINTOUT("scanP");
 	if(!sSensor->checkDataAvailable()) return;
 	double az = sSensor->getAcceleration()[2];
+	cout << "Acceleration z" << az << SerialOutput::endl;
 	if(az<=0){
 		fCurrentPower++;
 		sMotor->setMotorPowerAll(fCurrentPower);
 	}
 	else{
+		sMotor->setMotorPowerAll(fCurrentPower);
 		fState = kTAKEOFF;
 	}
 }
@@ -132,6 +134,7 @@ void CalibrationLoop::takeOff() {
 	if(height == calibHeight){
 		fState = kSTABILIZING;
 	}
+	sMotor->setMotorPowerAll(fCurrentPower);
 }
 
 /**

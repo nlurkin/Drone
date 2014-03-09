@@ -19,6 +19,8 @@ public:
 	SerialOutput& operator<<(const char* s);
 	SerialOutput& operator<<(const String s);
 	SerialOutput& operator<<(const int s);
+	SerialOutput& operator<<(const long int s);
+	SerialOutput& operator<<(const double s);
 	SerialOutput& operator<<(const cst s);
 };
 

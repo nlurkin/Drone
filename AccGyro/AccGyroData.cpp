@@ -6,6 +6,7 @@
  */
 
 #include "AccGyroData.h"
+#include "Constants.h"
 
 /**
  * Constructor.
@@ -106,7 +107,7 @@ void AccGyroData::setFullScaleGyroscope(uint8_t r){
  * Return the raw acceleration vector (as measured by the sensor)
  * @return VectorInt16
  */
-VectorInt16 AccGyroData::getRawAcceleration(){
+VectorInt<int32_t> AccGyroData::getRawAcceleration(){
 	return fAcceleration;
 }
 
@@ -119,7 +120,9 @@ VectorFloat AccGyroData::getLinearAcceleration(){
 
 	r.x = fAcceleration.x/fFullScaleAccelerometer;
 	r.y = fAcceleration.y/fFullScaleAccelerometer;
+	cout << "fAcc " << fAcceleration.z << "/" << fFullScaleAccelerometer << SerialOutput::endl;
 	r.z = fAcceleration.z/fFullScaleAccelerometer;
+	cout << r.z << SerialOutput::endl;
 
 	return r;
 }
@@ -224,7 +227,7 @@ void AccGyroData::computeAlpha(int timestamp, VectorFloat oldGyroscope) {
  * Return the raw angular velocity (as measured by the gyroscope)
  * @return VectorInt16
  */
-VectorInt16 AccGyroData::getRawAngularRate() {
+VectorInt<int32_t> AccGyroData::getRawAngularRate() {
 	return fGyroscope;
 }
 

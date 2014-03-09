@@ -44,6 +44,7 @@ public:
 	int getLastMotor();
 
 	bool read();
+	void cmdNextStep();
 
 private:
 	void cmdPower(int motor, int power);

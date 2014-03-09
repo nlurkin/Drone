@@ -37,18 +37,23 @@ THE SOFTWARE.
 #include "Quaternion.h"
 #include "VectorFloat.h"
 
-class VectorInt16 {
+template<class T>
+class VectorInt {
 public:
-	int16_t x;
-	int16_t y;
-	int16_t z;
+	T x;
+	T y;
+	T z;
 
-	VectorInt16();
+	VectorInt(){
+		x = 0;
+		y = 0;
+		z = 0;
+	};
 
-	VectorInt16(int16_t nx, int16_t ny, int16_t nz);
+	VectorInt(T nx, T ny, T nz):x(nx),y(ny),z(nz) {};
 
 	void rotate(Quaternion q);
-	VectorInt16 getRotated(Quaternion q);
+	VectorInt<T> getRotated(Quaternion q);
 
 	void print();
 };

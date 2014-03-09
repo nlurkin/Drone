@@ -498,7 +498,7 @@ uint8_t MPU6050DMP::dmpGetAccel(int16_t *data, const uint8_t* packet) {
     data[2] = (packet[36] << 8) + packet[37];
     return 0;
 }
-uint8_t MPU6050DMP::dmpGetAccel(VectorInt16 *v, const uint8_t* packet) {
+uint8_t MPU6050DMP::dmpGetAccel(VectorInt<int16_t> *v, const uint8_t* packet) {
     // TODO: accommodate different arrangements of sent data (ONLY default supported now)
     if (packet == 0) packet = dmpPacketBuffer;
     v -> x = (packet[28] << 8) + packet[29];
@@ -557,7 +557,7 @@ uint8_t MPU6050DMP::dmpGetGyro(int16_t *data, const uint8_t* packet) {
 }
 // uint8_t MPU6050DMP::dmpSetLinearAccelFilterCoefficient(float coef);
 // uint8_t MPU6050DMP::dmpGetLinearAccel(long *data, const uint8_t* packet);
-uint8_t MPU6050DMP::dmpGetLinearAccel(VectorInt16 *v, VectorInt16 *vRaw, VectorFloat *gravity) {
+uint8_t MPU6050DMP::dmpGetLinearAccel(VectorInt<int16_t> *v, VectorInt<int16_t> *vRaw, VectorFloat *gravity) {
     // get rid of the gravity component (+1g = +8192 in standard DMP FIFO packet, sensitivity is 2g)
     v -> x = vRaw -> x - gravity -> x*8192;
     v -> y = vRaw -> y - gravity -> y*8192;
@@ -565,10 +565,10 @@ uint8_t MPU6050DMP::dmpGetLinearAccel(VectorInt16 *v, VectorInt16 *vRaw, VectorF
     return 0;
 }
 // uint8_t MPU6050DMP::dmpGetLinearAccelInWorld(long *data, const uint8_t* packet);
-uint8_t MPU6050DMP::dmpGetLinearAccelInWorld(VectorInt16 *v, VectorInt16 *vReal, Quaternion *q) {
+uint8_t MPU6050DMP::dmpGetLinearAccelInWorld(VectorInt<int16_t> *v, VectorInt<int16_t> *vReal, Quaternion *q) {
     // rotate measured 3D acceleration vector into original state
     // frame of reference based on orientation quaternion
-    memcpy(v, vReal, sizeof(VectorInt16));
+    memcpy(v, vReal, sizeof(VectorInt<int16_t>));
     v -> rotate(*q);
     return 0;
 }

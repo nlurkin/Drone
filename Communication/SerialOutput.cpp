@@ -32,6 +32,15 @@ SerialOutput& SerialOutput::operator <<(const int s) {
 	Serial.print(s);
 	return *this;
 }
+SerialOutput& SerialOutput::operator <<(const long int s) {
+	Serial.print(s);
+	return *this;
+}
+
+SerialOutput& SerialOutput::operator <<(const double s) {
+	Serial.print(s);
+	return *this;
+}
 
 SerialOutput& SerialOutput::operator <<(const cst c) {
 	if(c==endl){
