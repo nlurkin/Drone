@@ -34,7 +34,7 @@ class Body(object):
     ctrl = None
     
     #set by controller
-    CtrlInput = []
+    CtrlInput = [0,0,0,0]
     
     #from motor
     Torque = Vector() #vector
@@ -119,6 +119,10 @@ class Body(object):
         self.CtrlInput = t
         #print "Controller input " + t
     
+    def changeInput(self, motor, value):
+        self.CtrlInput[motor] = value;
+        print "CtrlInput is now " + str(self.CtrlInput)
+        
     def nextStep(self, dt):
         #controller
         if self.UseController:

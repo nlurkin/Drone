@@ -107,7 +107,7 @@ class PSquare:
         #This is required to keep the z component compensating for gravity. 
         #If not, the norm is kept when rotating and the z component is reduced accordingly.
         #Maybe try by creating the rotation between z and the error and adding the gravity after!
-        #TODO: ou alors c'est fait plus loin en divisant par z' et celui-ci ne sert à rien?
+        #TODO: ou alors c'est fait plus loin en divisant par z' et celui-ci ne sert a rien?
         qRef.w = 1
         qRef.normalize()
         
