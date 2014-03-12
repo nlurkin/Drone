@@ -1,9 +1,9 @@
 #!python
+from pyqtgraph.Qt import QtGui, QtCore
 from ParamsClass import Params
 from FullSimu import Simu
 from mathclasses import Quaternion, Vector
 from time import sleep, time
-import matplotlib.pyplot as plt
 import msvcrt
 import serial
 import string
@@ -143,7 +143,6 @@ def main():
     timeout = 0.0001
     s = ""
     continuous = False
-    plotting = True
     tracking = False
     cont = False
     
@@ -153,17 +152,10 @@ def main():
     else:
         ser = serial.Serial(port=Params.comPort, baudrate=9600, timeout=1)
     
-    simu.plotSetup()
     while(True):
+        QtGui.QApplication.processEvents()
         s = readInput("", "", timeout)
-        if plotting:
-            if s=="p":
-                plotting = False
-            if s=="q":
-                break
-            plt.pause(1)
-            continue
-        
+         
         if Params.runLocally==False:
             serialLoop()
         if(continuous):
@@ -177,16 +169,15 @@ def main():
                     cont = False
             else:
                 cont = True
-            
+             
             if cont==True:
                 if tracking:
                     sendNewTracking(None)
                 simu.nextStep()
                 sendSensor()
-                    
-                plt.pause(0.0001)
+                 
         if s=="q":
-            break
+            sys.exit(0)
         elif s=="c":
             continuous= not(continuous)
             reqTorque = Vector([0, 0 ,0])
@@ -198,7 +189,6 @@ def main():
                 sendNewTracking(None)
             simu.nextStep()
             sendSensor()
-            plt.pause(0.0001)
         elif s=="d":
             simu.deviate()
             print "Disturbing system"
@@ -221,18 +211,14 @@ def main():
             simu.b.exportCalib()
         elif s=="load":
             simu.b.importCalib()
-        elif s=="p":
-            plotting = True
         elif s=="debug":
             sendDebug()
-
-            
         
-    
-
 
 if __name__ == "__main__":
     main()
+    if (sys.flags.interactive != 1) or not hasattr(QtCore, 'PYQT_VERSION'):
+        QtGui.QApplication.instance().exec_()
     sys.exit(0);
 
 

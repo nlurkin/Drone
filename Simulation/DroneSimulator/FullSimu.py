@@ -8,7 +8,7 @@ from scipy.constants.constants import pi
 from Body import Body
 from ParamsClass import Params
 from mathclasses import Vector, Quaternion
-import matplotlib.pyplot as plt
+from DronePlot import DronePlot
 
 
 class Simu(object):
@@ -43,6 +43,8 @@ class Simu(object):
     moveTimes = None
     moveType = None
     
+    pltpq = DronePlot()
+    
     def __init__(self):
         #self.b.setMotorConstants(self.Rho, self.K_v, self.K_t, self.K_tau, self.I_M, self.A_swept, self.A_xsec, self.Radius, self.C_D)
         self.time = numpy.arange(0,5, self.dt)
@@ -66,7 +68,6 @@ class Simu(object):
     def deviate(self):
         r = Vector([random(),random(), random()]) 
         deviation = Params.MaxDeviation
-        r = Vector([0.2,0.3,0.4])
         self.b.setOmega(-deviation+(2*deviation*r))
     
     def heavyside(self, t, t0):
@@ -126,13 +127,6 @@ class Simu(object):
         if self.moveType==3:
             val = self.moveFlip()
         
-        plt.figure(50)
-        plt.subplot(3, 1 ,1)
-        plt.plot(self.t, val[0], 'ro')
-        plt.subplot(3, 1 ,2)
-        plt.plot(self.t, val[1], 'go')
-        plt.subplot(3, 1 ,3)
-        plt.plot(self.t, val[2], 'bo')
         return val
         
     
@@ -151,118 +145,18 @@ class Simu(object):
         self.plot()
     
     def plot(self, t):
-        plotNbr=1
-        plt.figure(plotNbr)
-        plt.subplot(2, 2 ,1)
-        #quaternion
-        plt.plot(self.t, self.b.Quat.x, 'rx')
-        plt.plot(self.t, self.b.Quat.y, 'gx')
-        plt.plot(self.t, self.b.Quat.z, 'bx')
-        plt.plot(self.t, self.b.ctrl.lastqRef.x, 'ro')
-        plt.plot(self.t, self.b.ctrl.lastqRef.y, 'go')
-        plt.plot(self.t, self.b.ctrl.lastqRef.z, 'bo')
-
-        plt.subplot(2, 2 ,2)
-        #theta
-        plt.plot(t, self.b.Angles[0], 'rx')
-        plt.plot(t, self.b.Angles[1], 'gx')
-        plt.plot(t, self.b.Angles[2], 'bx')
-        plt.subplot(2, 2 ,3)
-        #thetadot
-        plt.plot(t, self.b.Omega[0], 'rx')
-        plt.plot(t, self.b.Omega[1], 'gx')
-        plt.plot(t, self.b.Omega[2], 'bx')
-        plt.subplot(2, 2 ,4)
-        #torque
-        plt.plot(t, self.b.Torque[0], 'rx')
-        plt.plot(t, self.b.Torque[1], 'gx')
-        plt.plot(t, self.b.Torque[2], 'bx')
-        plt.plot(t, self.b.ctrl.Torque[0], 'ro')
-        plt.plot(t, self.b.ctrl.Torque[1], 'go')
-        plt.plot(t, self.b.ctrl.Torque[2], 'bo')
+       
+        self.pltpq.addTime(t)
+        self.pltpq.addQuaternion(self.b.Quat, self.b.ctrl.lastqRef)
+        self.pltpq.addTheta(self.b.Angles)
+        self.pltpq.addThetaDot(self.b.Omega)
+        self.pltpq.addTorque(self.b.Torque, self.b.ctrl.Torque)
+        self.pltpq.addX(self.b.Position)
+        self.pltpq.addXDot(self.b.Velocity, self.b.ctrl.lastvRef)
+        self.pltpq.addA(self.b.Acceleration)
+        self.pltpq.addOmega(self.b.Omega)
+        self.pltpq.update()
         
-
-        plotNbr+=1
-        plt.figure(plotNbr)
-        plt.subplot(2, 2 ,1)
-        plt.plot(t, self.b.Position[0], 'rx')
-        plt.plot(t, self.b.Position[1], 'gx')
-        plt.plot(t, self.b.Position[2], 'bx')
-        plt.subplot(2, 2 ,2)
-        plt.plot(t, self.b.Velocity[0], 'rx')
-        plt.plot(t, self.b.Velocity[1], 'gx')
-        plt.plot(t, self.b.Velocity[2], 'bx')
-        plt.plot(t, self.b.ctrl.lastvRef[0], 'ro')
-        plt.plot(t, self.b.ctrl.lastvRef[1], 'go')
-        plt.plot(t, self.b.ctrl.lastvRef[2], 'bo')
-        plt.subplot(2, 2 ,3)
-        plt.plot(t, self.b.Acceleration[0], 'rx')
-        plt.plot(t, self.b.Acceleration[1], 'gx')
-        plt.plot(t, self.b.Acceleration[2], 'bx')
-        plt.subplot(2, 2 ,4)
-        
-        plotNbr+=1
-        plt.figure(50)
-        plt.subplot(3, 1 ,1)
-        plt.plot(t, self.b.Angles[0], 'rx')
-        plt.subplot(3, 1 ,2)
-        plt.plot(t, self.b.Angles[1], 'gx')
-        plt.subplot(3, 1 ,3)
-        plt.plot(t, self.b.Angles[2], 'bx')
-        
-        
-        
-        
-    def plotSetup(self):
-        plotNbr=1
-        plt.figure(plotNbr)
-        plt.subplot(2, 2 ,1)
-        plt.title("quaternion")
-        plt.grid(True)
-        #quaternion
-        plt.subplot(2, 2 ,2)
-        #theta
-        plt.title("theta")
-        plt.grid(True)
-        plt.subplot(2, 2 ,3)
-        #thetadot
-        plt.title("thetaDot")
-        plt.grid(True)
-        plt.subplot(2, 2 ,4)
-        #torque
-        plt.title("torque")
-        plt.grid(True)
-        
-        plotNbr+=1
-
-        plt.figure(plotNbr)
-        plt.subplot(2, 2 ,1)
-        plt.title("x")
-        plt.grid(True)
-        plt.subplot(2, 2 ,2)
-        plt.title("xDot")
-        plt.grid(True)
-        plt.subplot(2, 2 ,3)
-        plt.title("a")
-        plt.grid(True)
-        plt.subplot(2, 2 ,4)
-        plt.figure(plotNbr)
-        plt.title("omega")
-        plt.grid(True)
-        
-        plotNbr+=1
-        plt.figure(50)
-        plt.subplot(3, 1 ,1)
-        plt.title("MoveX")
-        plt.grid(True)
-        plt.subplot(3, 1 ,2)
-        plt.title("MoveY")
-        plt.grid(True)
-        plt.subplot(3, 1 ,3)
-        plt.title("MoveZ")
-        plt.grid(True)
-
-    
     def getI(self):
         return self.I
     
