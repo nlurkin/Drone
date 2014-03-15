@@ -42,6 +42,7 @@ public:
 	VectorFloat getAlpha();
 
 	VectorFloat getPosition();
+	VectorFloat getVelocity();
 
 	Quaternion getQuaternion();
 	uint8_t *getTeaPotPacket();
@@ -50,6 +51,8 @@ public:
 
 private:
 	void computeAlpha(int timestamp, VectorFloat oldGyroscope);
+	void computePosition(int timestamp);
+	void computeSpeed(int timestamp);
 
 	int fTimestamp;
 	Quaternion fQuaternion;
@@ -58,6 +61,8 @@ private:
 	VectorFloat fAlpha;
 	//int16_t fTemperature;
 	uint8_t teapotPacket[14];
+	VectorFloat fVelocity;
+	VectorFloat fPosition;
 
 	float fFullScaleGyroscope;
 	float fFullScaleAccelerometer;

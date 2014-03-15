@@ -27,6 +27,10 @@ public:
 	VectorFloat getAcceleration();
 	VectorFloat getPosition();
 	VectorFloat getAlpha();
+	VectorFloat getVelocity();
+
+	int getTime();
+
 	Constants::CtrlCommand::ECtrlCommand getCtrlCommand();
 
 	bool checkDataAvailable();
@@ -35,6 +39,7 @@ public:
 	bool isSensorReady();
 	bool isAttitudeReady();
 	bool isCtrlCommandReady();
+	bool isSimpleKFactorsReady();
 
 	void disableAll();
 	void setMotorPowerAll(double power);
@@ -42,12 +47,14 @@ public:
 
 	int getFirstMotor();
 	int getLastMotor();
+	double getSimpleKP();
+	double getSimpleKD();
 
 	bool read();
 	void cmdNextStep();
 
 private:
-	void cmdPower(int motor, int power);
+	void cmdPower(int motor, double power);
 	void cmdRequestI();
 	void cmdTorque(VectorFloat tau);
 
@@ -58,6 +65,7 @@ private:
 	void readIMat(String s);
 	void readNewAttitude(String s);
 	void readCtrlCommand(String s);
+	void readKValues(String s);
 
 	VectorFloat getI();
 	float* getBuffer();
@@ -74,6 +82,9 @@ private:
 
 	int fFirstMotor;
 	int fLastMotor;
+
+	double fSimKP, fSimKD;
+	int fSimKCount;
 
 	Constants::CtrlCommand::ECtrlCommand fCtrlCommand;
 	bool fCtrlCommandReady;

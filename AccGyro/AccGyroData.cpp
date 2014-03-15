@@ -120,9 +120,7 @@ VectorFloat AccGyroData::getLinearAcceleration(){
 
 	r.x = fAcceleration.x/fFullScaleAccelerometer;
 	r.y = fAcceleration.y/fFullScaleAccelerometer;
-	cout << "fAcc " << fAcceleration.z << "/" << fFullScaleAccelerometer << SerialOutput::endl;
 	r.z = fAcceleration.z/fFullScaleAccelerometer;
-	cout << r.z << SerialOutput::endl;
 
 	return r;
 }
@@ -186,6 +184,9 @@ void AccGyroData::setFromSerial(float buffer[10], int timestamp) {
 	fAcceleration.z = buffer[9];
 
 	computeAlpha(timestamp, oldGyro);
+	computeSpeed(timestamp);
+	computePosition(timestamp);
+	fTimestamp = timestamp;
 }
 
 /**
@@ -210,7 +211,7 @@ uint8_t *AccGyroData::getTeaPotPacket(){
  * @return VectorFloat
  */
 VectorFloat AccGyroData::getPosition() {
-	return VectorFloat();
+	return fPosition;
 }
 
 /**
@@ -220,7 +221,6 @@ VectorFloat AccGyroData::getPosition() {
  */
 void AccGyroData::computeAlpha(int timestamp, VectorFloat oldGyroscope) {
 	fAlpha = (getAngularRate() - oldGyroscope)/(timestamp-fTimestamp);
-	fTimestamp = timestamp;
 }
 
 /**
@@ -243,4 +243,20 @@ VectorFloat AccGyroData::getAngularRate() {
 	r.z = fGyroscope.z/fFullScaleGyroscope;
 
 	return r;
+}
+
+void AccGyroData::computePosition(int timestamp) {
+	float dt = (timestamp - fTimestamp)/1000.;
+	fPosition = fPosition + fVelocity*dt;
+}
+
+VectorFloat AccGyroData::getVelocity() {
+	return fVelocity;
+}
+
+void AccGyroData::computeSpeed(int timestamp) {
+	float dt = (timestamp - fTimestamp)/1000.;
+	//cout << "dt " << dt << SerialOutput::endl;
+	fVelocity = fVelocity + getLinearAcceleration()*dt;
+	//cout << "Velocity " << fVelocity.z  << SerialOutput::endl;
 }

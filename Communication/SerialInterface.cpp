@@ -20,6 +20,10 @@ SerialInterface::SerialInterface() {
 	fTime = 0;
 	fFirstMotor = 0;
 	fLastMotor = 3;
+
+	fSimKCount = 0;
+	fSimKP = 0;
+	fSimKD = 0;
 }
 
 SerialInterface::~SerialInterface() {
@@ -30,7 +34,7 @@ SerialInterface::~SerialInterface() {
  * @param motor: index of the motor
  * @param power: new power
  */
-void SerialInterface::cmdPower(int motor, int power) {
+void SerialInterface::cmdPower(int motor, double power) {
 	PRINTOUT("cmdPower");
 	cout << "CMD:power:" << motor << ":" << power << SerialOutput::endl;
 }
@@ -54,7 +58,7 @@ bool SerialInterface::read(){
 
 	while(Serial.available()>0){
 		s = Serial.readStringUntil('\n');
-		cout << "Receiving from Serial: " << s << SerialOutput::endl;
+		//cout << "Receiving from Serial: " << s << SerialOutput::endl;
 		//Does it look like a command
 		if(s.startsWith("CMD:")){
 			readCmd(s.substring(4));
@@ -90,10 +94,25 @@ void SerialInterface::readCmd(String s) {
 	if(s.startsWith("TRCK:")){				//Setting a new attitude reference
 		readNewAttitude(s.substring(5));
 	}
-	if(s.startsWith("CTRL:")){				//Control command
+	else if(s.startsWith("CTRL:")){				//Control command
 		readCtrlCommand(s.substring(5));
 	}
+	else if(s.startsWith("SETK:")){
+		readKValues(s.substring(5));
+	}
 }
+
+void SerialInterface::readKValues(String s){
+	PRINTOUT("readKValues");
+
+	if(fSimKCount==2) fSimKCount=0;
+	if(s.startsWith("SIMKP:")) fSimKP = atof(s.substring(6).c_str());
+	else if(s.startsWith("SIMKD:")) fSimKD = atof(s.substring(6).c_str());
+
+	fSimKCount++;
+}
+
+
 
 /**
  * Parse a sensor line. Waiting 10 values.
@@ -116,11 +135,11 @@ void SerialInterface::readSensor(String s) {
 	else if(s.startsWith("BUF7:")) fBuffer[7] = s.substring(5).toInt();
 	else if(s.startsWith("BUF8:")) fBuffer[8] = s.substring(5).toInt();
 	else if(s.startsWith("BUF9:")) fBuffer[9] = s.substring(5).toInt();
-	else if(s.startsWith("TIME:")) fTime = s.substring(5).toInt();
+	else if(s.startsWith("TIME:")) fTime = atof(s.substring(5).c_str())*1000;
 	fBufferCount++;
 	if(fBufferCount==11){
-		cout << "Full buffer received" << SerialOutput::endl;
-		fData.setFromSerial(fBuffer, millis());
+		//cout << "Full buffer received " << fTime << SerialOutput::endl;
+		fData.setFromSerial(fBuffer, fTime);
 	}
 }
 
@@ -170,7 +189,6 @@ bool SerialInterface::isSensorReady(){
 	//TODO faire comme ça ou pas?
 	bool isReady = (fBufferCount==11);
 	if(isReady) {
-		cout << "Sensor data is ready" << SerialOutput::endl;
 		fBufferCount = 0;
 	}
 	return isReady;
@@ -302,6 +320,28 @@ Constants::CtrlCommand::ECtrlCommand SerialInterface::getCtrlCommand() {
 
 void SerialInterface::cmdNextStep() {
 	cout << "CMD:NEXT" << SerialOutput::endl;
+}
+
+VectorFloat SerialInterface::getVelocity() {
+	return fData.getVelocity();
+}
+
+bool SerialInterface::isSimpleKFactorsReady() {
+	bool r = (fSimKCount==2);
+	if(r) fSimKCount = 0;
+	return r;
+}
+
+double SerialInterface::getSimpleKP() {
+	return fSimKP;
+}
+
+double SerialInterface::getSimpleKD() {
+	return fSimKD;
+}
+
+int SerialInterface::getTime() {
+	return fTime;
 }
 
 /**
