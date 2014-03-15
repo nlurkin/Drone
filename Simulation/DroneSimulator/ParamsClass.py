@@ -6,7 +6,8 @@ class Params:
     '''
 
     comPort = 3
-    runLocally = False
+    runLocally = True
+    ground = False
     ctrlType = 1
     
     I = Vector([0.177, 0.177, 0.334])
@@ -24,7 +25,7 @@ class Params:
     MaxTorque = 5
     MaxDeviation = 5
     
-    serialSleep = 0.03
+    serialSleep = 0.001
     
     MaxOmega = 500
     Gravity = Vector([0, 0, -9.81])

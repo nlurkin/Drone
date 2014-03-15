@@ -246,6 +246,7 @@ class Body(object):
     
     def computeOmega(self, dt):
         self.Omega = self.Omega + self.Alpha*dt
+        #print self.Omega
     
     def computeThetaDot(self, dt):
         mat1 = Matrix([[1, sin(self.Angles[0])*tan(self.Angles[1]), cos(self.Angles[0])*tan(self.Angles[1])], 
@@ -287,11 +288,13 @@ class Body(object):
         self.Acceleration = Params.Gravity+T*(1/self.Mass)+self.Friction*(1/self.Mass)
     
     def computeVelocity(self, dt):
+        #print dt
         self.Velocity += self.Acceleration*dt
+        #print self.Velocity
     
     def computePosition(self, dt):
         self.Position += self.Velocity*dt
-        if(self.Position[2]<0):
+        if(Params.ground and self.Position[2]<0):
             #On the ground. Reset all values
             self.Position[2]=0
             self.Velocity = Vector([0,0,0])
@@ -340,6 +343,7 @@ class Body(object):
         #get point
         for j in range(0, int(0.1/dt)):
             simu.nextStep()
+            
         self.cali.newPoint(self.CtrlInput[motor]-minMotor, self.Omega, self.Alpha, self.Acceleration, self.Quat)
 
         self.CtrlInput[motor] = minMotor+2*dMotor

@@ -43,9 +43,9 @@ class DronePlot(object):
     pACurves = [None,None,None]
     pAData = [[],[],[]]
     
-    pOmega = None
-    pOmegaCurves = [None,None,None]
-    pOmegaData = [[],[],[]]
+    pMotor = None
+    pMotorCurves = [None,None,None,None]
+    pMotorData = [[],[],[],[]]
         
     pMoveX = None
     pMoveXCruves = [None,None]
@@ -81,7 +81,7 @@ class DronePlot(object):
         self.buildThetaDot()
         self.buildTorque()
         self.buildA()
-        self.buildOmega()
+        self.buildMotor()
         #self.buildMoveX()
         #self.buildMoveY()
         #self.buildMoveZ()
@@ -237,22 +237,25 @@ class DronePlot(object):
         self.pACurves[1].setData(self.pTimes, self.pAData[1])
         self.pACurves[2].setData(self.pTimes, self.pAData[2])
 
-    def buildOmega(self):
-        self.pOmega= self.win.addPlot(title="Omega")
-        self.pOmega.showGrid(x=True,y=True)
-        self.pOmegaCurves[0] = self.pOmega.plot(pen="r")
-        self.pOmegaCurves[1] = self.pOmega.plot(pen="b")
-        self.pOmegaCurves[2] = self.pOmega.plot(pen="g")
+    def buildMotor(self):
+        self.pMotor= self.win.addPlot(title="Motor")
+        self.pMotor.showGrid(x=True,y=True)
+        self.pMotorCurves[0] = self.pMotor.plot(pen="r")
+        self.pMotorCurves[1] = self.pMotor.plot(pen="b")
+        self.pMotorCurves[2] = self.pMotor.plot(pen="g")
+        self.pMotorCurves[3] = self.pMotor.plot(pen="y")
     
-    def addOmega(self, omega):
-        self.pOmegaData[0].append(omega[0])
-        self.pOmegaData[1].append(omega[1])
-        self.pOmegaData[2].append(omega[2])
+    def addMotor(self, omega):
+        self.pMotorData[0].append(omega[0])
+        self.pMotorData[1].append(omega[1])
+        self.pMotorData[2].append(omega[2])
+        self.pMotorData[3].append(omega[3])
         
-    def updateOmega(self):
-        self.pOmegaCurves[0].setData(self.pTimes, self.pOmegaData[0])
-        self.pOmegaCurves[1].setData(self.pTimes, self.pOmegaData[1])
-        self.pOmegaCurves[2].setData(self.pTimes, self.pOmegaData[2])
+    def updateMotor(self):
+        self.pMotorCurves[0].setData(self.pTimes, self.pMotorData[0])
+        self.pMotorCurves[1].setData(self.pTimes, self.pMotorData[1])
+        self.pMotorCurves[2].setData(self.pTimes, self.pMotorData[2])
+        self.pMotorCurves[3].setData(self.pTimes, self.pMotorData[3])
     
     def buildMoveX(self):
         self.pMoveX= self.win2.addPlot(title="Move X")
@@ -307,7 +310,7 @@ class DronePlot(object):
         self.updateX()
         self.updateXDot()
         self.updateA()
-        self.updateOmega()
+        self.updateMotor()
         #self.updateMoveX()
         #self.updateMoveY()
         #self.updateMoveY()

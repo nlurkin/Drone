@@ -66,7 +66,7 @@ def sendSensor():
     print "Az=" + str(acc[2])
     ser.write(prefix + "BUF9:" + str(int(acc[2]*8192*2)) + "\r\n")
     sleep(Params.serialSleep)
-    ser.write(prefix + "TIME:" + str(int(t)) + "\r\n")
+    ser.write(prefix + "TIME:" + str(t) + "\r\n")
       
 
 def sendI():

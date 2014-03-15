@@ -154,7 +154,7 @@ class Simu(object):
         self.pltpq.addX(self.b.Position)
         self.pltpq.addXDot(self.b.Velocity, self.b.ctrl.lastvRef)
         self.pltpq.addA(self.b.Acceleration)
-        self.pltpq.addOmega(self.b.Omega)
+        self.pltpq.addMotor(self.b.CtrlInput)
         self.pltpq.update()
         
     def getI(self):
