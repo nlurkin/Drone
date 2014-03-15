@@ -12,13 +12,17 @@
 
 class GenericControl {
 public:
-	GenericControl();
-	virtual ~GenericControl();
+	GenericControl(){};
+	virtual ~GenericControl(){};
 
 	virtual bool read() = 0;
 	virtual bool isCtrlCommandReady() = 0;
 	virtual Constants::CtrlCommand::ECtrlCommand getCtrlCommand() = 0;
 	virtual void cmdNextStep()=0;
+	virtual bool isSimpleKFactorsReady()=0;
+	virtual double getSimpleKP()=0;
+	virtual double getSimpleKD()=0;
+
 };
 
 #endif /* GENERICCONTROL_H_ */

@@ -11,14 +11,17 @@
 
 class GenericSensor {
 public:
-	GenericSensor();
-	virtual ~GenericSensor();
+	GenericSensor(){};
+	virtual ~GenericSensor(){};
 
 	virtual Quaternion getQuaternion()=0;
 	virtual VectorFloat getOmega()=0;
 	virtual VectorFloat getAcceleration()=0;
 	virtual VectorFloat getPosition()=0;
 	virtual VectorFloat getAlpha()=0;
+	virtual VectorFloat getVelocity()=0;
+
+	virtual int getTime()=0;
 
 	//virtual void setSerialInterface(SerialInterface *s)=0;
 

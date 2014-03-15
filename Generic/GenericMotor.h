@@ -10,8 +10,8 @@
 
 class GenericMotor {
 public:
-	GenericMotor();
-	virtual ~GenericMotor();
+	GenericMotor(){};
+	virtual ~GenericMotor(){};
 
 	virtual void disableAll()=0;
 	virtual void setMotorPowerAll(double power)=0;
