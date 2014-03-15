@@ -5,6 +5,7 @@
 class GenericSensor;
 class GenericMotor;
 class GenericControl;
+class SimpleControl;
 
 
 namespace Constants{
@@ -17,6 +18,7 @@ public:
 extern GenericSensor *sSensor;
 extern GenericMotor *sMotor;
 extern GenericControl *sControl;
+extern SimpleControl *sAltitude;
 extern SerialOutput cout;
 extern bool bigDebug;
 

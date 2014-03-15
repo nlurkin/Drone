@@ -19,6 +19,7 @@ MainLoop::MainLoop(){
 	sControl = new SerialInterface();
 	sMotor = (SerialInterface*)sControl;
 	sSensor = (SerialInterface*)sControl;
+	sAltitude = new SimpleControl();
 	//cout = new SerialOutput();
 
 	fSimulate = false;
@@ -50,6 +51,9 @@ void MainLoop::loop(){
 		cout << "Control command received " << (int)fCtrlCommand << SerialOutput::endl;
 		delay(100);
 		if(fCtrlCommand==Constants::CtrlCommand::kDODEBUG) bigDebug = !bigDebug;
+	}
+	if(sControl->isSimpleKFactorsReady()){
+		sAltitude->setKs(sControl->getSimpleKP(), sControl->getSimpleKD());
 	}
 	if(fState==kINITIALIZING) initializationLoop();
 	else if(fState==kIDLE) idleLoop();

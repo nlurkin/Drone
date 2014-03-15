@@ -10,6 +10,7 @@
 
 #include "Calibrator.h"
 #include "Constants.h"
+#include "SimpleControl.h"
 #include <EEPROM.h>
 
 class CalibrationLoop {

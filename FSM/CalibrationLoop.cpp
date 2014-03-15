@@ -113,12 +113,15 @@ void CalibrationLoop::scanP(){
 	PRINTOUT("scanP");
 	if(!sSensor->checkDataAvailable()) return;
 	double az = sSensor->getAcceleration()[2];
-	cout << "Acceleration z" << az << SerialOutput::endl;
+	//cout << "Acceleration z" << az << SerialOutput::endl;
 	if(az<=0){
 		fCurrentPower++;
 		sMotor->setMotorPowerAll(fCurrentPower);
 	}
 	else{
+		sAltitude->setMotorLim(fCurrentPower);
+		sAltitude->setZRef(calibHeight);
+		fCurrentPower++;
 		sMotor->setMotorPowerAll(fCurrentPower);
 		fState = kTAKEOFF;
 	}
@@ -131,10 +134,15 @@ void CalibrationLoop::takeOff() {
 	PRINTOUT("takeOff");
 	if(!sSensor->checkDataAvailable()) return;
 	double height = sSensor->getPosition()[2];
-	if(height == calibHeight){
+	double vz = sSensor->getVelocity()[2];
+	cout << sAltitude->getZRef() << SerialOutput::endl;
+	cout << sAltitude->getMotorLim() << SerialOutput::endl;
+	double control = sAltitude->loop(height, vz);
+	cout << control << SerialOutput::endl;
+	if(sAltitude->isStable()){
 		fState = kSTABILIZING;
 	}
-	sMotor->setMotorPowerAll(fCurrentPower);
+	sMotor->setMotorPowerAll(control);
 }
 
 /**
@@ -150,7 +158,7 @@ void CalibrationLoop::stabilize() {
 	}
 	else{
 		sMotor->setMotorPower(fCurrentPower+fIPInterval, sMotor->getFirstMotor());
-		fStopTime = millis()+fITInterval;
+		fStopTime = sSensor->getTime()+fITInterval;
 		fNextState = kIDISTURBED;
 		fState = kWAITING;
 	}
@@ -161,7 +169,7 @@ void CalibrationLoop::stabilize() {
  */
 void CalibrationLoop::wait() {
 	PRINTOUT("wait");
-	if(millis()>=fStopTime) fState = fNextState;
+	if(sSensor->getTime()>=fStopTime) fState = fNextState;
 }
 
 /**
@@ -170,7 +178,7 @@ void CalibrationLoop::wait() {
 void CalibrationLoop::iDisturbed(){
 	PRINTOUT("iDisturbed");
 	sMotor->setMotorPower(fCurrentPower+fIPInterval, sMotor->getFirstMotor());
-	fStopTime = millis()+fITInterval;
+	fStopTime = sSensor->getTime()+fITInterval;
 	fNextState = kIMEASUREP;
 	fState = kWAITING;
 }
@@ -188,7 +196,7 @@ void CalibrationLoop::measureP() {
 			sSensor->getAcceleration(),
 			sSensor->getQuaternion());
 	sMotor->setMotorPower(fCurrentPower-fIPInterval, sMotor->getFirstMotor());
-	fStopTime = millis()+fITInterval;
+	fStopTime = sSensor->getTime()+fITInterval;
 	fNextState = kIMEASUREM;
 	fState = kWAITING;
 }
@@ -209,7 +217,7 @@ void CalibrationLoop::measureM() {
 	//Do we restart the loop for the average?
 	if(fLoopIndex<fMaxLoop){
 		sMotor->setMotorPower(fCurrentPower+fIPInterval, sMotor->getFirstMotor());
-		fStopTime = millis()+fITInterval;
+		fStopTime = sSensor->getTime()+fITInterval;
 		fNextState = kIMEASUREP;
 		fState = kWAITING;
 	}
@@ -217,7 +225,7 @@ void CalibrationLoop::measureM() {
 		fCalibrator.calibrateI(sMotor->getFirstMotor());
 		fCalibrator.clearPoints();
 		sMotor->setMotorPower(fCurrentPower-fIPInterval, sMotor->getFirstMotor());
-		fStopTime = millis()+fITInterval;
+		fStopTime = sSensor->getTime()+fITInterval;
 		fCurrentMotor = sMotor->getFirstMotor();
 		fNextState = kMDISTURBED;
 		fState = kWAITING;
@@ -227,7 +235,7 @@ void CalibrationLoop::measureM() {
 void CalibrationLoop::mDisturbed() {
 	PRINTOUT("mDisturbed");
 	sMotor->setMotorPower(fCurrentPower+fMPInterval, fCurrentMotor);
-	fStopTime = millis()+fMTInterval;
+	fStopTime = sSensor->getTime()+fMTInterval;
 	fNextState = kMMEASURES;
 	fState = kWAITING;
 }
@@ -242,7 +250,7 @@ void CalibrationLoop::measureS() {
 			sSensor->getAcceleration(),
 			sSensor->getQuaternion());
 	sMotor->setMotorPower(fCurrentPower+2*fMPInterval, fCurrentMotor);
-	fStopTime = millis()+fMTInterval;
+	fStopTime = sSensor->getTime()+fMTInterval;
 	fNextState = kMMEASURED;
 	fState = kWAITING;
 }
@@ -257,7 +265,7 @@ void CalibrationLoop::measureD() {
 			sSensor->getAcceleration(),
 			sSensor->getQuaternion());
 	sMotor->setMotorPower(fCurrentPower-2*fMPInterval, fCurrentMotor);
-	fStopTime = millis()+fMTInterval;
+	fStopTime = sSensor->getTime()+fMTInterval;
 	fNextState = kMBALANCED;
 	fState = kWAITING;
 }
@@ -265,7 +273,7 @@ void CalibrationLoop::measureD() {
 void CalibrationLoop::mBalancedD(){
 	PRINTOUT("mBalancedD");
 	sMotor->setMotorPower(fCurrentPower-2*fMPInterval, fCurrentMotor);
-	fStopTime = millis()+fMTInterval;
+	fStopTime = sSensor->getTime()+fMTInterval;
 	fNextState = kMBALANCES;
 	fState = kWAITING;
 }

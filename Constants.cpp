@@ -9,11 +9,12 @@
 class GenericSensor;
 class GenericMotor;
 class GenericControl;
-
+class SimpleControl;
 
 GenericSensor *sSensor;
 GenericMotor *sMotor;
 GenericControl *sControl;
+SimpleControl *sAltitude;
 SerialOutput cout;
 bool bigDebug = false;
 
