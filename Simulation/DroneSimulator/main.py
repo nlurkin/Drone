@@ -80,6 +80,11 @@ def sendI():
 def sendDebug():
     prefix = "CMD:CTRL:"
     ser.write(prefix + "GODEBUG\r\n")
+
+def sendKValues():
+    prefix = "CMD:SETK:"
+    ser.write(prefix + "SIMKP:" + str(3) + "\r\n")
+    ser.write(prefix + "SIMKD:" + str(20) + "\r\n")
     
 def sendNewTracking(anglesSet):
     if anglesSet is None:
@@ -127,7 +132,7 @@ def serialLoop():
                     reqTorque[2] = float(spl[3])
                     torqueSet+=1;  
             elif spl[1]=="power":
-                simu.b.changeInput(int(spl[2]), pow(int(spl[3]),2))
+                simu.b.changeInput(int(spl[2]), pow(float(spl[3]),2))
             elif spl[1]=="NEXT":
                 reqNextStep = True
 
@@ -150,7 +155,7 @@ def main():
     if Params.runLocally==True:
         sendNewTracking([0, 0, 0])
     else:
-        ser = serial.Serial(port=Params.comPort, baudrate=9600, timeout=1)
+        ser = serial.Serial(port=Params.comPort, baudrate=9600, timeout=1)        
     
     while(True):
         QtGui.QApplication.processEvents()
@@ -201,7 +206,8 @@ def main():
             if Params.runLocally==True:
                 simu.calibration()
             else:
-                sendInstruction("GOCALIB");
+                sendKValues()
+                sendInstruction("GOCALIB")
         elif s=="dt":
             if simu.dt==0.1:
                 simu.dt = 0.001
