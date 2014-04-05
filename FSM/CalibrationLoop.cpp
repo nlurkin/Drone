@@ -41,7 +41,7 @@ CalibrationLoop::~CalibrationLoop() {
  */
 void CalibrationLoop::setCalibPath(Path p) {
 	PRINTOUT("setCalibPath");
-	cout << "Setting calibration path to " << p << SerialOutput::endl;
+	cout << "Setting calibration path to " << p << endl;
 	fPath = p;
 }
 
@@ -113,7 +113,7 @@ void CalibrationLoop::scanP(){
 	PRINTOUT("scanP");
 	if(!sSensor->checkDataAvailable()) return;
 	double az = sSensor->getAcceleration()[2];
-	//cout << "Acceleration z" << az << SerialOutput::endl;
+	//cout << "Acceleration z" << az << endl;
 	if(az<=0){
 		fCurrentPower++;
 		sMotor->setMotorPowerAll(fCurrentPower);
@@ -135,10 +135,10 @@ void CalibrationLoop::takeOff() {
 	if(!sSensor->checkDataAvailable()) return;
 	double height = sSensor->getPosition()[2];
 	double vz = sSensor->getVelocity()[2];
-	cout << sAltitude->getZRef() << SerialOutput::endl;
-	cout << sAltitude->getMotorLim() << SerialOutput::endl;
+	cout << sAltitude->getZRef() << endl;
+	cout << sAltitude->getMotorLim() << endl;
 	double control = sAltitude->loop(height, vz);
-	cout << control << SerialOutput::endl;
+	cout << control << endl;
 	if(sAltitude->isStable()){
 		fState = kSTABILIZING;
 	}
@@ -315,7 +315,7 @@ void CalibrationLoop::load() {
 void CalibrationLoop::start() {
 	PRINTOUT("start");
 	if(fPath==kPROCEDURE){
-		cout << "Starting calibration procedure" << SerialOutput::endl;
+		cout << "Starting calibration procedure" << endl;
 		fCurrentPower = 1;
 		fState = kSCANNING;
 	}

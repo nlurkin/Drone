@@ -19,5 +19,5 @@ SerialOutput cout;
 bool bigDebug = false;
 
 void PRINTOUT(char const* name){
-	if(bigDebug) cout << name << SerialOutput::endl;
+	if(bigDebug) cout << name << endl;
 }

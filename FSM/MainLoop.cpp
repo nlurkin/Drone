@@ -48,7 +48,7 @@ void MainLoop::loop(){
 	sControl->read();
 	if(sControl->isCtrlCommandReady()){
 		fCtrlCommand = sControl->getCtrlCommand();
-		cout << "Control command received " << (int)fCtrlCommand << SerialOutput::endl;
+		cout << "Control command received " << (int)fCtrlCommand << endl;
 		delay(100);
 		if(fCtrlCommand==Constants::CtrlCommand::kDODEBUG) bigDebug = !bigDebug;
 	}
@@ -93,12 +93,12 @@ void MainLoop::flightLoop() {
 
 
 void MainLoop::moveToIdle() {
-	cout << "Moving to IDLE" << SerialOutput::endl;
+	cout << "Moving to IDLE" << endl;
 	fCtrlCommand = Constants::CtrlCommand::kNONE;
 	fState = kIDLE;
 }
 void MainLoop::moveToCalibration() {
-	cout << "Moving to CALIBRATION" << SerialOutput::endl;
+	cout << "Moving to CALIBRATION" << endl;
 	delay(100);
 	fCtrlCommand = Constants::CtrlCommand::kNONE;
 	fLoopCalib.setCalibPath(CalibrationLoop::kPROCEDURE);
@@ -106,7 +106,7 @@ void MainLoop::moveToCalibration() {
 	fState = kCALIBRATING;
 }
 void MainLoop::moveToFlight() {
-	cout << "Moving to FLIGHT" << SerialOutput::endl;
+	cout << "Moving to FLIGHT" << endl;
 	fCtrlCommand = Constants::CtrlCommand::kNONE;
 	fState = kFLYING;
 }

@@ -42,13 +42,13 @@ SerialOutput& SerialOutput::operator <<(const double s) {
 	return *this;
 }
 
-SerialOutput& SerialOutput::operator <<(const cst c) {
-	if(c==endl){
-		Serial.println();
-		//delay(100);
-	}
-	return *this;
+SerialOutput& endl(SerialOutput& c) {
+	Serial.println();
+	//delay(100);
+	return c;
 }
 
-//void SerialOutput::print(const String constString) {
-//}
+SerialOutput& SerialOutput::operator<<( SerialOutput& (*f)(SerialOutput&) )
+  {
+      return f(*this);
+  }

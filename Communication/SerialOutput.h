@@ -12,7 +12,6 @@
 
 class SerialOutput {
 public:
-	enum cst{endl};
 	SerialOutput();
 	virtual ~SerialOutput();
 
@@ -21,7 +20,10 @@ public:
 	SerialOutput& operator<<(const int s);
 	SerialOutput& operator<<(const long int s);
 	SerialOutput& operator<<(const double s);
-	SerialOutput& operator<<(const cst s);
+	//SerialOutput& operator<<(const cst s);
+	SerialOutput& operator<<( SerialOutput& (*f)(SerialOutput&) );
 };
+
+SerialOutput& endl(SerialOutput& s);
 
 #endif /* SERIALOUTPUT_H_ */
