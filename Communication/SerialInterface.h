@@ -88,6 +88,8 @@ private:
 
 	Constants::CtrlCommand::ECtrlCommand fCtrlCommand;
 	bool fCtrlCommandReady;
+
+	int fRequests;
 };
 
 #endif /* SERIALINTERFACE_H_ */

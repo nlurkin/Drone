@@ -7,6 +7,7 @@
 
 #include "Calibrator.h"
 #include "MatrixMath.h"
+#include "Constants.h"
 
 Calibrator::Calibrator() {
 	dataPoints = 0;
@@ -18,6 +19,11 @@ Calibrator::~Calibrator() {
 }
 
 void Calibrator::newPoint(int motor, float p, VectorFloat omega, VectorFloat alpha, VectorFloat acceleration, Quaternion q) {
+	cout << p;
+	omega.print();
+	alpha.print();
+	acceleration.print();
+	q.print();
 	fP[motor].push_back(p);
 	fOmega[motor].push_back(omega);
 	fAlpha[motor].push_back(alpha);
@@ -30,12 +36,20 @@ bool Calibrator::calibrateI(int motor){
 	VectorFloat I;
 
 	//This works if the time difference between both measurement is big enough and time step small enough and avoid angles close to k*pi
+	cout << F("alpha0 ");
+	fAlpha[motor][0].print();
+	cout << F("alpha1 ");
+	fAlpha[motor][1].print();
+	cout << F("omega0 ");
+	fOmega[motor][0].print();
+	cout << F("omega1 ");
+	fOmega[motor][1].print();
+
+
 	I[0] = (fAlpha[motor][1][0]-fAlpha[motor][0][0])/(fOmega[motor][1][1]*fOmega[motor][1][2]-fOmega[motor][0][1]*fOmega[motor][0][2]);
 	I[1] = (fAlpha[motor][1][1]-fAlpha[motor][0][1])/(fOmega[motor][1][0]*fOmega[motor][1][2]-fOmega[motor][0][0]*fOmega[motor][0][2]);
 	I[2] = (fAlpha[motor][1][2]-fAlpha[motor][0][2])/(fOmega[motor][1][0]*fOmega[motor][1][1]-fOmega[motor][0][0]*fOmega[motor][0][1]);
-	//print "Estimated I1 " + str(I1)
-	//print "Estimated I2 " + str(I2)
-	//print "Estimated I3 " + str(I3)
+	cout << F("Estimated I ") << I[0] << "," << I[1] << "," << I[2] << endl;
 	if(fI.mag() == 0) fI = I;
 	else fI = fI+I;
 

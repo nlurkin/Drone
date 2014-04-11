@@ -9,7 +9,7 @@
 #include "SerialOutput.h"
 
 SerialInterface::SerialInterface() {
-	cout << "Drone serial interface initialized" << endl;
+	cout << F("Drone serial interface initialized") << endl;
 	fICount = 0;
 	fBufferCount = 0;
 	fQuatCount = 0;
@@ -24,6 +24,8 @@ SerialInterface::SerialInterface() {
 	fSimKCount = 0;
 	fSimKP = 0;
 	fSimKD = 0;
+
+	fRequests = 0;
 }
 
 SerialInterface::~SerialInterface() {
@@ -36,7 +38,8 @@ SerialInterface::~SerialInterface() {
  */
 void SerialInterface::cmdPower(int motor, double power) {
 	PRINTOUT("cmdPower");
-	cout << "CMD:power:" << motor << ":" << power << endl;
+	cout << F("CMD:power:") << motor << ":" << power << endl;
+	cout << endl;
 }
 
 /**
@@ -44,7 +47,7 @@ void SerialInterface::cmdPower(int motor, double power) {
  */
 void SerialInterface::cmdRequestI(){
 	PRINTOUT("cmdRequestI");
-	cout << "CMD:sendI" << endl;
+	cout << F("CMD:sendI") << endl;
 }
 
 /**
@@ -54,7 +57,6 @@ void SerialInterface::cmdRequestI(){
 bool SerialInterface::read(){
 	PRINTOUT("read");
 	String s;
-	bool r = false;
 
 	while(Serial.available()>0){
 		s = Serial.readStringUntil('\n');
@@ -68,7 +70,8 @@ bool SerialInterface::read(){
 			readData(s.substring(4));
 		}
 	}
-	return r;
+
+	return (fRequests!=0);
 }
 
 /**
@@ -139,6 +142,8 @@ void SerialInterface::readSensor(String s) {
 	fBufferCount++;
 	if(fBufferCount==11){
 		//cout << "Full buffer received " << fTime << endl;
+		--fRequests;
+		if(fRequests<0) fRequests=0;
 		fData.setFromSerial(fBuffer, fTime);
 	}
 }
@@ -200,9 +205,9 @@ bool SerialInterface::isSensorReady(){
  */
 void SerialInterface::cmdTorque(VectorFloat tau) {
 	PRINTOUT("cmdTorque");
-	cout << "CMD:TAUS:TAUX:" << tau.x << endl;
-	cout << "CMD:TAUS:TAUY:" << tau.y << endl;
-	cout << "CMD:TAUS:TAUZ:" << tau.z << endl;
+	cout << F("CMD:TAUS:TAUX:") << tau.x << endl;
+	cout << F("CMD:TAUS:TAUY:") << tau.y << endl;
+	cout << F("CMD:TAUS:TAUZ:") << tau.z << endl;
 }
 
 /**
@@ -221,7 +226,7 @@ void SerialInterface::readNewAttitude(String s) {
 	else if(s.startsWith("QUAY:")) fRefQuat.y = atof(s.substring(5).c_str());
 	else if(s.startsWith("QUAZ:")) fRefQuat.z = atof(s.substring(5).c_str());
 	fQuatCount++;
-	if(fQuatCount==4) cout << "Full attitude quaternion received" << endl;
+	if(fQuatCount==4) cout << F("Full attitude quaternion received") << endl;
 }
 
 /**
@@ -320,6 +325,7 @@ Constants::CtrlCommand::ECtrlCommand SerialInterface::getCtrlCommand() {
 
 void SerialInterface::cmdNextStep() {
 	cout << "CMD:NEXT" << endl;
+	++fRequests;
 }
 
 VectorFloat SerialInterface::getVelocity() {
@@ -341,7 +347,7 @@ double SerialInterface::getSimpleKD() {
 }
 
 int SerialInterface::getTime() {
-	cout << "CMD:NEXT" << endl;
+	if(fRequests==0) cout << F("CMD:NEXT:") << endl;
 	return fTime;
 }
 

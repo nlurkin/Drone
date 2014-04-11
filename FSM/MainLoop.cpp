@@ -41,11 +41,11 @@ void MainLoop::setup(){
 	//ctl.setP(20, 4);
 
 	//Reset all motors
-	sMotor->disableAll();
+	//sMotor->disableAll();
 }
 
 void MainLoop::loop(){
-	sControl->read();
+	while(sControl->read()){};
 	if(sControl->isCtrlCommandReady()){
 		fCtrlCommand = sControl->getCtrlCommand();
 		cout << "Control command received " << (int)fCtrlCommand << endl;

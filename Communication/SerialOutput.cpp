@@ -7,6 +7,23 @@
 
 #include "SerialOutput.h"
 #include <Arduino.h>
+#include "MemoryFree.h"
+
+void SerialOutput::printDouble(double val, byte precision) {
+
+  Serial.print (int(val));                                     // Print int part
+  if( precision > 0) {                                         // Print decimal part
+    Serial.print(".");
+    unsigned long frac, mult = 1;
+    byte padding = precision -1;
+    while(precision--) mult *=10;
+    if(val >= 0) frac = (val - int(val)) * mult; else frac = (int(val) - val) * mult;
+    unsigned long frac1 = frac;
+    while(frac1 /= 10) padding--;
+    while(padding--) Serial.print("0");
+    Serial.print(frac,DEC) ;
+  }
+}
 
 SerialOutput::SerialOutput() {
 	// TODO Auto-generated constructor stub
@@ -38,12 +55,19 @@ SerialOutput& SerialOutput::operator <<(const long int s) {
 }
 
 SerialOutput& SerialOutput::operator <<(const double s) {
+	printDouble(s, 5);
+	return *this;
+}
+
+SerialOutput& SerialOutput::operator<<(const __FlashStringHelper *s){
 	Serial.print(s);
+
 	return *this;
 }
 
 SerialOutput& endl(SerialOutput& c) {
 	Serial.println();
+	//Serial.println(freeMemory());
 	//delay(100);
 	return c;
 }

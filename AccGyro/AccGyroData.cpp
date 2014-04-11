@@ -166,12 +166,11 @@ void AccGyroData::setFromSerial(float buffer[10], int timestamp) {
 
 	VectorFloat oldGyro = getAngularRate();
 
-	Serial.print("Reading from buffer: (");
+	cout << F("Reading from buffer: (");
 	for(int i =0; i<10; i++){
-		Serial.print(buffer[i]);
-		Serial.print(",");
+		cout << buffer[i] << ",";
 	}
-	Serial.println(")");
+	cout << ")" << endl;
 	fQuaternion.w = buffer[0];
 	fQuaternion.x = buffer[1];
 	fQuaternion.y = buffer[2];

@@ -9,6 +9,7 @@
 #include "Quaternion.h"
 #include <Arduino.h>
 #include <math.h>
+#include "Constants.h"
 
 VectorFloat::VectorFloat() {
 	x = 0.0f;
@@ -47,13 +48,7 @@ float &VectorFloat::operator[](int i){
 }
 
 void VectorFloat::print(){
-	Serial.print("(");
-	Serial.print(x);
-	Serial.print(",");
-	Serial.print(y);
-	Serial.print(",");
-	Serial.print(z);
-	Serial.println(")");
+	cout << "(" << x << "," << y << "," << z << ")" << endl;
 }
 
 float VectorFloat::mag() {
