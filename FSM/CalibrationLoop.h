@@ -71,24 +71,26 @@ private:
 	    return i;
 	};
 
+	double getSqrtMotorPower(int factor);
+
 	Path fPath;
 	CalibrationState fState;
 
-	int fCurrentPower;
+	double fCurrentPower;
 
 	Calibrator fCalibrator;
 
 	double calibHeight;
 
 	unsigned long fStopTime;
-	int fIPInterval;
+	double fIPInterval;
 	unsigned long fITInterval;
 	CalibrationState fNextState;
 	int fLoopIndex;
 	int fMaxLoop;
 
 	int fCurrentMotor;
-	int fMPInterval;
+	double fMPInterval;
 	unsigned long fMTInterval;
 
 	int eepromAddress[19];
