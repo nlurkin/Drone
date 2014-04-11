@@ -45,6 +45,9 @@ def sendSensor():
     gyro = simu.b.Omega
     acc = simu.b.Acceleration
     t = simu.t
+    print "Sending quat " + str(quat)
+    print "Sending gyro " + str(gyro*131*2)
+    print "Sending acc " + str(acc*8192*2)
     ser.write(prefix + "BUF0:" + str(quat.w) + "\r\n")
     sleep(Params.serialSleep)
     ser.write(prefix + "BUF1:" + str(quat.x) + "\r\n")
@@ -63,7 +66,6 @@ def sendSensor():
     sleep(Params.serialSleep)
     ser.write(prefix + "BUF8:" + str(int(acc[1]*8192*2)) + "\r\n")
     sleep(Params.serialSleep)
-    print "Az=" + str(acc[2])
     ser.write(prefix + "BUF9:" + str(int(acc[2]*8192*2)) + "\r\n")
     sleep(Params.serialSleep)
     ser.write(prefix + "TIME:" + str(t) + "\r\n")
@@ -83,8 +85,8 @@ def sendDebug():
 
 def sendKValues():
     prefix = "CMD:SETK:"
-    ser.write(prefix + "SIMKP:" + str(3) + "\r\n")
-    ser.write(prefix + "SIMKD:" + str(20) + "\r\n")
+    ser.write(prefix + "SIMKP:" + str(6) + "\r\n")
+    ser.write(prefix + "SIMKD:" + str(30) + "\r\n")
     
 def sendNewTracking(anglesSet):
     if anglesSet is None:
@@ -114,8 +116,8 @@ def serialLoop():
     s = str(ser.readline());
     
     if len(s) > 0:
-        print s
         s = string.rstrip(s, "\r\n")
+        print s
         if s[0:3]=="CMD":
             spl = s.split(':');
             print spl
@@ -132,6 +134,7 @@ def serialLoop():
                     reqTorque[2] = float(spl[3])
                     torqueSet+=1;  
             elif spl[1]=="power":
+                #print "Power request for motor %s: %s" % (spl[2], spl[3])
                 simu.b.changeInput(int(spl[2]), pow(float(spl[3]),2))
             elif spl[1]=="NEXT":
                 reqNextStep = True
@@ -165,7 +168,8 @@ def main():
             serialLoop()
         if(continuous):
             if Params.runLocally==False:
-                if ser.inWaiting()==0 and reqNextStep==True:
+                #if ser.inWaiting()==0 and reqNextStep==True:
+                if reqNextStep==True:
                     #simu.setRequiredTorque(reqTorque)
                     torqueSet = 0
                     reqNextStep = False

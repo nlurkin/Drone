@@ -7,7 +7,7 @@ class Params:
 
     comPort = 3
     runLocally = False
-    ground = True
+    ground = False
     ctrlType = 1
     
     I = Vector([0.177, 0.177, 0.334])
