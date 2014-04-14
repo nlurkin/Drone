@@ -51,6 +51,22 @@ void SerialInterface::cmdRequestI(){
 }
 
 /**
+ * Command to request the simulator to send new Data
+ */
+void SerialInterface::cmdRequestData(){
+	PRINTOUT("cmdRequestData");
+	cout << F("CMD:REQD") << endl;
+}
+
+/**
+ * Command to request the simulator to send new time
+ */
+void SerialInterface::cmdRequestTime(){
+	PRINTOUT("cmdRequestTime");
+	cout << F("CMD:REQT") << endl;
+}
+
+/**
  * Loop method. Check if something to be read on pipe and parse it.
  * @return false
  */
@@ -86,6 +102,9 @@ void SerialInterface::readData(String s) {
 	else if(s.startsWith("IMAT:")){	//I Matrix values
 		readIMat(s.substring(5));
 	}
+	else if(s.startsWith("TIME:")){	//Time value
+		readTime(s.substring(5));
+	}
 }
 
 /**
@@ -114,8 +133,6 @@ void SerialInterface::readKValues(String s){
 
 	fSimKCount++;
 }
-
-
 
 /**
  * Parse a sensor line. Waiting 10 values.
@@ -146,6 +163,18 @@ void SerialInterface::readSensor(String s) {
 		if(fRequests<0) fRequests=0;
 		fData.setFromSerial(fBuffer, fTime);
 	}
+}
+
+/**
+ * Parse a time line.
+ * @param s: sensor line
+ */
+void SerialInterface::readTime(String s) {
+	PRINTOUT("readTime");
+
+	fTime = atof(s.c_str())*1000;
+	--fRequests;
+	if(fRequests<0) fRequests=0;
 }
 
 /**
@@ -265,6 +294,11 @@ VectorFloat SerialInterface::getAlpha() {
 
 bool SerialInterface::checkDataAvailable() {
 	PRINTOUT("checkDataAvailable");
+	//cmdRequestData();
+	//++fRequests;
+	//while(fRequests>0){
+//		read();
+//	}
 	return isSensorReady();
 }
 
@@ -325,7 +359,11 @@ Constants::CtrlCommand::ECtrlCommand SerialInterface::getCtrlCommand() {
 
 void SerialInterface::cmdNextStep() {
 	cout << "CMD:NEXT" << endl;
+	cmdRequestData();
 	++fRequests;
+	while(fRequests>0){
+		read();
+	}
 }
 
 VectorFloat SerialInterface::getVelocity() {
@@ -347,7 +385,13 @@ double SerialInterface::getSimpleKD() {
 }
 
 int SerialInterface::getTime() {
-	if(fRequests==0) cout << F("CMD:NEXT:") << endl;
+	PRINTOUT("getTime");
+	cout << F("CMD:NEXT:") << endl;
+	cmdRequestData();
+	++fRequests;
+	while(fRequests>0){
+		read();
+	}
 	return fTime;
 }
 

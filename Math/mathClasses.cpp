@@ -37,14 +37,5 @@ VectorInt<T> VectorInt<T>::getRotated(Quaternion q) {
 	return r;
 }
 
-template<class T>
-void VectorInt<T>::print(){
-	Serial.print(x);
-	Serial.print(" ");
-	Serial.print(y);
-	Serial.print(" ");
-	Serial.print(z);
-	Serial.println("");
-}
 
 

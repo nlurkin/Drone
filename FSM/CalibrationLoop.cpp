@@ -18,16 +18,16 @@ CalibrationLoop::CalibrationLoop() {
 
 	fCurrentMotor = 0;
 	fNextState = kIDLE;
-	fIPInterval = 5;
+	fIPInterval = 1;
 	fITInterval = 100;
 
 	fStopTime = 0;
 
 	fMTInterval = 100;
-	fMPInterval = 15;
+	fMPInterval = 3;
 
-	fMaxLoop = 2;
-	fLoopIndex = 0;
+	fMaxLoop = 1;
+	fLoopIndex = 1;
 
 	fPath = kPROCEDURE;
 }
@@ -236,7 +236,7 @@ void CalibrationLoop::measureM() {
 		fCalibrator.clearPoints();
 		fCalibrator.finalizeI();
 		fCalibrator.getIAxis().print();
-		sMotor->setMotorPowerAll(fCurrentPower);
+		//sMotor->setMotorPowerAll(fCurrentPower);
 		sMotor->setMotorPower(getSqrtMotorPower(-1), sMotor->getFirstMotor());
 		fStopTime = sSensor->getTime()+fITInterval;
 		fCurrentMotor = sMotor->getFirstMotor();
@@ -285,7 +285,7 @@ void CalibrationLoop::measureD() {
 
 void CalibrationLoop::mBalancedD(){
 	PRINTOUT("mBalancedD");
-	sMotor->setMotorPower(getSqrtMotorPower(-2), fCurrentMotor);
+	sMotor->setMotorPower(getSqrtMotorPower(-1), fCurrentMotor);
 	fStopTime = sSensor->getTime()+fMTInterval;
 	fNextState = kMBALANCES;
 	fState = kWAITING;

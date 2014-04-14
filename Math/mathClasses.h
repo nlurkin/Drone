@@ -55,7 +55,15 @@ public:
 	void rotate(Quaternion q);
 	VectorInt<T> getRotated(Quaternion q);
 
-	void print();
+	void print(){
+		Serial.print(x);
+		Serial.print(" ");
+		Serial.print(y);
+		Serial.print(" ");
+		Serial.print(z);
+		Serial.println("");
+	}
+
 };
 
 

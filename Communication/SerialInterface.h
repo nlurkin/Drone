@@ -56,6 +56,8 @@ public:
 private:
 	void cmdPower(int motor, double power);
 	void cmdRequestI();
+	void cmdRequestData();
+	void cmdRequestTime();
 	void cmdTorque(VectorFloat tau);
 
 	void readData(String s);
@@ -63,6 +65,7 @@ private:
 
 	void readSensor(String s);
 	void readIMat(String s);
+	void readTime(String s);
 	void readNewAttitude(String s);
 	void readCtrlCommand(String s);
 	void readKValues(String s);

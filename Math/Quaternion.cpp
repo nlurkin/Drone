@@ -10,6 +10,7 @@
 #include <math.h>
 #include <Arduino.h>
 #include "VectorFloat.h"
+#include "Constants.h"
 
 Quaternion::Quaternion() {
 	w = 1.0f;
@@ -47,15 +48,7 @@ void Quaternion::set(float nw, float nx, float ny, float nz) {
 }
 
 void Quaternion::print(){
-	Serial.print("(");
-	Serial.print(w);
-	Serial.print(",");
-	Serial.print(x);
-	Serial.print(",");
-	Serial.print(y);
-	Serial.print(",");
-	Serial.print(z);
-	Serial.println(")");
+	cout << "(" << w << "," << x << "," << y << "," << z << ")" << endl;
 }
 
 Quaternion Quaternion::operator+(Quaternion q){

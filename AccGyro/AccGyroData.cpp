@@ -31,6 +31,8 @@ AccGyroData::AccGyroData(){
 
 	setFullScaleAccelerometer(0);
 	setFullScaleGyroscope(0);
+
+	fTimestamp = 0;
 }
 
 /**
@@ -122,6 +124,8 @@ VectorFloat AccGyroData::getLinearAcceleration(){
 	r.y = fAcceleration.y/fFullScaleAccelerometer;
 	r.z = fAcceleration.z/fFullScaleAccelerometer;
 
+	cout << fAcceleration.z << " " << fFullScaleAccelerometer << " " << r.z << endl;
+
 	return r;
 }
 
@@ -182,10 +186,23 @@ void AccGyroData::setFromSerial(float buffer[10], int timestamp) {
 	fAcceleration.y = buffer[8];
 	fAcceleration.z = buffer[9];
 
+	cout << F("Received: ") << endl;
+	cout << "Quaternion: ";
+	fQuaternion.print();
+	cout << "Gyroscope: ";
+	getAngularRate().print();
+	cout << "Acceleration: ";
+	getLinearAcceleration().print();
+	cout << "Time: " << timestamp << endl;
+
 	computeAlpha(timestamp, oldGyro);
 	computeSpeed(timestamp);
 	computePosition(timestamp);
 	fTimestamp = timestamp;
+
+	cout << "Alpha: ";
+	getAlpha().print();
+
 }
 
 /**
@@ -219,7 +236,16 @@ VectorFloat AccGyroData::getPosition() {
  * @param oldGyroscope : previous angular velocities.
  */
 void AccGyroData::computeAlpha(int timestamp, VectorFloat oldGyroscope) {
-	fAlpha = (getAngularRate() - oldGyroscope)/(timestamp-fTimestamp);
+
+	cout << "Old gyro";
+	oldGyroscope.print();
+	cout << "Old timestamp " << fTimestamp << endl;
+	cout << "new gyro";
+	getAngularRate().print();
+	cout << "New timestamp " << timestamp << endl;
+
+	(getAngularRate()-oldGyroscope).print();
+	fAlpha = (getAngularRate() - oldGyroscope)/((timestamp-fTimestamp)/1000.);
 }
 
 /**

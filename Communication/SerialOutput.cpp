@@ -10,19 +10,19 @@
 #include "MemoryFree.h"
 
 void SerialOutput::printDouble(double val, byte precision) {
-
-  Serial.print (int(val));                                     // Print int part
-  if( precision > 0) {                                         // Print decimal part
-    Serial.print(".");
-    unsigned long frac, mult = 1;
-    byte padding = precision -1;
-    while(precision--) mult *=10;
-    if(val >= 0) frac = (val - int(val)) * mult; else frac = (int(val) - val) * mult;
-    unsigned long frac1 = frac;
-    while(frac1 /= 10) padding--;
-    while(padding--) Serial.print("0");
-    Serial.print(frac,DEC) ;
-  }
+	if(val<0) Serial.print('-');
+	Serial.print(int(fabs(val)));                                     // Print int part
+	if( precision > 0) {                                         // Print decimal part
+		Serial.print(".");
+		unsigned long frac, mult = 1;
+		byte padding = precision -1;
+		while(precision--) mult *=10;
+		if(val >= 0) frac = (val - int(val)) * mult; else frac = (int(val) - val) * mult;
+		unsigned long frac1 = frac;
+		while(frac1 /= 10) padding--;
+		while(padding--) Serial.print("0");
+		Serial.print(frac,DEC) ;
+	}
 }
 
 SerialOutput::SerialOutput() {
@@ -73,6 +73,6 @@ SerialOutput& endl(SerialOutput& c) {
 }
 
 SerialOutput& SerialOutput::operator<<( SerialOutput& (*f)(SerialOutput&) )
-  {
-      return f(*this);
-  }
+{
+	return f(*this);
+}

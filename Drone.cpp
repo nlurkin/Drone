@@ -21,5 +21,5 @@ void loop()
 {
 	//Add your repeated code here
 	//sensor.exportValueToSerial();
-	if(Serial.available()>0) mainloop->loop();
+	mainloop->loop();
 }
