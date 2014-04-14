@@ -11,7 +11,8 @@ import sys
 
 torqueSet = 0
 reqTorque = Vector([0, 0, 0])
-reqNextStep = False
+reqNextStep = 0
+reqData = False
 
 ser = None
 
@@ -46,8 +47,9 @@ def sendSensor():
     acc = simu.b.Acceleration
     t = simu.t
     print "Sending quat " + str(quat)
-    print "Sending gyro " + str(gyro*131*2)
-    print "Sending acc " + str(acc*8192*2)
+    print "Sending gyro " + str(gyro)
+    print "Sending acc " + str(acc)
+    print "With alpha " + str(simu.b.Alpha)
     ser.write(prefix + "BUF0:" + str(quat.w) + "\r\n")
     sleep(Params.serialSleep)
     ser.write(prefix + "BUF1:" + str(quat.x) + "\r\n")
@@ -69,7 +71,10 @@ def sendSensor():
     ser.write(prefix + "BUF9:" + str(int(acc[2]*8192*2)) + "\r\n")
     sleep(Params.serialSleep)
     ser.write(prefix + "TIME:" + str(t) + "\r\n")
-      
+
+def sendTime():
+    t = simu.t
+    ser.write("DAT:TIME:" + str(t) + "\r\n")      
 
 def sendI():
     I = simu.I
@@ -113,6 +118,8 @@ def serialLoop():
     global torqueSet
     global ser
     global reqNextStep
+    global reqData
+    
     s = str(ser.readline());
     
     if len(s) > 0:
@@ -137,7 +144,11 @@ def serialLoop():
                 #print "Power request for motor %s: %s" % (spl[2], spl[3])
                 simu.b.changeInput(int(spl[2]), pow(float(spl[3]),2))
             elif spl[1]=="NEXT":
-                reqNextStep = True
+                reqNextStep += 1
+            elif spl[1]=="REQD":
+                reqData = True
+            elif spl[1]=="REQT":
+                sendTime()
 
 def sendInstruction(cmd):
     prefix = "CMD:CTRL:"
@@ -148,6 +159,7 @@ def main():
     global reqTorque
     global ser
     global reqNextStep
+    global reqData
     timeout = 0.0001
     s = ""
     continuous = False
@@ -169,10 +181,9 @@ def main():
         if(continuous):
             if Params.runLocally==False:
                 #if ser.inWaiting()==0 and reqNextStep==True:
-                if reqNextStep==True:
+                if reqNextStep>0:
                     #simu.setRequiredTorque(reqTorque)
                     torqueSet = 0
-                    reqNextStep = False
                     cont = True
                 else:
                     cont = False
@@ -183,7 +194,10 @@ def main():
                 if tracking:
                     sendNewTracking(None)
                 simu.nextStep()
+                reqNextStep -= 1
+            if reqData:
                 sendSensor()
+                reqData=False
                  
         if s=="q":
             sys.exit(0)

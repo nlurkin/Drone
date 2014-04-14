@@ -33,10 +33,10 @@ class Calibrator:
         
         #TODO: Review I_i conventions everywhere to have something coherent (and the corresponding signs everywhere)
         #This works if the time difference between both measurement is big enough and time step small enough and avoid angles closse to k*pi
-        print str(self.Ialpha[0])
-        print str(self.Ialpha[1])
-        print str(self.Iomega[0])
-        print str(self.Iomega[1])
+        print "alpha0" + str(self.Ialpha[0])
+        print "alpha1" + str(self.Ialpha[1])
+        print "omega0" + str(self.Iomega[0])
+        print "omega1" + str(self.Iomega[1])
         
         I1 = (self.Ialpha[1][0]-self.Ialpha[0][0])/(self.Iomega[1][1]*self.Iomega[1][2]-self.Iomega[0][1]*self.Iomega[0][2])
         I2 = (self.Ialpha[1][1]-self.Ialpha[0][1])/(self.Iomega[1][0]*self.Iomega[1][2]-self.Iomega[0][0]*self.Iomega[0][2])
