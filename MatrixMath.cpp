@@ -10,7 +10,7 @@
 
 #define NR_END 1
 
-MatrixMath Matrix;			// Pre-instantiate
+//MatrixMath Matrix;			// Pre-instantiate
 
 // Matrix Printing Routine
 // Uses tabs to separate numbers under assumption printed float width won't cause problems

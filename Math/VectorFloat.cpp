@@ -94,6 +94,11 @@ VectorFloat VectorFloat::operator-(VectorFloat s){
 VectorFloat VectorFloat::operator+(VectorFloat s){
 	return VectorFloat(x+s.x, y+s.y, z+s.z);
 }
+void VectorFloat::operator+=(VectorFloat s){
+	x+=s.x;
+	y+=s.y;
+	z+=s.z;
+}
 VectorFloat VectorFloat::operator-(float s){
 	return VectorFloat(x-s, y-s, z-s);
 }

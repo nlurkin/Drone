@@ -28,5 +28,5 @@ public:
 	int Invert(float* A, int n);
 };
 
-extern MatrixMath Matrix;
+//extern MatrixMath Matrix;
 #endif

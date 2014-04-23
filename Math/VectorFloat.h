@@ -37,6 +37,7 @@ public:
 	VectorFloat operator+(VectorFloat s);
 	VectorFloat operator-(float s);
 	VectorFloat operator+(float s);
+	void operator+=(VectorFloat s);
 	VectorFloat operator-();
 	VectorFloat operator*(float s);
 	float operator*(VectorFloat s);
