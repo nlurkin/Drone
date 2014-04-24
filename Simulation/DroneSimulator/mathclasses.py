@@ -376,7 +376,7 @@ class Matrix:
             s = s[:-1]
             s += '\n '
         s = s[:-2]
-        return '[' + s + ']'
+        return '[' + s + ']\n'
     
     def setrow(self,n,l):
         self.components[n] = l
@@ -400,9 +400,9 @@ class Matrix:
     
     def maxcol(self,n):
         col = self.col(n)
-        abscol = [abs(el) for el in col]
+        abscol = [abs(el) for el in col[n:]]
         m = max(abscol)
-        i = abscol.index(m)
+        i = abscol.index(m)+n
         return [self.col(n)[i], i]
     
     def swap(self,n,m):
@@ -444,9 +444,11 @@ class Matrix:
             if m == 0.0:
                 print "Inversion failed due to singular matrix"
                 return False
-            if pivrow != k:
+            
+            if pivrow != k: 
                 inv.swap(k, pivrow)
                 idMat.swap(k,pivrow)
+            
             
             pivrows.append(pivrow)  #record row swap (even if no swap happened)
             inv.dividerow(k, m)
@@ -465,3 +467,12 @@ if __name__ == "__main__":
     x = Matrix([[3., 0., 2.],[2.,0.,-2.],[0.,1.,1.]])
     y = x.invert()
     print x*y
+    
+    x = Matrix([[1., 3., 3.],[1.,4.,3.],[1.,3.,4.]])
+    y = x.invert()
+    print x*y
+    
+    x = Matrix([[0.143, 0.357, 2.01],[-1.31, 0.911, 1.99],[11.2, -4.30, -0.605]])
+    y = x.invert()
+    print x*y
+    

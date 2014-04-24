@@ -164,20 +164,22 @@ public:
 
 		return r;
 	};
+
 	Matrix<R,C> getInverse(){
 		if(R!=C){
 			cout << "Matrix::getInverse only valid for square matrices" << endl;
 			return Matrix<R,C>();
 		}
-		int pivrow = 0;			//keeps track of current pivot row
-		vector<int> pivrows;	//keeps track of rows swaps to undo at end ??? ou 1,N
-		int m;
+		int pivrow = 0;         //keeps track of current pivot row
+		//int pivrows[R];   //keeps track of rows swaps to undo at end ??? ou 1,N
+		float m;
 
-		Matrix<R,R> inv(data);
+		Matrix<R,R> inv(data), res;
+		res = identity();
 
 		for(int k=0; k<R; ++k){
 			//find pivot row, the row with biggest entry in current column
-			 m = inv.maxCol(k, pivrow);
+			m = inv.maxCol(k, pivrow);
 
 			//check for singular matrix
 			if(m == 0.0){
@@ -186,37 +188,46 @@ public:
 			}
 			if(pivrow != k){
 				inv.swap(k, pivrow);
+				res.swap(k, pivrow);
 			}
 
-			pivrows.push_back(pivrow);	//record row swap (even if no swap happened)
+			//pivrows[k] = pivrow; //record row swap (even if no swap happened)
 			inv.divideRow(k, m);
+			res.divideRow(k, m);
 
 			//Now eliminate all other entries in this column
 			for(int i=0; i<R; ++i){
 				if(i != k){
+					res.substractRow(i, inv[i][k], k);
 					inv.substractRow(i, inv[i][k], k);
 				}
 			}
-
-
-			//Done, now need to undo pivot row swaps by doing column swaps in reverse order
-			for(int k=R-1; k>=0; --k){
-				if(pivrows[k] != k){
-					inv.swapCol(k, pivrows[k]);
-				}
-			}
 		}
-		return inv;
+
+		//Done, now need to undo pivot row swaps by doing column swaps in reverse order
+		/*for(int k=R-1; k>=0; --k){
+			if(pivrows[k] != k){
+				inv.swapCol(k, pivrows[k]);
+			}
+		}*/
+
+		return res;
 	};
 
 	void swap(int i, int j){
+		float temp;
 		for(int k=0; k<C; ++k){
-			swap(data[i][k], data[j][k]);
+			temp = data[i][k];
+			data[i][k] = data[j][k];
+			data[j][k] = temp;
 		}
 	};
 	void swapCol(int i, int j){
+		float temp;
 		for(int k=0; k<R; ++k){
-			swap(data[k][i], data[k][j]);
+			temp = data[k][i];
+			data[k][i] = data[k][j];
+			data[k][j] = temp;
 		}
 	};
 	void divideRow(int i, float d){
@@ -231,10 +242,10 @@ public:
 		}
 	};
 	float maxCol(int i, int& index){
-		float max = data[0][i];
-		index = 0;
-		for(int k=1; k<R; ++k){
-			if(max < data[k][i]){
+		float max = data[i][i];
+		index = i;
+		for(int k=i+1; k<R; ++k){
+			if(fabs(max) < fabs(data[k][i])){
 				max = data[k][i];
 				index = k;
 			}
@@ -249,6 +260,7 @@ public:
 			}
 			cout << endl;
 		}
+		cout << endl;
 	};
 
 private:
