@@ -303,7 +303,7 @@ class Matrix:
     '''
 
     components = []
-    size = [0,0]
+    size = (0,0)
 
     def __init__(self, v=None):
         '''
@@ -311,27 +311,26 @@ class Matrix:
         '''
         if v==None:
             self.components = [[0., 0., 0.], [0., 0., 0.], [0., 0., 0.]]
-            self.size = [3,3]
+            self.size = (3,3)
         elif v.__class__ == Matrix:
             self.components = v.components[:]
             self.size = v.size
+        elif type(v) == tuple and len(v)==2:
+            self.components = []
+            for i in range(0,v[0]):
+                row = []
+                for j in range(0,v[1]):
+                    row.append(0.)
+                self.components.append(row)
+            self.size = v
         elif type(v) == list:
-            if len(v)==2 and type(v[0])!=list:
-                self.components = []
-                for i in range(0,v[0]):
-                    row = []
-                    for j in range(0,v[1]):
-                        row.append(0.)
-                    self.components.append(row)
-                self.size = v
-            else:
-                self.components = []
-                for col in v:
-                    c = []
-                    for row in col:
-                        c.append(row)
-                    self.components.append(c)
-                self.size = [len(v),len(v[0])]
+            self.components = []
+            for col in v:
+                c = []
+                for row in col:
+                    c.append(row)
+                self.components.append(c)
+            self.size = (len(v),len(v[0]))
         
     def __mul__(self, other):
         if other.__class__ == Vector:
@@ -345,7 +344,7 @@ class Matrix:
                 i+=1
             return v
         elif other.__class__== Matrix:
-            v = Matrix([self.size[0],other.size[1]])
+            v = Matrix((self.size[0],other.size[1]))
             for ir in range(0,self.size[0]):
                 for ic in range(0,other.size[1]):
                     sum = 0
@@ -364,6 +363,22 @@ class Matrix:
                 i+=1
             return v
     
+    def __add__(self, other):
+        if other.__class__== Matrix:
+            v = Matrix(self.size)
+            for ir in range(0,self.size[0]):
+                for ic in range(0,other.size[1]):
+                    v.setitem(ir,ic, self[ir][ic]+other[ir][ic])
+            return v
+        
+    def __sub__(self, other):
+        if other.__class__== Matrix:
+            v = Matrix(self.size)
+            for ir in range(0,self.size[0]):
+                for ic in range(0,other.size[1]):
+                    v.setitem(ir,ic, self[ir][ic]-other[ir][ic])
+            return v
+        
     def __repr__(self):
         return self.__str__()
     
@@ -427,6 +442,17 @@ class Matrix:
     def identity(self):
         for k in range(0, self.size[0]):
             self.components[k][k] = 1.
+        return self
+    
+    def transpose(self):
+        ret = Matrix((self.size[1], self.size[0]))
+        
+        for i in range(0, self.size[0]):
+            for j in range(0, self.size[1]):
+                ret[j][i] = self[i][j];
+        
+        return ret
+        
     def invert(self):
         pivrow = 0  #keeps track of current pivot row
         pivrows = []  #keeps track of rows swaps to undo at end
@@ -465,12 +491,12 @@ class Matrix:
 if __name__ == "__main__":
     print '*** running test ***'
     x = Matrix([[3., 0., 2.],[2.,0.,-2.],[0.,1.,1.]])
-    y = x.invert()
-    print x*y
+    #y = x.transpose()
+    print x
     
-    x = Matrix([[1., 3., 3.],[1.,4.,3.],[1.,3.,4.]])
-    y = x.invert()
-    print x*y
+    z = Matrix([[1., 3., 3.],[1.,4.,3.],[1.,3.,4.]])
+    #y = z.invert()
+    print x+z
     
     x = Matrix([[0.143, 0.357, 2.01],[-1.31, 0.911, 1.99],[11.2, -4.30, -0.605]])
     y = x.invert()

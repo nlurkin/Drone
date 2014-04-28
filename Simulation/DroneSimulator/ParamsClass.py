@@ -6,7 +6,7 @@ class Params:
     '''
 
     comPort = 3
-    runLocally = False
+    runLocally = True
     ground = False
     ctrlType = 1
     

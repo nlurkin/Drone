@@ -8,9 +8,10 @@ from scipy.constants.constants import pi
 from Body import Body
 from ParamsClass import Params
 from mathclasses import Vector, Quaternion
-from DronePlot import DronePlot
+from sensorTest import PrecisionTest
 
 
+#from DronePlot import DronePlot
 class Simu(object):
     Rho = 1.2250 #kg.m^-3
     #K_v = 3000 #rpm.V^-1
@@ -43,7 +44,8 @@ class Simu(object):
     moveTimes = None
     moveType = None
     
-    pltpq = DronePlot()
+    #pltpq = DronePlot()
+    test = PrecisionTest(dt)
     
     def __init__(self):
         #self.b.setMotorConstants(self.Rho, self.K_v, self.K_t, self.K_tau, self.I_M, self.A_swept, self.A_xsec, self.Radius, self.C_D)
@@ -57,6 +59,7 @@ class Simu(object):
         self.flipResponse = [0, 0, 0]
         self.moveType = 0
         self.moveTimes = [0, 0, 0]
+               
     
     def initBody(self, local):
         self.b.setModel(self.I, self.K_d, Params.L, Params.Mass)
@@ -136,13 +139,17 @@ class Simu(object):
     
     def singleStep(self, t):
         self.b.nextStep(self.dt)
-        self.plot(t)
+        self.test.setAngularMeasure(self.b.Quat, self.b.Omega, self.t)
+        self.test.setControl(self.b.CtrlInput)
+        self.test.computeValues()
+        self.test.compare(self.b.Omega, self.b.Alpha)
+        #self.plot(t)
 
     
     def mainLoop(self):
         for t in self.time:
             self.singleStep(t)
-        self.plot()
+        #self.plot()
     
     def plot(self, t):
        
