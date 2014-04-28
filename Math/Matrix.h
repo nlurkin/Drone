@@ -165,6 +165,16 @@ public:
 		return r;
 	};
 
+	Matrix<R,C>& zeros(){
+		for(int i=0; i<R; ++i){
+			for(int j=0; j<C; ++j){
+				data[i][j] = 0.;
+			}
+		}
+
+		return *this;
+	}
+
 	Matrix<R,C> getInverse(){
 		if(R!=C){
 			cout << "Matrix::getInverse only valid for square matrices" << endl;

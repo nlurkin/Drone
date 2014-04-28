@@ -33,6 +33,9 @@ AccGyroData::AccGyroData(){
 	setFullScaleGyroscope(0);
 
 	fTimestamp = 0;
+
+	filter.setMatH(Matrix<1,2>({{1., 0.}}));
+	filter.setMatR(Matrix<1,1>({{1./(131.*2.)}}));
 }
 
 /**
@@ -84,10 +87,10 @@ void AccGyroData::setFromBuffer(uint8_t *buffer, int timestamp){
  * @param r: Scale (0 to 3)
  */
 void AccGyroData::setFullScaleAccelerometer(uint8_t r){
-	if(r==0) fFullScaleAccelerometer = 8192.0 * 2;
-	if(r==1) fFullScaleAccelerometer = 4096.0 * 2;
-	if(r==2) fFullScaleAccelerometer = 2048.0 * 2;
-	if(r==3) fFullScaleAccelerometer = 1024.0 * 2;
+	if(r==0) fFullScaleAccelerometer = 8192.0 * 2.;
+	if(r==1) fFullScaleAccelerometer = 4096.0 * 2.;
+	if(r==2) fFullScaleAccelerometer = 2048.0 * 2.;
+	if(r==3) fFullScaleAccelerometer = 1024.0 * 2.;
 }
 
 /**
@@ -99,10 +102,10 @@ void AccGyroData::setFullScaleAccelerometer(uint8_t r){
  * @param r: Scale (0 to 3)
  */
 void AccGyroData::setFullScaleGyroscope(uint8_t r){
-	if(r==0) fFullScaleGyroscope = 131.0 * 2;
-	if(r==1) fFullScaleAccelerometer = 65.5 * 2;
-	if(r==2) fFullScaleAccelerometer = 32.8 * 2;
-	if(r==3) fFullScaleAccelerometer = 16.4 * 2;
+	if(r==0) fFullScaleGyroscope = 131.0 * 2.;
+	if(r==1) fFullScaleAccelerometer = 65.5 * 2.;
+	if(r==2) fFullScaleAccelerometer = 32.8 * 2.;
+	if(r==3) fFullScaleAccelerometer = 16.4 * 2.;
 }
 
 /**
@@ -244,8 +247,15 @@ void AccGyroData::computeAlpha(int timestamp, VectorFloat oldGyroscope) {
 	getAngularRate().print();
 	cout << "New timestamp " << timestamp << endl;
 
-	(getAngularRate()-oldGyroscope).print();
-	fAlpha = (getAngularRate() - oldGyroscope)/((timestamp-fTimestamp)/1000.);
+	float dt = timestamp - fTimestamp;
+	filter.setMatF(Matrix<2,2>({{1., dt}, {0., 1.}}));
+	filter.setMatQ(Matrix<2,2>({{dt*dt*dt*dt/4., dt*dt*dt/3.}, {dt*dt*dt/3., dt*dt}}));
+
+	Matrix<2,1> temp = filter.newMeasure(Matrix<1,1>({{getAngularRate()[0]}}));
+	//(getAngularRate()-oldGyroscope).print();
+	//fAlpha = (getAngularRate() - oldGyroscope)/((timestamp-fTimestamp)/1000.);
+	fAlpha[0] = temp[1][0];
+	fOmega[0] = temp[0][0];
 }
 
 /**

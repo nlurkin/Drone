@@ -66,6 +66,9 @@ private:
 
 	float fFullScaleGyroscope;
 	float fFullScaleAccelerometer;
+
+	Kalman<1, 2, 0> filter;
+	VectorFloat fOmega;
 };
 
 #endif /* ACCGYRODATA_H_ */
