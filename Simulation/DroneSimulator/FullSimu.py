@@ -11,7 +11,7 @@ from mathclasses import Vector, Quaternion
 from sensorTest import PrecisionTest
 
 
-#from DronePlot import DronePlot
+from DronePlot import DronePlot
 class Simu(object):
     Rho = 1.2250 #kg.m^-3
     #K_v = 3000 #rpm.V^-1
@@ -44,7 +44,7 @@ class Simu(object):
     moveTimes = None
     moveType = None
     
-    #pltpq = DronePlot()
+    pltpq = DronePlot()
     test = PrecisionTest(dt)
     
     def __init__(self):
@@ -143,13 +143,13 @@ class Simu(object):
         self.test.setControl(self.b.CtrlInput)
         self.test.computeValues()
         self.test.compare(self.b.Omega, self.b.Alpha)
-        #self.plot(t)
+        self.plot(t)
 
     
     def mainLoop(self):
         for t in self.time:
             self.singleStep(t)
-        #self.plot()
+        self.plot()
     
     def plot(self, t):
        

@@ -1,5 +1,5 @@
 #!python
-#from pyqtgraph.Qt import QtGui, QtCore
+from pyqtgraph.Qt import QtGui, QtCore
 from ParamsClass import Params
 from FullSimu import Simu
 from mathclasses import Quaternion, Vector
@@ -173,7 +173,7 @@ def main():
         ser = serial.Serial(port=Params.comPort, baudrate=9600, timeout=1)        
     
     while(True):
-        #QtGui.QApplication.processEvents()
+        QtGui.QApplication.processEvents()
         s = readInput("", "", timeout)
          
         if Params.runLocally==False:

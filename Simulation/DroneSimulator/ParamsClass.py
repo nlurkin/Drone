@@ -6,7 +6,7 @@ class Params:
     '''
 
     comPort = 3
-    runLocally = True
+    runLocally = False
     ground = False
     ctrlType = 1
     
@@ -19,13 +19,13 @@ class Params:
     waveTimes = [0.5, 1, 1.5]
     flipTimes = [1, 2, 3]
     
-    dt = 0.1
+    dt = 0.01
     
     moveType = 1
     MaxTorque = 5
     MaxDeviation = 5
     
-    serialSleep = 0.001
+    serialSleep = 0.01
     
     MaxOmega = 500
     Gravity = Vector([0, 0, -9.81])
