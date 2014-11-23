@@ -11,7 +11,7 @@
 
 void SerialOutput::printDouble(double val, byte precision) {
 	if(val<0) Serial.print('-');
-	Serial.print(int(fabs(val)));                                     // Print int part
+	Serial.print(long(fabs(val)));                           // Print int part
 	if( precision > 0) {                                         // Print decimal part
 		Serial.print(".");
 		unsigned long frac, mult = 1;
@@ -55,6 +55,11 @@ SerialOutput& SerialOutput::operator <<(const long int s) {
 }
 
 SerialOutput& SerialOutput::operator <<(const double s) {
+	printDouble(s, 5);
+	return *this;
+}
+
+SerialOutput& SerialOutput::operator <<(const float s) {
 	printDouble(s, 5);
 	return *this;
 }

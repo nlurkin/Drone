@@ -68,7 +68,7 @@ private:
 	float fFullScaleGyroscope;
 	float fFullScaleAccelerometer;
 
-	Kalman<1, 2, 0> filter;
+	Kalman<1, 2, 1> filter;
 	VectorFloat fOmega;
 };
 

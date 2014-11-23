@@ -11,6 +11,7 @@
 #include "Math/VectorFloat.h"
 #include "Math/Matrix.h"
 
+
 template <int I, int O, int C>
 class Kalman {
 public:
@@ -56,6 +57,7 @@ public:
 		//x_{k|k-1} = F*x_{k-1|k-1} + w_k
 		//get the multivariate normal here
 		//w_k =
+		//w_k = Matrix([random.multivariate_normal([0]*self.Outputs, self.Q.components).tolist()]).transpose()
 
 		if(C>0){
 			controlPart = B*u_k;
@@ -63,10 +65,25 @@ public:
 		else{
 			controlPart.zeros();
 		}
+
+		cout << "F";
+		F.print();
+		cout << "x_k";
+		x_k.print();
+		cout << "controlPart";
+		controlPart.print();
+		cout << "w_k";
+		w_k.print();
 		x_hat_k = F*x_k + controlPart + w_k;
+
+		cout << "x_hat_k ";
+		x_hat_k.print();
 
 		//P_{k|k-1} = F*P_{k-1|k-1}*F^T + Q_k
 		P_hat_k = F*P_k*F.getTranspose() + Q;
+
+		cout << "P_hat_k ";
+		P_hat_k.print();
 
 		//x_{k|k-1} = F*x_{k-1|k-1} + w_k
 		//temp =
@@ -100,18 +117,28 @@ public:
 
 		//y_k = z_k - H*x_{k|k-1}
 		y = z_k - H*x_hat_k;
+		cout << "y ";
+		y.print();
 
 		//S_k = H*P_{k|k-1}*H^T + R_k
 		S = H*P_hat_k*H.getTranspose() + R;
+		cout << "S ";
+		S.print();
 
 		//K_k = P_{k|k-1}*H^T*S^{-1}
 		K = P_hat_k*H.getTranspose()*S.getInverse();
+		cout << "K ";
+		K.print();
 
 		//x_{k|k} = x_{k|k-1} + K_k*y_k
 		x_k = x_hat_k + K*y;
+		cout << "x_k ";
+		x_k.print();
 
 		//P_{k|k} = (I-K_k*H_k)*P_{k|k-1}
 		P_k = (Matrix<O,O>::identity() - K*H)*P_hat_k;
+		cout << "P_k ";
+		P_k.print();
 
 		//y_k = z_k - H*x_{k|k-1}
 		//temp = H*P_{k|k-1}
