@@ -1,5 +1,4 @@
-from mathclasses import Vector
-
+from DroneMath.mathclasses import Vector
 
 class Calibrator:
     '''

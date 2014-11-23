@@ -1,4 +1,3 @@
-from math import atan2
 from numpy.lib.scimath import sqrt
 from numpy.ma.core import cos, sin, arcsin, arctan
 

@@ -1,6 +1,3 @@
-from numpy.ma.core import sin, cos, tan
-from mathclasses import *
-
 '''def vecCrossProduct(a, b): #vector, vector 
     c = [[a[1]*b[2]-a[2]*b[1]], [b[2]*a[0]-a[2]*b[0]], [a[0]*b[1]-b[0]*a[1]]]
     return c
@@ -27,6 +24,9 @@ def vecScalarProduct(a, b): #scalar, vector
 def vecScalarSum(a, b): #scalar, vector
     c = [a+b[0], a+b[1], a+b[2]]
     return c'''
+
+from numpy.ma.core import tan, sin, cos
+from mathclasses import Matrix, Vector
 
 
 def thetadot2omega(tD, t):

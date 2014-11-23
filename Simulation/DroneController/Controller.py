@@ -1,7 +1,45 @@
 #from qmath.qmathcore import quaternion
-from ParamsClass import Params
-from mathclasses import Matrix, Quaternion, Vector, createRotation
+import pickle
+
 from numpy.lib.scimath import sqrt
+
+from DroneController.Calibrator import Calibrator
+from DroneMath.mathclasses import Matrix, Quaternion, Vector, createRotation
+from ParamsClass import Params
+
+
+class SensorValues:
+    
+    def __init__(self):
+        self.Acceleration = Vector()
+        self.Omega = Vector()
+        self.Quat = Quaternion()
+        self.Alpha = Vector()
+    
+    def setValues(self, acceleration, gyroscope, quat, alpha):
+        #self.Acceleration = acceleration
+        #self.Omega = gyroscope
+        #self.Quat = quat
+        #self.Alpha = alpha
+        #return
+        oldGyro = Vector(self.Omega)
+        self.OmegaVector.append(oldGyro)
+        self.Acceleration[0] = int(acceleration[0]*8192*2)/(8192.*2.)
+        self.Acceleration[1] = int(acceleration[1]*8192*2)/(8192.*2.)
+        self.Acceleration[2] = int(acceleration[2]*8192*2)/(8192.*2.)
+        
+        self.Omega[0] = int(gyroscope[0]*131*2)/(131.*2.)
+        self.Omega[1] = int(gyroscope[1]*131*2)/(131.*2.)
+        self.Omega[2] = int(gyroscope[2]*131*2)/(131.*2.)
+        
+        self.Quat = quat
+        
+        self.computeAlpha(oldGyro)
+    
+    def computeAlpha(self, oldGyroscope):
+        dt = Params.dt
+        self.Alpha = (self.Omega - oldGyroscope)/dt;
+
 
 class PSquare:
     '''
@@ -240,3 +278,115 @@ class PID:
         
         self.Torque = self.I * (-self.Kd*omegaM - self.Kp*qErr)
         return self.Torque
+    
+class Calibration(object):
+    
+    def __init__(self, body, simu):
+        self.cali = Calibrator()
+        self.body = body
+        self.simu = simu
+    
+    def calibrateI(self, dt, minMotor):
+        dMotor = 1
+        self.body.CtrlInput = [minMotor, minMotor, minMotor, minMotor]
+        self.body.CtrlInput[0] = minMotor+dMotor
+    
+        for j in range(0, int(0.1/dt)):
+            self.simu.nextStep()
+        
+        for i in range(0,2):
+            #set motor power
+            self.body.CtrlInput[0] = minMotor + pow(-1,i)*dMotor
+            #get point
+            for j in range(0, int(0.1/dt)):
+                self.simu.nextStep()
+            
+            newOmega = Vector(self.body.sensors.Omega)
+            newAlpha = Vector(self.body.sensors.Alpha)
+            #newOmega = self.body.Omega
+            #newAlpha = self.body.Alpha
+            #newOmega[0] = simu.test.omega
+            #newAlpha[0] = simu.test.alpha
+            #self.cali.newPoint(self.CtrlInput[0], self.Omega, self.Alpha, 0, 0)
+            print newOmega
+            self.cali.newPoint(self.body.CtrlInput[0], newOmega, newAlpha, 0, 0)
+            for j in range(0, int(0.1/dt)):
+                self.simu.nextStep()
+            newOmega = Vector(self.body.sensors.Omega)
+            newAlpha = Vector(self.body.sensors.Alpha)
+            #newOmega = self.body.Omega
+            #newAlpha = self.body.Alpha
+            #newOmega[0] = simu.test.omega
+            #newAlpha[0] = simu.test.alpha
+            
+            print newOmega
+            self.cali.newPoint(self.body.CtrlInput[0], newOmega, newAlpha, 0, 0)
+            self.cali.calibrateI()
+            self.cali.clearPoints()
+        
+        self.body.CtrlInput[0] = minMotor-dMotor
+        for j in range(0, int(0.1/dt)):
+            self.simu.nextStep()
+        
+        self.body.CtrlInput =  [0,0,0,0]
+
+    def calibrateMotor(self, motor, dt, minMotor):
+        dMotor = 3
+        self.body.CtrlInput = [minMotor, minMotor, minMotor, minMotor]
+
+        self.body.CtrlInput[motor] = minMotor+dMotor
+        for j in range(0, int(0.1/dt)):
+            self.simu.nextStep()
+        #get point
+        for j in range(0, int(0.1/dt)):
+            self.simu.nextStep()
+            
+        self.cali.newPoint(self.body.CtrlInput[motor]-minMotor, self.body.sensors.Omega, self.body.sensors.Alpha, self.body.sensors.Acceleration, self.body.sensors.Quat)
+
+        self.body.CtrlInput[motor] = minMotor+2*dMotor
+        for j in range(0, int(0.1/dt)):
+            self.simu.nextStep()
+        #get point
+        for j in range(0, int(0.1/dt)):
+            self.simu.nextStep()
+        self.cali.newPoint(self.body.CtrlInput[motor]-minMotor, self.body.sensors.Omega, self.body.sensors.Alpha, self.body.sensors.Acceleration, self.body.sensors.Quat)
+
+        self.cali.calibrateR(motor,Params.Mass)#self.m1.K*pow(Params.MaxOmega,2)/(10000))
+        self.cali.clearPoints()
+        
+        self.body.CtrlInput[motor] = minMotor-2*dMotor
+        for j in range(0, int(0.2/dt)):
+            self.simu.nextStep()
+        self.body.CtrlInput[motor] = minMotor-dMotor
+        for j in range(0, int(0.2/dt)):
+            self.simu.nextStep()
+        
+        self.body.CtrlInput =  [0,0,0,0]
+    
+    def level(self):
+        minMotor = 0
+        minMotor+=1
+        self.body.CtrlInput = [minMotor, minMotor, minMotor, minMotor]
+        self.simu.nextStep()
+        while(self.Acceleration[2]<0):
+            minMotor+=1
+            self.body.CtrlInput = [minMotor, minMotor, minMotor, minMotor]
+            self.simu.nextStep() 
+        
+        return minMotor
+        
+    def exportCalib(self):
+        exportVals = {"R": [self.cali.getR(0),self.cali.getR(1),self.cali.getR(2),self.cali.getR(3)], "I":self.cali.getIAxis()}
+        oFile = open('calib.dat', "wb")
+        pickle.dump(exportVals, oFile)
+        oFile.close()
+    
+    def importCalib(self):
+        oFile = open('calib.dat', "rb")
+        vals = pickle.load(oFile)
+        oFile.close()
+        R = vals["R"]
+        I = vals["I"]
+        self.body.ctrl.setMotorCoefficient(R[0],R[1],R[2],R[3])
+        self.body.ctrl.setI(I)
+    

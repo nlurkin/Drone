@@ -7,7 +7,7 @@ Created on 27 Apr 2014
 import random
 import matplotlib.pyplot as plt
 
-from Kalman import KalmanGeneric
+from DroneMath.Kalman import KalmanGeneric
 
 
 def test1():
@@ -56,9 +56,9 @@ def test1():
     #print kal
     
     plt.subplot(3, 1, 1)
-    plt.plot(tv, tkv, "r")#, tv, thv, "b")
+    plt.plot(tv, tkv, "r", tv, thv, "b")
     plt.subplot(3, 1, 2)
-    plt.plot(tv, okv, "r")#, tv, ov, "b")
+    plt.plot(tv, okv, "r", tv, ov, "b")
     plt.subplot(3, 1, 3)
     plt.plot(tv, av, "b")
     
@@ -117,5 +117,5 @@ def test2():
     plt.show()
     
 if __name__ == "__main__":
-    test2()
+    test1()
         

@@ -1,8 +1,8 @@
 #!python
 from pyqtgraph.Qt import QtGui, QtCore
 from ParamsClass import Params
-from FullSimu import Simu
-from mathclasses import Quaternion, Vector
+from DroneSimulator.FullSimu import Simu
+from DroneMath.mathclasses import Quaternion, Vector
 from time import sleep, time
 import msvcrt
 import serial

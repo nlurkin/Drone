@@ -1,4 +1,4 @@
-from mathclasses import Vector
+from DroneMath.mathclasses import Vector
 
 class Params:
     '''
@@ -6,7 +6,7 @@ class Params:
     '''
 
     comPort = 3
-    runLocally = False
+    runLocally = True
     ground = False
     ctrlType = 1
     
@@ -19,7 +19,7 @@ class Params:
     waveTimes = [0.5, 1, 1.5]
     flipTimes = [1, 2, 3]
     
-    dt = 0.01
+    dt = 0.001
     
     moveType = 1
     MaxTorque = 5

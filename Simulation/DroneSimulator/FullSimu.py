@@ -7,11 +7,11 @@ from scipy.constants.constants import pi
 
 from Body import Body
 from ParamsClass import Params
-from mathclasses import Vector, Quaternion
+from DroneMath.mathclasses import Vector, Quaternion
 from sensorTest import PrecisionTest
 
 
-from DronePlot import DronePlot
+from DroneMath.DronePlot import DronePlot
 class Simu(object):
     Rho = 1.2250 #kg.m^-3
     #K_v = 3000 #rpm.V^-1
@@ -28,7 +28,6 @@ class Simu(object):
     
     I = Params.I
     K_d = 0.0013
-    b = Body()
     
     time = None
     dt = Params.dt
@@ -59,6 +58,8 @@ class Simu(object):
         self.flipResponse = [0, 0, 0]
         self.moveType = 0
         self.moveTimes = [0, 0, 0]
+        
+        self.b = Body(self)
                
     
     def initBody(self, local):
@@ -183,7 +184,7 @@ class Simu(object):
         self.b.setReference(ref, v)
     
     def calibration(self):
-        self.b.calibrate(self.dt,self)
+        self.b.calibrate(self.dt)
         
 if __name__ == "__main__":
     import matplotlib.pyplot as plt

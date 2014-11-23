@@ -5,8 +5,7 @@ Created on 28 Apr 2014
 '''
 
 import matplotlib.pyplot as plt
-from Kalman import KalmanGeneric
-from Queue import Queue
+from DroneMath.Kalman import KalmanGeneric
 
 class PrecisionTest(object):
     '''
@@ -86,7 +85,7 @@ class PrecisionTest(object):
         
         self.attitude = quat
         self.omega = int(omega[0]*(131*2))/(131.*2.)
-        print "%s / %s" % (self.omega, omega[0])
+        #print "%s / %s" % (self.omega, omega[0])
         self.time = t
     
     def setControl(self, c):
@@ -123,6 +122,7 @@ class PrecisionTest(object):
             self.filter.setX0([[self.omega],[0]])
             self.filter.setP0([[1000,0], [0,1]])
         [[self.omega],[self.alpha]] = self.filter.newMeasure([[self.omega]], [[0]])
+        #print self.omega, self.alpha
 
     def compare(self, omega, alpha):
         if(self.old_time==None):
@@ -139,13 +139,17 @@ class PrecisionTest(object):
          
     def plot(self):
         plt.subplot(4, 1, 1)
+        plt.title("omega")
         plt.plot(self.v_time, self.v_omega, "r", self.v_time, self.true_omega, "b")
         plt.subplot(4, 1, 2)
+        plt.title("omega_diff")
         plt.plot(self.v_time, self.diff_omega, "r")
 
         plt.subplot(4, 1, 3)
+        plt.title("alpha")
         plt.plot(self.v_time, self.v_alpha, "r", self.v_time, self.true_alpha, "b")
         plt.subplot(4, 1, 4)
+        plt.title("alpha_diff")
         plt.plot(self.v_time, self.diff_alpha, "r")
         
         plt.show()

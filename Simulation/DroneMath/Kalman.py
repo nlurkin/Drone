@@ -5,9 +5,7 @@ Created on 25 Apr 2014
 '''
 
 from numpy import random
-
 from mathclasses import Matrix
-
 
 
 class KalmanGeneric(object):
@@ -176,7 +174,8 @@ class KalmanGeneric(object):
         '''
         
         random.seed()
-        w_k = Matrix([random.multivariate_normal([0]*self.Outputs, self.Q.components).tolist()]).transpose()
+        #w_k = Matrix([random.multivariate_normal([0]*self.Outputs, self.Q.components).tolist()]).transpose()
+        w_k = Matrix([[0.001], [0.001]])
         
         #x_{k|k-1} = F*x_{k-1|k-1} + B*u_k + w_k
         if(self.Controls>0):
@@ -184,11 +183,18 @@ class KalmanGeneric(object):
         else:
             cpart = Matrix((self.Outputs, 1))
         
-        print cpart
+        #print "F" + str(self.F)
+        #print "x_k" + str(self.x_k)
+        #print "controlPart" + str(cpart)
+        #print "w_k" + str(w_k)
+        
         self.x_hat_k = self.F*self.x_k + cpart + w_k
+        
+        #print "x_hat_k: " + str(self.x_hat_k)
 
         #P_{k|k-1} = F*P_{k-1|k-1}*F^T + Q_k
         self.P_hat_k = self.F*self.P_k*self.F.transpose() + self.Q
+        #print "P_hat_k: " + str(self.P_hat_k)
     
     def update(self, z_k):
         '''
@@ -196,15 +202,20 @@ class KalmanGeneric(object):
         '''
         #y_k = z_k - H*x_{k|k-1}
         y = z_k - self.H*self.x_hat_k
+        #print "y: " + str(y)
 
         #S_k = H*P_{k|k-1}*H^T + R_k
         S = self.H*self.P_hat_k*self.H.transpose() + self.R
+        #print "S: " + str(S)
 
         #K_k = P_{k|k-1}*H^T*S^{-1}
         K = self.P_hat_k*self.H.transpose()*S.invert()
+        #print "K: " + str(K)
         
         #x_{k|k} = x_{k|k-1} + K_k*y_k
         self.x_k = self.x_hat_k + K*y
+        #print "x_k: " + str(self.x_k)
 
         #P_{k|k} = (I-K_k*H_k)*P_{k|k-1}
         self.P_k = (Matrix((self.Outputs, self.Outputs)).identity() - K*self.H)*self.P_hat_k
+        #print "P_k: " + str(self.P_k)
