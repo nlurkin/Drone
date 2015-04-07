@@ -254,7 +254,7 @@ void AccGyroData::computeAlpha(int timestamp, VectorFloat oldGyroscope) {
 	cout << "New timestamp " << timestamp << endl;
 
 	float dt = timestamp - fTimestamp;
-	float fArray[2][2] = {{1., dt/1000.}, {0., 1.}};
+	/*float fArray[2][2] = {{1., dt/1000.}, {0., 1.}};
 	float qArray[2][2] = {{dt*dt*dt*dt/4., dt*dt*dt/2.}, {dt*dt*dt/2., dt*dt}};
 	float bArray[2][1] = {{dt},{1.}};
 	filter.setMatF(Matrix<2,2>(fArray));
@@ -263,12 +263,12 @@ void AccGyroData::computeAlpha(int timestamp, VectorFloat oldGyroscope) {
 
 	float tempArray[1][1] = {{getAngularRate()[0]}};
 	float ctrlArray[1][1] = {{0.}};
-	Matrix<2,1> temp = filter.newMeasure(Matrix<1,1>(tempArray), Matrix<1,1>(ctrlArray));
+	Matrix<2,1> temp = filter.newMeasure(Matrix<1,1>(tempArray), Matrix<1,1>(ctrlArray));*/
 	//(getAngularRate()-oldGyroscope).print();
-	//fAlpha = (getAngularRate() - oldGyroscope)/((timestamp-fTimestamp)/1000.);
-	fAlpha[0] = temp.at(1,0);
-	cout << fAlpha[0] << endl;
-	fOmega[0] = temp[0][0];
+	fAlpha = (getAngularRate() - oldGyroscope)/((timestamp-fTimestamp)/1000.);
+	//fAlpha[0] = temp.at(1,0);
+	//cout << fAlpha[0] << endl;
+	//fOmega[0] = temp[0][0];
 }
 
 /**

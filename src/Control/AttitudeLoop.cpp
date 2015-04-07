@@ -5,7 +5,7 @@
  *      Author: Nicolas
  */
 
-#include "AttitudeLoop.h"
+#include "Control/AttitudeLoop.h"
 
 AttitudeLoop::AttitudeLoop() {
 	// TODO Auto-generated constructor stub

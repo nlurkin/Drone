@@ -343,6 +343,8 @@ void SerialInterface::readCtrlCommand(String s) {
 	fCtrlCommandReady = true;
 	if(s.startsWith("GOCALIB")) fCtrlCommand = Constants::CtrlCommand::kDOCALIB;
 	else if(s.startsWith("GODEBUG")) fCtrlCommand = Constants::CtrlCommand::kDODEBUG;
+	else if(s.startsWith("GOSTILL")) fCtrlCommand = Constants::CtrlCommand::kGOSTILL;
+	else if(s.startsWith("GODEFAULT")) fCtrlCommand = Constants::CtrlCommand::kUSEDEFAULTCALIB;
 	else fCtrlCommandReady = false;
 }
 

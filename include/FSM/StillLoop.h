@@ -10,9 +10,7 @@
 
 class StillLoop {
 public:
-	enum StillState {kIDLE, kWAITING, kSCANNING, kTAKEOFF, kSTABILIZING, kIDISTURBED, kIMEASUREP, kIMEASUREM,
-			kMDISTURBED, kMMEASURES, kMMEASURED, kMBALANCED, kMBALANCES,
-			kAPPLY, kLOAD};
+	enum StillState {kIDLE, kSTABILIZING, kSTABILIZED};
 
 	StillLoop();
 	virtual ~StillLoop();
@@ -21,7 +19,10 @@ public:
 	void start();
 
 private:
+	void stabilize();
+	void maintain();
 
+	StillState fState;
 };
 
 #endif /* INCLUDE_STILLLOOP_H_ */

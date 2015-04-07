@@ -6,12 +6,13 @@ class GenericSensor;
 class GenericMotor;
 class GenericControl;
 class SimpleControl;
+class AttitudeLoop;
 
 
 namespace Constants{
 class CtrlCommand{
 public:
-	enum ECtrlCommand {kNONE,kDOCALIB,kDODEBUG};
+	enum ECtrlCommand {kNONE,kUSEDEFAULTCALIB, kDOCALIB,kDODEBUG, kGOSTILL};
 };
 };
 
@@ -19,6 +20,7 @@ extern GenericSensor *sSensor;
 extern GenericMotor *sMotor;
 extern GenericControl *sControl;
 extern SimpleControl *sAltitude;
+extern AttitudeLoop *sAttitude;
 extern SerialOutput cout;
 extern bool bigDebug;
 

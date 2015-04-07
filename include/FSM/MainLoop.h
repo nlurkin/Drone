@@ -8,11 +8,12 @@
 #ifndef MAINLOOP_H_
 #define MAINLOOP_H_
 #include "AccGyro/AccGyro.h"
-#include "AttitudeLoop.h"
+#include "Control/AttitudeLoop.h"
 #include "Control/Calibrator.h"
 #include "FSM/CalibrationLoop.h"
 #include "Communication/SerialInterface.h"
 #include "Constants.h"
+#include "FSM/StillLoop.h"
 
 class MainLoop {
 public:
@@ -26,10 +27,14 @@ public:
 	void initializationLoop();
 	void calibrationLoop();
 	void flightLoop();
+	void stillLoop();
 
 	void moveToIdle();
 	void moveToCalibration();
+	void moveToStill();
 	void moveToFlight();
+
+	void useDefaultCalib();
 
 	/*void setCalibration();
 	void setCalibrationSerial();
@@ -39,9 +44,10 @@ public:
 	void calibrate();*/
 
 private:
-	enum MainStates {kINITIALIZING, kIDLE, kCALIBRATING, kFLYING};
+	enum MainStates {kINITIALIZING, kIDLE, kCALIBRATING, kSTILL, kFLYING};
 
 	CalibrationLoop fLoopCalib;
+	StillLoop fLoopStill;
 
 	bool fSimulate;
 

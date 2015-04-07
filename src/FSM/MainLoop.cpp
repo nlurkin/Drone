@@ -59,6 +59,7 @@ void MainLoop::loop(){
 	else if(fState==kIDLE) idleLoop();
 	else if(fState==kCALIBRATING) calibrationLoop();
 	else if(fState==kFLYING) flightLoop();
+	else if(fState==kSTILL) stillLoop();
 	else{
 		//Error, do something
 	}
@@ -70,6 +71,7 @@ void MainLoop::initializationLoop(){
 
 void MainLoop::idleLoop(){
 	if(fCtrlCommand==Constants::CtrlCommand::kDOCALIB) moveToCalibration();
+	if(fCtrlCommand==Constants::CtrlCommand::kGOSTILL) moveToStill();
 }
 
 void MainLoop::calibrationLoop(){
@@ -88,6 +90,10 @@ void MainLoop::flightLoop() {
 			ser.cmdTorque(tau);
 		}
 	}*/
+}
+
+void MainLoop::stillLoop() {
+	if(fLoopStill.processLoop()) moveToIdle();
 }
 
 
@@ -109,4 +115,20 @@ void MainLoop::moveToFlight() {
 	cout << "Moving to FLIGHT" << endl;
 	fCtrlCommand = Constants::CtrlCommand::kNONE;
 	fState = kFLYING;
+}
+void MainLoop::moveToStill() {
+	cout << "Moving to STILL" << endl;
+	fCtrlCommand = Constants::CtrlCommand::kNONE;
+	fState = kSTILL;
+	fLoopStill.start();
+}
+
+void MainLoop::useDefaultCalib(){
+	cout << "Setting default calibration" << endl;
+	MatrixNic<float, 3, 3> I;
+	I(0,0) = 0.177;
+	I(1,1) = 0.177;
+	I(2,2) = 0.334;
+	sAttitude->setI(I);
+	//TODO motor factors
 }
