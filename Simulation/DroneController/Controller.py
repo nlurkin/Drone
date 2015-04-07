@@ -2,10 +2,11 @@
 import pickle
 
 from numpy.lib.scimath import sqrt
-
+import matplotlib.pyplot as plt
 from DroneController.Calibrator import Calibrator
 from DroneMath.mathclasses import Matrix, Quaternion, Vector, createRotation
 from ParamsClass import Params
+from sensorTest import PrecisionTest
 
 
 class SensorValues:
@@ -15,15 +16,24 @@ class SensorValues:
         self.Omega = Vector()
         self.Quat = Quaternion()
         self.Alpha = Vector()
+        self.time = 0
+        
+        self.sensorTest = PrecisionTest(Params.dt)
     
+        self.v_time = []
+        
+        self.true_omega = []
+        self.v_omega =[]
+        self.diff_omega = []
+        
     def setValues(self, acceleration, gyroscope, quat, alpha):
         #self.Acceleration = acceleration
         #self.Omega = gyroscope
         #self.Quat = quat
         #self.Alpha = alpha
         #return
+        self.time += Params.dt
         oldGyro = Vector(self.Omega)
-        self.OmegaVector.append(oldGyro)
         self.Acceleration[0] = int(acceleration[0]*8192*2)/(8192.*2.)
         self.Acceleration[1] = int(acceleration[1]*8192*2)/(8192.*2.)
         self.Acceleration[2] = int(acceleration[2]*8192*2)/(8192.*2.)
@@ -35,11 +45,37 @@ class SensorValues:
         self.Quat = quat
         
         self.computeAlpha(oldGyro)
+        
+        self.sensorTest.setAngularMeasure(self.Quat, self.Omega, self.time)
+        #self.test.setControl(self.b.CtrlInput)
+        self.sensorTest.computeValues()
+        self.sensorTest.compare(gyroscope, alpha)
+        self.compare(gyroscope)
+        self.Acceleration = acceleration
+        self.Omega = gyroscope
+        self.Quat = quat
+        self.Alpha = alpha
     
     def computeAlpha(self, oldGyroscope):
         dt = Params.dt
         self.Alpha = (self.Omega - oldGyroscope)/dt;
 
+    def compare(self, omega):
+        self.v_time.append(self.time)
+
+        self.true_omega.append(omega[0])
+        self.v_omega.append(self.Omega[0])
+        self.diff_omega.append(self.Omega[0]-omega[0])
+        
+    def plot(self):
+        plt.subplot(4, 1, 1)
+        plt.title("omega")
+        plt.plot(self.v_time, self.v_omega, "r", self.v_time, self.true_omega, "b")
+        plt.subplot(4, 1, 2)
+        plt.title("omega_diff")
+        plt.plot(self.v_time, self.diff_omega, "r")
+        
+        plt.show()
 
 class PSquare:
     '''

@@ -44,7 +44,6 @@ class Simu(object):
     moveType = None
     
     pltpq = DronePlot()
-    test = PrecisionTest(dt)
     
     def __init__(self):
         #self.b.setMotorConstants(self.Rho, self.K_v, self.K_t, self.K_tau, self.I_M, self.A_swept, self.A_xsec, self.Radius, self.C_D)
@@ -140,10 +139,6 @@ class Simu(object):
     
     def singleStep(self, t):
         self.b.nextStep(self.dt)
-        self.test.setAngularMeasure(self.b.Quat, self.b.Omega, self.t)
-        self.test.setControl(self.b.CtrlInput)
-        self.test.computeValues()
-        self.test.compare(self.b.Omega, self.b.Alpha)
         self.plot(t)
 
     

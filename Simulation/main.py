@@ -238,7 +238,8 @@ def main():
         elif s=="debug":
             sendDebug()
         elif s=="print":
-            simu.test.plot()
+            simu.b.sensors.sensorTest.plot()
+            simu.b.sensors.plot()
 
 if __name__ == "__main__":
     main()

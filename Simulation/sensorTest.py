@@ -68,7 +68,7 @@ class PrecisionTest(object):
             #self.filter.setMatF([[1, dt],[0, 1]])
             #self.filter.setQ([[dt*dt, 0], [0, 1.]])
             #self.filter.setR([[1.86E-5, 0], [0, 1.87E-5]])
-            sigma_omega = 1./(131.*2.)
+            sigma_omega = 1./(131.*4.)
             self.filter.setMatH([[1,0]])
             self.filter.setMatF([[1, dt],[0, 1]])
             self.filter.setQ([[dt*dt*dt*dt/4., dt*dt*dt/2.], [dt*dt*dt/2., dt*dt]])
