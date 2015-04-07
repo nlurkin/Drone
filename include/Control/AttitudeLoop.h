@@ -18,6 +18,11 @@ typedef struct motorFactor{
 	int m4;
 } motorFactor_t;
 
+typedef struct motorConstants{
+	double Rx, Ry, Rz;
+	double RT;
+} motorConstants_t;
+
 class AttitudeLoop {
 public:
 	AttitudeLoop();
@@ -38,6 +43,7 @@ public:
 
 	const MatrixNic<float, 3, 3>& getI() const {return fI;}
 	void setI(const MatrixNic<float, 3, 3>& i) {fI = i;}
+	void setM(int motor, double Rx, double Ry, double Rz, double RT);
 
 	void printI();
 private:
@@ -46,6 +52,7 @@ private:
 	VectorFloat fTorque;
 
 	MatrixNic<float, 3, 3> fI;
+	motorConstants_t fM1, fM2, fM3, fM4;
 };
 
 #endif /* ATTITUDELOOP_H_ */

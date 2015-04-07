@@ -265,7 +265,7 @@ void AccGyroData::computeAlpha(int timestamp, VectorFloat oldGyroscope) {
 	float ctrlArray[1][1] = {{0.}};
 	Matrix<2,1> temp = filter.newMeasure(Matrix<1,1>(tempArray), Matrix<1,1>(ctrlArray));*/
 	//(getAngularRate()-oldGyroscope).print();
-	fAlpha = (getAngularRate() - oldGyroscope)/((timestamp-fTimestamp)/1000.);
+	fAlpha = (getAngularRate() - oldGyroscope)/(dt/1000.);
 	//fAlpha[0] = temp.at(1,0);
 	//cout << fAlpha[0] << endl;
 	//fOmega[0] = temp[0][0];

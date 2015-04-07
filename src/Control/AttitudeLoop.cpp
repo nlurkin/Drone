@@ -8,13 +8,11 @@
 #include "Control/AttitudeLoop.h"
 
 AttitudeLoop::AttitudeLoop() {
-	// TODO Auto-generated constructor stub
 	fPOmega = 0;
 	fPQ = 0;
 }
 
 AttitudeLoop::~AttitudeLoop() {
-	// TODO Auto-generated destructor stub
 }
 
 VectorFloat AttitudeLoop::ComputePP(Quaternion qM, VectorFloat omegaM) {
@@ -54,6 +52,20 @@ motorFactor_t AttitudeLoop::Compute(Quaternion qM, VectorFloat omegaM) {
 
 	//Fit the desired torque vector with the motor response function to extract the 4 motor factors
 	return F;
+}
+
+void AttitudeLoop::setM(int motor, double Rx, double Ry, double Rz, double RT) {
+	motorConstants_t *m;
+	if(motor==0) m = &fM1;
+	else if(motor==1) m = &fM2;
+	else if(motor==2) m = &fM3;
+	else if(motor==3) m = &fM4;
+	else return;
+
+	m->Rx = Rx;
+	m->Ry = Ry;
+	m->Rz = Rz;
+	m->RT = RT;
 }
 
 void AttitudeLoop::printI(){

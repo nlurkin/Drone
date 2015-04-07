@@ -29,7 +29,7 @@ public:
 	VectorFloat getAlpha();
 	VectorFloat getVelocity();
 
-	int getTime();
+	unsigned int getTime();
 
 	Constants::CtrlCommand::ECtrlCommand getCtrlCommand();
 
@@ -75,7 +75,7 @@ private:
 
 	VectorFloat fI;
 	float fBuffer[10];
-	int fTime;
+	unsigned int fTime;
 	Quaternion fRefQuat;
 	AccGyroData fData;
 

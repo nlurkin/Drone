@@ -386,7 +386,7 @@ double SerialInterface::getSimpleKD() {
 	return fSimKD;
 }
 
-int SerialInterface::getTime() {
+unsigned int SerialInterface::getTime() {
 	PRINTOUT("getTime");
 	cout << F("CMD:NEXT:") << endl;
 	cmdRequestData();

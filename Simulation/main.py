@@ -198,8 +198,22 @@ def main():
             if reqData:
                 sendSensor()
                 reqData=False
-                 
-        if s=="q":
+        if s=="h":
+            print "help:"
+            print "\t q = exit"
+            print "\t c = continuous mode"
+            print "\t s = single step"
+            print "\t d = disturb system"
+            print "\t ms = tracking mode"
+            print "\t ref = request still"
+            print "\t calib = calibration mode"
+            print "\t dt = switch between fine-coarse time"
+            print "\t dump = dump calibration (simu)"
+            print "\t load = load calibration (simu)"
+            print "\t print = show kalman test plots (simu)"
+            print "\t debug = debug mode (arduino)"
+            print "\t default = use default calib (arduino)"
+        elif s=="q":
             sys.exit(0)
         elif s=="c":
             continuous= not(continuous)
@@ -219,7 +233,10 @@ def main():
             simu.setMoveType(Params.moveType)
             tracking = True
         elif s=="ref":
-            sendNewTracking([1,1,0])
+            if Params.runLocally==True:
+                sendNewTracking([1,1,0])
+            else:
+                sendInstruction("GOSTILL")
         elif s=="calib":
             if Params.runLocally==True:
                 simu.calibration()
@@ -240,6 +257,8 @@ def main():
         elif s=="print":
             simu.b.sensors.sensorTest.plot()
             simu.b.sensors.plot()
+        elif s=="default":
+            sendInstruction("GODEFAULT")
 
 if __name__ == "__main__":
     main()

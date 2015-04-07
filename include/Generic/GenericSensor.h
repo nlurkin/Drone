@@ -21,7 +21,7 @@ public:
 	virtual VectorFloat getAlpha()=0;
 	virtual VectorFloat getVelocity()=0;
 
-	virtual int getTime()=0;
+	virtual unsigned int getTime()=0;
 
 	//virtual void setSerialInterface(SerialInterface *s)=0;
 
