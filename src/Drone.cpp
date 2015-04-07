@@ -16,7 +16,7 @@ void setup()
 
 	mainloop = new MainLoop();
 	// Add your initialization code here
-	mainloop->setup();
+	mainloop->start();
 	//test = new TestKalman();
 	//test->test1();
 }
@@ -26,6 +26,6 @@ void loop()
 {
 	//Add your repeated code here
 	//sensor.exportValueToSerial();
-	mainloop->loop();
+	mainloop->processLoop();
 
 }

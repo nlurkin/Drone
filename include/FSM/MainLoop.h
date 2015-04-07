@@ -14,15 +14,17 @@
 #include "Communication/SerialInterface.h"
 #include "Constants.h"
 #include "FSM/StillLoop.h"
+#include "Generic/FSMLoop.h"
 
-class MainLoop {
+class MainLoop : public FSMLoop{
 public:
 	MainLoop();
 	virtual ~MainLoop();
 
-	void setup();
-	void loop();
+	bool processLoop();
+	void start();
 
+private:
 	void idleLoop();
 	void initializationLoop();
 	void calibrationLoop();
@@ -43,15 +45,14 @@ public:
 	void calibrateSensor();
 	void calibrate();*/
 
-private:
-	enum MainStates {kINITIALIZING, kIDLE, kCALIBRATING, kSTILL, kFLYING};
+	enum FSMState {kINITIALIZING, kIDLE, kCALIBRATING, kSTILL, kFLYING};
 
 	CalibrationLoop fLoopCalib;
 	StillLoop fLoopStill;
 
 	bool fSimulate;
 
-	MainStates fState;
+	FSMState fState;
 	Constants::CtrlCommand::ECtrlCommand fCtrlCommand;
 
 };

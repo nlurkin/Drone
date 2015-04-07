@@ -5,13 +5,13 @@
  *      Author: Nicoas
  */
 
+#include "Generic/FSMLoop.h"
+
 #ifndef INCLUDE_STILLLOOP_H_
 #define INCLUDE_STILLLOOP_H_
 
-class StillLoop {
+class StillLoop : public FSMLoop{
 public:
-	enum StillState {kIDLE, kSTABILIZING, kSTABILIZED};
-
 	StillLoop();
 	virtual ~StillLoop();
 
@@ -19,10 +19,12 @@ public:
 	void start();
 
 private:
+	enum FSMState {kIDLE, kSTABILIZING, kSTABILIZED};
+
 	void stabilize();
 	void maintain();
 
-	StillState fState;
+	FSMState fState;
 };
 
 #endif /* INCLUDE_STILLLOOP_H_ */

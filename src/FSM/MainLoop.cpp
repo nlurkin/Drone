@@ -33,7 +33,7 @@ MainLoop::~MainLoop() {
 	// TODO Auto-generated destructor stub
 }
 
-void MainLoop::setup(){
+void MainLoop::start(){
 	fSimulate = true;
 	//fSensor->setSerialInterface(fSerial);
 	//fSensor->setSimulate(true);
@@ -44,7 +44,7 @@ void MainLoop::setup(){
 	//sMotor->disableAll();
 }
 
-void MainLoop::loop(){
+bool MainLoop::processLoop(){
 	while(sControl->read()){};
 	if(sControl->isCtrlCommandReady()){
 		fCtrlCommand = sControl->getCtrlCommand();
@@ -63,6 +63,7 @@ void MainLoop::loop(){
 	else{
 		//Error, do something
 	}
+	return true;
 }
 
 void MainLoop::initializationLoop(){

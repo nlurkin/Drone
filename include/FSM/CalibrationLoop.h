@@ -12,13 +12,11 @@
 #include "Constants.h"
 #include "Control/SimpleControl.h"
 #include <avr/eeprom.h>
+#include "Generic/FSMLoop.h"
 
-class CalibrationLoop {
+class CalibrationLoop : public FSMLoop {
 public:
 	enum Path {kFILE, kPROCEDURE};
-	enum CalibrationState {kIDLE, kWAITING, kSCANNING, kTAKEOFF, kSTABILIZING, kIDISTURBED, kIMEASUREP, kIMEASUREM,
-		kMDISTURBED, kMMEASURES, kMMEASURED, kMBALANCED, kMBALANCES,
-		kAPPLY, kLOAD};
 
 	CalibrationLoop();
 	virtual ~CalibrationLoop();
@@ -28,6 +26,10 @@ public:
 	void start();
 
 private:
+	enum FSMState {kIDLE, kWAITING, kSCANNING, kTAKEOFF, kSTABILIZING, kIDISTURBED, kIMEASUREP, kIMEASUREM,
+		kMDISTURBED, kMMEASURES, kMMEASURED, kMBALANCED, kMBALANCES,
+		kAPPLY, kLOAD};
+
 	//Init
 	void scanP();
 	void takeOff();
@@ -74,7 +76,7 @@ private:
 	double getSqrtMotorPower(int factor);
 
 	Path fPath;
-	CalibrationState fState;
+	FSMState fState;
 
 	double fCurrentPower;
 
@@ -85,7 +87,7 @@ private:
 	unsigned long fStopTime;
 	double fIPInterval;
 	unsigned long fITInterval;
-	CalibrationState fNextState;
+	FSMState fNextState;
 	int fLoopIndex;
 	int fMaxLoop;
 
