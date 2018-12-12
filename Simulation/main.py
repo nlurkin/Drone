@@ -4,8 +4,15 @@ from ParamsClass import Params
 from DroneSimulator.FullSimu import Simu
 from DroneMath.mathclasses import Quaternion, Vector
 from time import sleep, time
-import msvcrt
-import serial
+try:
+   import msvcrt
+except ImportError:
+   useRawInput = True
+   import select
+else:
+   useRawInput = False
+
+#import serial
 import string
 import sys
 
@@ -20,6 +27,19 @@ simu = Simu()
 
 #console
 def readInput( caption, default, timeout = 5):
+   if useRawInput:
+      return readInput_posix(caption, default, timeout)
+   else:
+      return readInput_msvcrt(caption, default, timeout)
+
+def readInput_posix( caption, default, timeout = 5):
+   i, o, e = select.select( [sys.stdin], [], [], timeout )
+   if i:
+      return sys.stdin.readline().strip()
+   else:
+      return default
+
+def readInput_msvcrt(caption, default, timeout = 5):
     start_time = time()
     inputS = ''
     while True:
